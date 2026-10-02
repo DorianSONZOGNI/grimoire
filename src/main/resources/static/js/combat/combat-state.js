@@ -602,19 +602,38 @@ window.renderHeroStatsPanel = function () {
         const mMp = p.manaMax || 1;
         const hpPct = Math.max(0, Math.min(100, (cHp / mHp) * 100));
         const mpPct = Math.max(0, Math.min(100, (cMp / mMp) * 100));
-        let iconName = 'account_circle';
-        let iconColor = '#94a3b8';
-        if (p.spiritualite && p.spiritualite.nom && window.getSpiritualiteIcon) {
-            iconName = window.getSpiritualiteIcon(p.spiritualite.nom);
-            iconColor = window.getSpiritualiteColor ? window.getSpiritualiteColor(p.spiritualite.nom) : '#94a3b8';
-        } else if (p.voie && p.voie.nom && window.getSpiritualiteIcon) {
-            iconName = window.getSpiritualiteIcon(p.voie.nom);
-            iconColor = window.getSpiritualiteColor ? window.getSpiritualiteColor(p.voie.nom) : '#94a3b8';
+
+        // Voie avatar image
+        let avatarHtml = '';
+        if (p.voie && p.voie.nom) {
+            const vNom = p.voie.nom.toLowerCase();
+            let avatarName = '';
+            if (vNom.includes('consolidation')) avatarName = 'consolidation';
+            else if (vNom.includes('conviction')) avatarName = 'conviction';
+            else if (vNom.includes('création') || vNom.includes('creation')) avatarName = 'creation';
+            else if (vNom.includes('destruction')) avatarName = 'destruction';
+            else if (vNom.includes('raison')) avatarName = 'raison';
+            else if (vNom.includes('sûreté') || vNom.includes('surete')) avatarName = 'surete';
+            else if (vNom.includes('trahison')) avatarName = 'trahison';
+            else if (vNom.includes('violence')) avatarName = 'violence';
+            if (avatarName) {
+                avatarHtml = `<img src="/images/avatar/${avatarName}.png" alt="${avatarName}" style="width:28px; height:28px; object-fit:contain; border-radius:4px; flex-shrink:0; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">`;
+            }
         }
+
+        // Spiritualité icon
+        let spIconName = 'auto_awesome';
+        let spIconColor = '#94a3b8';
+        if (p.spiritualite && p.spiritualite.nom && window.getSpiritualiteIcon) {
+            spIconName = window.getSpiritualiteIcon(p.spiritualite.nom);
+            spIconColor = window.getSpiritualiteColor ? window.getSpiritualiteColor(p.spiritualite.nom) : '#94a3b8';
+        }
+
         statsHtml += `<div style="display:flex; flex-direction:column; gap:4px; padding:8px 10px; background:rgba(15,23,42,0.92); border:1px solid rgba(255,255,255,0.08); border-radius:10px;">
             <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
-                <span class="material-symbols-outlined" style="font-size:1rem; color:${iconColor}; flex-shrink:0;">${iconName}</span>
-                <span style="font-size:0.72rem; font-weight:600; color:#e2e8f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</span>
+                ${avatarHtml}
+                <span class="material-symbols-outlined" style="font-size:1rem; color:${spIconColor}; flex-shrink:0;">${spIconName}</span>
+                <span style="font-size:0.72rem; font-weight:600; color:#e2e8f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1;">${p.name}</span>
             </div>
             <div style="display:flex; align-items:center; gap:4px;">
                 <span class="material-symbols-outlined" style="font-size:0.8rem; color:#f472b6; flex-shrink:0;">favorite</span>
