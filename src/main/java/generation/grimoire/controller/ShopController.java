@@ -493,6 +493,17 @@ public class ShopController {
             existing.setDescription(dto.getDescription());
             existing.setGoldCost(dto.getGoldCost());
             existing.setAnomalyCost(dto.getAnomalyCost() != null ? dto.getAnomalyCost() : new java.util.HashMap<>());
+            
+            existing.setUnlocksSlot4(dto.isUnlocksSlot4());
+            existing.setUnlocksSlot5(dto.isUnlocksSlot5());
+            existing.setUnlocksPromo(dto.isUnlocksPromo());
+            existing.setUnlocksBlackMarket(dto.isUnlocksBlackMarket());
+            
+            existing.getSlotRules().clear();
+            if (dto.getSlotRules() != null) {
+                existing.getSlotRules().addAll(dto.getSlotRules());
+            }
+
             return ResponseEntity.ok(shopUpgradeConfigRepository.save(existing));
         }).orElse(ResponseEntity.notFound().build());
     }

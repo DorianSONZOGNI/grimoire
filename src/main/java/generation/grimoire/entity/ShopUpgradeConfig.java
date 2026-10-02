@@ -8,6 +8,8 @@ import org.hibernate.annotations.FetchMode;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Configuration d'un palier d'amélioration de la boutique.
@@ -45,4 +47,23 @@ public class ShopUpgradeConfig {
     @MapKeyColumn(name = "anomaly_name")
     @Column(name = "quantity")
     private Map<String, Integer> anomalyCost = new HashMap<>();
+
+    /** Déblocage des slots spécifiques */
+    @Column(nullable = false)
+    private boolean unlocksSlot4 = false;
+
+    @Column(nullable = false)
+    private boolean unlocksSlot5 = false;
+
+    @Column(nullable = false)
+    private boolean unlocksPromo = false;
+
+    @Column(nullable = false)
+    private boolean unlocksBlackMarket = false;
+
+    /** Règles de rareté par slot (probabilités) */
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
+    @CollectionTable(name = "shop_upgrade_slot_rules", joinColumns = @JoinColumn(name = "config_id"))
+    private List<ShopSlotRarityRule> slotRules = new ArrayList<>();
 }

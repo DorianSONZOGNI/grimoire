@@ -913,7 +913,34 @@ function renderUpgradeModal(cfg, nextLevel = 2) {
                         ${anomalyEntries.map(([name, qty]) => upgradeAnomalyRowHtml(name, qty)).join('')}
                     </div>
                 </div>
-                <button type="button" class="eq-create-btn text-white p-3 flex items-center justify-center gap-2 font-semibold text-base cursor-pointer border-none rounded-lg"
+
+                <hr style="border-color: rgba(255,255,255,0.1); margin: 0.5rem 0;">
+                
+                <h4 style="margin-bottom: 0;">Déblocage des Slots</h4>
+                <div class="flex gap-4 flex-wrap text-sm text-slate-300">
+                    <label class="flex items-center gap-1"><input type="checkbox" id="upSlot4" ${cfg?.unlocksSlot4 ? 'checked' : ''}> Slot 4</label>
+                    <label class="flex items-center gap-1"><input type="checkbox" id="upSlot5" ${cfg?.unlocksSlot5 ? 'checked' : ''}> Slot 5</label>
+                    <label class="flex items-center gap-1"><input type="checkbox" id="upPromo" ${cfg?.unlocksPromo ? 'checked' : ''}> Promo</label>
+                    <label class="flex items-center gap-1"><input type="checkbox" id="upBlackMarket" ${cfg?.unlocksBlackMarket ? 'checked' : ''}> Marché Noir</label>
+                </div>
+
+                <hr style="border-color: rgba(255,255,255,0.1); margin: 0.5rem 0;">
+                
+                <div>
+                    <label class="flex items-center justify-between mb-2">
+                        <span>Probabilités Rareté par Slot</span>
+                        <button type="button" class="flex items-center gap-1 text-sm cursor-pointer rounded px-2 py-1"
+                            style="background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.4);color:#3b82f6"
+                            onclick="addUpgradeSlotRuleRow()">
+                            <span class="material-symbols-outlined text-base">add</span> Règle
+                        </button>
+                    </label>
+                    <div id="upSlotRuleRows" style="display:flex;flex-direction:column;gap:0.5rem;">
+                        ${(cfg?.slotRules || []).map(rule => upgradeSlotRuleRowHtml(rule.slotIndex, rule.rarity, rule.weight)).join('')}
+                    </div>
+                </div>
+
+                <button type="button" class="eq-create-btn text-white p-3 flex items-center justify-center gap-2 font-semibold text-base cursor-pointer border-none rounded-lg mt-2"
                     style="background:linear-gradient(135deg,#a855f7,#7c3aed);"
                     onclick="submitUpgrade()">
                     <span class="material-symbols-outlined text-xl">save</span>
@@ -977,6 +1004,39 @@ window.addUpgradeAnomalyRow = function() {
     container.appendChild(div.firstElementChild);
 };
 
+window.upgradeSlotRuleRowHtml = function(slotIndex = 1, rarity = 'COMMUN', weight = 100) {
+    const rarities = ['COMMUN', 'INHABITUEL', 'RARE', 'MYTHIQUE', 'LEGENDAIRE', 'EPIQUE', 'RELIQUE', 'MAUDIT'];
+    const rarityOptions = rarities.map(r => `<option value="${r}" ${rarity === r ? 'selected' : ''}>${r}</option>`).join('');
+    
+    return `<div class="flex gap-2 items-center slot-rule-row">
+        <select class="rule-slot-index" style="width:70px;background:#1e293b;border:1px solid #334155;color:white;border-radius:6px;padding:6px;font-size:0.9rem;">
+            <option value="1" ${slotIndex === 1 ? 'selected' : ''}>Slot 1</option>
+            <option value="2" ${slotIndex === 2 ? 'selected' : ''}>Slot 2</option>
+            <option value="3" ${slotIndex === 3 ? 'selected' : ''}>Slot 3</option>
+            <option value="4" ${slotIndex === 4 ? 'selected' : ''}>Slot 4</option>
+            <option value="5" ${slotIndex === 5 ? 'selected' : ''}>Slot 5</option>
+        </select>
+        <select class="rule-rarity flex-1" style="background:#1e293b;border:1px solid #334155;color:white;border-radius:6px;padding:6px;font-size:0.9rem;">
+            ${rarityOptions}
+        </select>
+        <input type="number" class="rule-weight" min="1" value="${weight}" title="Probabilité (poids)"
+            style="width:60px;background:#1e293b;border:1px solid #334155;color:white;border-radius:6px;padding:6px;text-align:center;font-size:0.9rem;">
+        <span class="text-xs text-muted">%</span>
+        <button type="button" onclick="this.closest('.slot-rule-row').remove()"
+            style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:4px 8px;cursor:pointer;color:#ef4444">
+            <span class="material-symbols-outlined" style="font-size:1rem">delete</span>
+        </button>
+    </div>`;
+}
+
+window.addUpgradeSlotRuleRow = function() {
+    const container = document.getElementById('upSlotRuleRows');
+    if (!container) return;
+    const div = document.createElement('div');
+    div.innerHTML = upgradeSlotRuleRowHtml();
+    container.appendChild(div.firstElementChild);
+};
+
 window.submitUpgrade = async function() {
     const level = parseInt(document.getElementById('upLevel')?.value, 10);
     const desc = document.getElementById('upDesc')?.value?.trim();
@@ -992,7 +1052,34 @@ window.submitUpgrade = async function() {
         if (name) anomalyCost[name] = qty;
     });
 
-    const payload = { targetLevel: level, description: desc, goldCost: gold, anomalyCost };
+    const unlocksSlot4 = document.getElementById('upSlot4')?.checked || false;
+    const unlocksSlot5 = document.getElementById('upSlot5')?.checked || false;
+    const unlocksPromo = document.getElementById('upPromo')?.checked || false;
+    const unlocksBlackMarket = document.getElementById('upBlackMarket')?.checked || false;
+
+    const slotRules = [];
+    document.querySelectorAll('.slot-rule-row').forEach(row => {
+        const sIndex = parseInt(row.querySelector('.rule-slot-index')?.value, 10) || 1;
+        const rarity = row.querySelector('.rule-rarity')?.value || 'COMMUN';
+        const weight = parseInt(row.querySelector('.rule-weight')?.value, 10) || 100;
+        slotRules.push({ slotIndex: sIndex, rarity, weight });
+    });
+
+    const slotSums = {};
+    for (const r of slotRules) {
+        slotSums[r.slotIndex] = (slotSums[r.slotIndex] || 0) + r.weight;
+    }
+    for (const [idx, sum] of Object.entries(slotSums)) {
+        if (sum > 100) {
+            showNotif(`Erreur : Le total des probabilités pour le Slot ${idx} dépasse 100% (actuel: ${sum}%)`, true);
+            return;
+        }
+    }
+
+    const payload = { 
+        targetLevel: level, description: desc, goldCost: gold, anomalyCost,
+        unlocksSlot4, unlocksSlot5, unlocksPromo, unlocksBlackMarket, slotRules
+    };
 
     try {
         let res;
