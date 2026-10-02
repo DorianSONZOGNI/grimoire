@@ -129,3 +129,83 @@
     display: inline-block;
     transform: rotate(180deg) !important;
 }
+
+/* ===== PALIERS AMÉLIORATION ===== */
+
+#upgradesGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.upgrade-admin-card {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 0.85rem 1.2rem;
+    background: rgba(168, 85, 247, 0.04);
+    border: 1px solid rgba(168, 85, 247, 0.15);
+    border-radius: 10px;
+    transition: background 0.2s;
+}
+
+.upgrade-admin-card:hover {
+    background: rgba(168, 85, 247, 0.08);
+}
+
+.upgrade-admin-level {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #a855f7;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    min-width: 70px;
+    padding: 0.3rem 0.6rem;
+    background: rgba(168, 85, 247, 0.12);
+    border: 1px solid rgba(168, 85, 247, 0.25);
+    border-radius: 6px;
+    text-align: center;
+}
+
+.upgrade-admin-desc {
+    flex: 1;
+    font-size: 0.9rem;
+    color: #e2e8f0;
+}
+
+.upgrade-admin-costs {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.upgrade-admin-tag {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+}
+
+.upgrade-admin-tag--gold {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.upgrade-admin-tag--ano {
+    color: #a855f7;
+    background: rgba(168, 85, 247, 0.1);
+    border: 1px solid rgba(168, 85, 247, 0.25);
+}
+
+.upgrade-admin-actions {
+    display: flex;
+    gap: 0.4rem;
+    margin-left: auto;
+}

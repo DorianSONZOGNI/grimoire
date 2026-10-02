@@ -3,17 +3,19 @@
 const pageState = {
     shopItems: [],
     itemToBuy: null,
-    allAnomalies: []
+    allAnomalies: [],
+    shopStatus: null
 };
 
 
 
 async function loadShop() {
     try {
-        const [resShop, resAno, resUserAno] = await Promise.all([
+        const [resShop, resAno, resUserAno, resLevel] = await Promise.all([
             globalFetch(`/api/shop/daily?_t=${Date.now()}`),
             globalFetch('/api/anomalies/all-templates'),
-            globalFetch('/api/anomalies')
+            globalFetch('/api/anomalies'),
+            globalFetch('/api/shop/level')
         ]);
         pageState.shopItems = await resShop.json();
         if (resAno.ok) {
@@ -22,8 +24,12 @@ async function loadShop() {
         if (resUserAno.ok) {
             window.myGlobalAnomalies = await resUserAno.json();
         }
+        if (resLevel.ok) {
+            pageState.shopStatus = await resLevel.json();
+        }
         renderShop();
         renderSpecials();
+        renderUpgradePanel();
     } catch (e) {
         console.error('Erreur chargement boutique:', e);
         document.getElementById('shopGrid').innerHTML = `<div class="text-error"><span class="material-symbols-outlined">error</span> Erreur de connexion.</div>`;
@@ -183,6 +189,24 @@ function generateStandHtml(eq) {
     `;
 }
 
+/** Génère le HTML d'un slot cadenas verrouillé */
+function generateLockedSlotHtml(slot) {
+    return `
+        <div class="shop-stand shop-stand--locked">
+            <div class="shop-stand-lock-icon">
+                <span class="material-symbols-outlined">lock</span>
+            </div>
+            <div class="shop-stand-name shop-stand-locked-title">${slot.requiredLevel}</div>
+            <div class="shop-stand-stats">
+                <div class="text-muted text-sm font-italic text-center">${slot.hint}</div>
+            </div>
+            <div class="shop-stand-price shop-stand-price--locked">
+                <span class="material-symbols-outlined align-middle icon-md">lock</span> Verrouillé
+            </div>
+        </div>
+    `;
+}
+
 function renderShop() {
     const container = document.getElementById('shopGrid');
 
@@ -190,8 +214,9 @@ function renderShop() {
     container.className = 'shop-showcase';
 
     const dailyItems = pageState.shopItems.daily || [];
+    const lockedSlots = pageState.shopItems.lockedSlots || [];
 
-    if (dailyItems.length === 0) {
+    if (dailyItems.length === 0 && lockedSlots.length === 0) {
         container.innerHTML = `<div class="font-italic text-muted">La boutique est vide aujourd'hui.</div>`;
         return;
     }
@@ -239,6 +264,16 @@ function renderShop() {
             html += generateStandHtml(eq);
         });
 
+        html += `</div>`;
+    }
+
+    // Slots verrouillés à la fin de la grille
+    if (lockedSlots.length > 0) {
+        html += `<div class="shop-rarity-group shop-rarity-group--locked">
+            <div class="shop-rarity-title shop-rarity-title--locked">Verrouillé</div>`;
+        lockedSlots.forEach(slot => {
+            html += generateLockedSlotHtml(slot);
+        });
         html += `</div>`;
     }
 
@@ -295,6 +330,85 @@ function renderSpecials() {
         startPromoCountdown();
     }
 }
+
+/** Rend le panneau quête d'amélioration de la boutique */
+function renderUpgradePanel() {
+    const panel = document.getElementById('shopUpgradePanel');
+    if (!panel) return;
+
+    const status = pageState.shopStatus;
+    if (!status) {
+        panel.classList.add('is-hidden');
+        return;
+    }
+
+    // Niveau max = pas de nextLevel
+    if (!status.nextLevel) {
+        panel.classList.add('is-hidden');
+        return;
+    }
+
+    panel.classList.remove('is-hidden');
+
+    const requirementsHtml = (status.requirements || []).map(req => {
+        const fulfilled = req.fulfilled;
+        const icon = req.type === 'GOLD' ? 'monetization_on' : 'auto_awesome';
+        const color = fulfilled ? '#22c55e' : '#ef4444';
+        const label = req.type === 'GOLD' ? `${req.required} Or` : `${req.required}× ${req.name}`;
+        const progress = `${req.owned}/${req.required}`;
+
+        return `<div class="upgrade-req ${fulfilled ? 'upgrade-req--ok' : 'upgrade-req--nok'}">
+            <span class="material-symbols-outlined" style="color: ${color}; font-size: 1rem;">${fulfilled ? 'check_circle' : 'cancel'}</span>
+            <span class="upgrade-req-label">${label}</span>
+            <span class="upgrade-req-progress">${progress}</span>
+        </div>`;
+    }).join('');
+
+    panel.innerHTML = `
+        <div class="upgrade-panel-header">
+            <span class="material-symbols-outlined upgrade-panel-icon">storefront</span>
+            <div>
+                <div class="upgrade-panel-title">Améliorer la Boutique</div>
+                <div class="upgrade-panel-level">Niv. ${status.currentLevel} → Niv. ${status.nextLevel}</div>
+            </div>
+        </div>
+        <div class="upgrade-panel-desc">${status.nextLevelDescription}</div>
+        <div class="upgrade-requirements">
+            ${requirementsHtml}
+        </div>
+        <button
+            id="upgradeShopBtn"
+            class="upgrade-btn ${status.canUpgrade ? 'upgrade-btn--ready' : 'upgrade-btn--locked'}"
+            ${status.canUpgrade ? '' : 'disabled'}
+            onclick="window.doUpgradeShop()"
+        >
+            <span class="material-symbols-outlined">${status.canUpgrade ? 'upgrade' : 'lock'}</span>
+            ${status.canUpgrade ? 'Améliorer !' : 'Conditions non remplies'}
+        </button>
+    `;
+}
+
+window.doUpgradeShop = async function() {
+    const btn = document.getElementById('upgradeShopBtn');
+    if (btn) btn.classList.add('is-loading');
+
+    try {
+        const res = await globalFetch('/api/shop/upgrade', { method: 'POST' });
+        const data = await res.json();
+        if (res.ok) {
+            showNotif(data.message || 'Boutique améliorée !');
+            if (window.checkAuthStatus) window.checkAuthStatus();
+            await loadShop();
+        } else {
+            showNotif(data.error || 'Erreur lors de l\'amélioration.', true);
+        }
+    } catch (e) {
+        showNotif('Erreur réseau.', true);
+    } finally {
+        const btnAfter = document.getElementById('upgradeShopBtn');
+        if (btnAfter) btnAfter.classList.remove('is-loading');
+    }
+};
 
 window.updateBuyModalPrice = function() {
     let eq = window.currentBuyItem;
@@ -475,4 +589,3 @@ window.addEventListener('authLoaded', () => {
         adminLink.style.display = window.isAdmin ? 'inline-flex' : 'none';
     }
 });
-
