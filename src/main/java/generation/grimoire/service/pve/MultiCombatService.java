@@ -187,17 +187,24 @@ public class MultiCombatService {
                 if (cid == null) return;
                 Personnage p = personnageRepository.findById(cid).orElse(null);
                 if (p != null) {
-                    heroInfos.add(Map.of(
-                            "id", cid,
-                            "name", p.getName(),
-                            "level", p.getVoieLevel(),
-                            "healthMax", p.getHealthMax()
-                    ));
+                    Map<String, Object> hInfo = new java.util.HashMap<>();
+                    hInfo.put("id", cid);
+                    hInfo.put("name", p.getName());
+                    hInfo.put("level", p.getVoieLevel());
+                    hInfo.put("healthMax", p.getHealthMax());
+                    if (p.getVoie() != null) {
+                        hInfo.put("voieName", p.getVoie().getNom());
+                    }
+                    if (p.getSpiritualite() != null) {
+                        hInfo.put("spiritualiteName", p.getSpiritualite().getNom());
+                    }
+                    heroInfos.add(hInfo);
                 }
             });
         }
 
         // Enrichir le payload avec les noms des consomables (groupés par nom)
+        Map<String, generation.grimoire.entity.Equipment> eqMap = new java.util.HashMap<>();
         Map<String, Long> consomablesGrouped = new java.util.LinkedHashMap<>();
         if (consumableIds != null) {
             consumableIds.forEach(eid -> {
@@ -206,12 +213,21 @@ public class MultiCombatService {
                         equipmentRepository.findById(eid).orElse(null);
                 if (eq != null) {
                     consomablesGrouped.merge(eq.getName(), 1L, (a, b) -> a + b);
+                    eqMap.putIfAbsent(eq.getName(), eq);
                 }
             });
         }
         List<Map<String, Object>> consInfos = new ArrayList<>();
-        consomablesGrouped.forEach((name, count) ->
-                consInfos.add(Map.of("name", name, "count", count)));
+        consomablesGrouped.forEach((name, count) -> {
+            Map<String, Object> cInfo = new java.util.HashMap<>();
+            cInfo.put("name", name);
+            cInfo.put("count", count);
+            generation.grimoire.entity.Equipment eq = eqMap.get(name);
+            if (eq != null && eq.getConsumableCategory() != null) {
+                cInfo.put("category", eq.getConsumableCategory().name());
+            }
+            consInfos.add(cInfo);
+        });
 
         // Broadcaster l'état à l'hôte
         eventEmitter.broadcastEvent(multiSessionId, "guest-update", Map.of(

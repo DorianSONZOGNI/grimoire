@@ -1459,40 +1459,103 @@ function onGuestUpdate(data) {
     // Section héros de l'allié
     let heroHtml = '';
     if (heroInfos.length === 0) {
-        heroHtml = '<span style="color:#64748b; font-size:0.85rem;">Aucun héros sélectionné</span>';
+        heroHtml = '<div style="color:#64748b; font-size:0.85rem; width:100%; text-align:center; padding:1rem 0;">Aucun héros sélectionné</div>';
     } else {
-        heroHtml = heroInfos.map(h =>
-            `<span style="background:rgba(14,165,233,0.15); border:1px solid rgba(14,165,233,0.4); border-radius:0.5rem; padding:0.25rem 0.6rem; font-size:0.8rem; color:#38bdf8; display:inline-flex; align-items:center; gap:0.3rem;">
-                <span class="material-symbols-outlined" style="font-size:0.9rem;">person</span>
-                ${h.name} <span style="color:#64748b; font-size:0.72rem;">Niv.${h.level}</span>
-            </span>`
-        ).join('');
+        heroHtml = heroInfos.map(h => {
+            let iconsHtml = '';
+            let avatarName = '';
+            
+            const getVIcon = (nom) => {
+                const n = nom.toLowerCase();
+                if (n.includes('raison')) return { c: '#3b82f6', i: 'psychology' };
+                if (n.includes('sûreté') || n.includes('surete')) return { c: '#00e5cc', i: 'water_drop' };
+                if (n.includes('trahison')) return { c: '#ed5677', i: 'visibility_off' };
+                if (n.includes('consolidation')) return { c: '#99674c', i: 'foundation' };
+                if (n.includes('conviction')) return { c: '#b74c0b', i: 'volcano' };
+                if (n.includes('création') || n.includes('creation')) return { c: '#10b981', i: 'eco' };
+                if (n.includes('destruction')) return { c: '#ff0000', i: 'local_fire_department' };
+                if (n.includes('violence')) return { c: '#a70740', i: 'explosion' };
+                return { c: '#94a3b8', i: 'route' };
+            };
+            const getSIcon = (nom) => {
+                const n = nom.toLowerCase();
+                if (n.includes('esprit')) return { c: '#38bdf8', i: 'blur_on' };
+                if (n.includes('ténèbres') || n.includes('tenebres')) return { c: '#c084fc', i: 'dark_mode' };
+                if (n.includes('karma')) return { c: '#e7d198', i: 'all_inclusive' };
+                return { c: '#94a3b8', i: 'star' };
+            };
+
+            if (h.voieName) {
+                const vi = getVIcon(h.voieName);
+                iconsHtml += `<span class="material-symbols-outlined" style="font-size:0.85rem; color:${vi.c};" title="${h.voieName}">${vi.i}</span>`;
+                const vNom = h.voieName.toLowerCase();
+                if (vNom.includes('consolidation')) avatarName = 'consolidation';
+                else if (vNom.includes('conviction')) avatarName = 'conviction';
+                else if (vNom.includes('création') || vNom.includes('creation')) avatarName = 'creation';
+                else if (vNom.includes('destruction')) avatarName = 'destruction';
+                else if (vNom.includes('raison')) avatarName = 'raison';
+                else if (vNom.includes('sûreté') || vNom.includes('surete')) avatarName = 'surete';
+                else if (vNom.includes('trahison')) avatarName = 'trahison';
+                else if (vNom.includes('violence')) avatarName = 'violence';
+            }
+            if (h.spiritualiteName) {
+                const si = getSIcon(h.spiritualiteName);
+                iconsHtml += `<span class="material-symbols-outlined" style="font-size:0.85rem; color:${si.c};" title="${h.spiritualiteName}">${si.i}</span>`;
+            }
+
+            let avatarHtml = `<span class="material-symbols-outlined" style="font-size:1.1rem; color:#818cf8;">person</span>`;
+            if (avatarName) {
+                avatarHtml = `<img src="/images/avatar/${avatarName}.png" alt="${avatarName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+            }
+
+            return `
+                <div style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.75rem; border-radius:0.6rem; border:1px solid rgba(255,255,255,0.1); background:rgba(15,23,42,0.5); width:calc(50% - 0.2rem);">
+                    <div style="width:2.2rem; height:2.2rem; border-radius:50%; background:rgba(99,102,241,0.2); display:flex; flex-shrink:0; align-items:center; justify-content:center;">
+                        ${avatarHtml}
+                    </div>
+                    <div style="min-width:0; flex:1;">
+                        <div style="font-weight:600; color:#e2e8f0; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:4px;">
+                            ${h.name} ${iconsHtml}
+                        </div>
+                        <div style="color:#64748b; font-size:0.7rem;">Niv. ${h.level || 1} &bull; ${h.healthMax} PV max</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
     // Section consomables de l'allié
     let consHtml = '';
     if (consInfos.length > 0) {
-        consHtml = consInfos.map(c =>
-            `<span style="background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); border-radius:0.5rem; padding:0.2rem 0.5rem; font-size:0.78rem; color:#10b981; display:inline-flex; align-items:center; gap:0.3rem;">
-                <span class="material-symbols-outlined" style="font-size:0.85rem;">inventory_2</span>
-                ${c.name} x${c.count}
-            </span>`
-        ).join('');
+        consHtml = consInfos.map(c => {
+            let iconName = 'inventory_2';
+            let iconColor = '#854c4c';
+            if (c.category && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[c.category]) {
+                iconName = window.CONSUMABLE_CATEGORIES[c.category].icon;
+                iconColor = window.CONSUMABLE_CATEGORIES[c.category].color;
+            }
+            return `
+                <span style="background:rgba(15,23,42,0.6); border:1px solid ${iconColor}40; border-radius:0.5rem; padding:0.3rem 0.6rem; font-size:0.8rem; color:#e2e8f0; display:inline-flex; align-items:center; gap:0.4rem;">
+                    <span class="material-symbols-outlined" style="font-size:1rem; color:${iconColor};">${iconName}</span>
+                    ${c.name} <span style="font-weight:700; color:#10b981;">x${c.count}</span>
+                </span>
+            `;
+        }).join('');
     } else {
-        consHtml = '<span style="color:#64748b; font-size:0.8rem;">Aucun consomable</span>';
+        consHtml = '<div style="color:#64748b; font-size:0.8rem; width:100%; text-align:center; padding:0.5rem 0;">Aucun consomable</div>';
     }
 
     const section = document.getElementById('lobbyGuestPreview');
     if (!section) return;
     section.innerHTML = `
         <div style="margin-top:1rem; border-top:1px solid rgba(255,255,255,0.1); padding-top:1rem;">
-            <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:#64748b; margin-bottom:0.5rem;">
-                <span class="material-symbols-outlined" style="font-size:0.9rem; vertical-align:middle; color:#38bdf8;">group</span>
+            <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:#94a3b8; margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem;">
+                <span class="material-symbols-outlined" style="font-size:1rem; color:#38bdf8;">group</span>
                 Allié — Sélection en cours
             </div>
-            <div style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.5rem;">${heroHtml}</div>
-            <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:#64748b; margin-bottom:0.4rem; margin-top:0.5rem;">
-                <span class="material-symbols-outlined" style="font-size:0.9rem; vertical-align:middle; color:#10b981;">inventory_2</span>
+            <div style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:1rem;">${heroHtml}</div>
+            <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:#94a3b8; margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem;">
+                <span class="material-symbols-outlined" style="font-size:1rem; color:#10b981;">inventory_2</span>
                 Consomables
             </div>
             <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">${consHtml}</div>
@@ -1909,24 +1972,42 @@ document.addEventListener('DOMContentLoaded', () => {
                                 '<div style="font-size:0.75rem; color:#64748b; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">Héros de l\'hôte</div>' +
                                 '<div style="display:flex; flex-wrap:wrap; gap:0.4rem;">' +
                                 info.hostHeroInfos.map(h => {
-                                    let vHtml = '';
+                                    let iconsHtml = '';
+                                    let avatarName = '';
+
                                     if (h.voieName) {
-                                        const v = getVIcon(h.voieName);
-                                        vHtml = `<span class="material-symbols-outlined" style="font-size:0.9rem; color:${v.c};" title="${h.voieName}">${v.i}</span>`;
+                                        const vi = getVIcon(h.voieName);
+                                        iconsHtml += `<span class="material-symbols-outlined" style="font-size:0.85rem; color:${vi.c};" title="${h.voieName}">${vi.i}</span>`;
+                                        const vNom = h.voieName.toLowerCase();
+                                        if (vNom.includes('consolidation')) avatarName = 'consolidation';
+                                        else if (vNom.includes('conviction')) avatarName = 'conviction';
+                                        else if (vNom.includes('création') || vNom.includes('creation')) avatarName = 'creation';
+                                        else if (vNom.includes('destruction')) avatarName = 'destruction';
+                                        else if (vNom.includes('raison')) avatarName = 'raison';
+                                        else if (vNom.includes('sûreté') || vNom.includes('surete')) avatarName = 'surete';
+                                        else if (vNom.includes('trahison')) avatarName = 'trahison';
+                                        else if (vNom.includes('violence')) avatarName = 'violence';
                                     }
-                                    let sHtml = '';
                                     if (h.spiritualiteName) {
-                                        const s = getSIcon(h.spiritualiteName);
-                                        sHtml = `<span class="material-symbols-outlined" style="font-size:0.9rem; color:${s.c};" title="${h.spiritualiteName}">${s.i}</span>`;
+                                        const si = getSIcon(h.spiritualiteName);
+                                        iconsHtml += `<span class="material-symbols-outlined" style="font-size:0.85rem; color:${si.c};" title="${h.spiritualiteName}">${si.i}</span>`;
                                     }
+
+                                    let avatarHtml = `<span class="material-symbols-outlined" style="font-size:1.1rem; color:#818cf8;">person</span>`;
+                                    if (avatarName) {
+                                        avatarHtml = `<img src="/images/avatar/${avatarName}.png" alt="${avatarName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                                    }
+
                                     return `
-                                    <div style="flex:1 1 calc(50% - 0.2rem); background:rgba(0,0,0,0.2); padding:0.4rem 0.6rem; border-radius:0.4rem; border:1px solid rgba(255,255,255,0.05);">
-                                        <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.15rem;">
-                                            <div style="font-weight:600; color:#f8fafc; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${h.name}</div>
-                                            <div style="display:flex; align-items:center; gap:0.25rem;">${vHtml}${sHtml}</div>
+                                    <div style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.75rem; border-radius:0.6rem; border:1px solid rgba(255,255,255,0.05); background:rgba(0,0,0,0.2); width:calc(50% - 0.2rem);">
+                                        <div style="width:2.2rem; height:2.2rem; border-radius:50%; background:rgba(99,102,241,0.2); display:flex; flex-shrink:0; align-items:center; justify-content:center;">
+                                            ${avatarHtml}
                                         </div>
-                                        <div style="color:#94a3b8; font-size:0.75rem; white-space:nowrap;">
-                                            Niv. ${h.level} &bull; ${h.healthMax} PV max
+                                        <div style="min-width:0; flex:1;">
+                                            <div style="font-weight:600; color:#e2e8f0; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:4px;">
+                                                ${h.name} ${iconsHtml}
+                                            </div>
+                                            <div style="color:#94a3b8; font-size:0.7rem;">Niv. ${h.level} &bull; ${h.healthMax} PV max</div>
                                         </div>
                                     </div>`;
                                 }).join('') +
