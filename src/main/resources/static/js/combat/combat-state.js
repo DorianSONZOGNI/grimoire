@@ -659,7 +659,7 @@ window.renderHeroStatsPanel = function () {
         'position: absolute',
         'left: 100%',
         'top: 16px',
-        'margin-left: 12px',
+        'margin-left: 30px',
         'width: 190px',
         'z-index: 50',
         'pointer-events: none',
