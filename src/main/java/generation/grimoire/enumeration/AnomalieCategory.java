@@ -16,6 +16,8 @@ public enum AnomalieCategory {
     MATIERE("Matière", "matter"),
     JETON("Jeton", "token"),
     DRONE("Drone", "drone_2"),
+    CUBE("Cube", "deployed_code"),
+    TECH("Tech", "memory"),
     AUTRE("Autre", "category");
 
     private final String label;

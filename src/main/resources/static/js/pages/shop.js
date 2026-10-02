@@ -3,17 +3,19 @@
 const pageState = {
     shopItems: [],
     itemToBuy: null,
-    allAnomalies: []
+    allAnomalies: [],
+    shopStatus: null
 };
 
 
 
 async function loadShop() {
     try {
-        const [resShop, resAno, resUserAno] = await Promise.all([
+        const [resShop, resAno, resUserAno, resLevel] = await Promise.all([
             globalFetch(`/api/shop/daily?_t=${Date.now()}`),
             globalFetch('/api/anomalies/all-templates'),
-            globalFetch('/api/anomalies')
+            globalFetch('/api/anomalies'),
+            globalFetch('/api/shop/level')
         ]);
         pageState.shopItems = await resShop.json();
         if (resAno.ok) {
@@ -22,8 +24,14 @@ async function loadShop() {
         if (resUserAno.ok) {
             window.myGlobalAnomalies = await resUserAno.json();
         }
+        if (resLevel.ok) {
+            pageState.shopStatus = await resLevel.json();
+        }
         renderShop();
         renderSpecials();
+        renderBlackMarket();
+        startPromoCountdown();
+        renderUpgradePanel();
     } catch (e) {
         console.error('Erreur chargement boutique:', e);
         document.getElementById('shopGrid').innerHTML = `<div class="text-error"><span class="material-symbols-outlined">error</span> Erreur de connexion.</div>`;
@@ -130,7 +138,7 @@ function generateStandHtml(eq) {
     }
 
     let promoTimerHtml = '';
-    if (isPromo) {
+    if (isPromo || eq.isBlackMarket) {
         const expiresAt = pageState.shopItems && pageState.shopItems.promoExpiresAt ? pageState.shopItems.promoExpiresAt : 0;
         promoTimerHtml = `
             <div class="shop-stand-timer promo-countdown" style="color: ${rarityColor};" data-expires="${expiresAt}">
@@ -183,15 +191,40 @@ function generateStandHtml(eq) {
     `;
 }
 
+/** Génère le HTML d'un slot cadenas verrouillé */
+function generateLockedSlotHtml(slot) {
+    return `
+        <div class="shop-stand shop-stand--locked">
+            <div class="shop-stand-lock-icon">
+                <span class="material-symbols-outlined">lock</span>
+            </div>
+            <div class="shop-stand-name shop-stand-locked-title">${slot.requiredLevel}</div>
+            <div class="shop-stand-stats">
+                <div class="text-muted text-sm font-italic text-center">${slot.hint}</div>
+            </div>
+            <div class="shop-stand-price shop-stand-price--locked">
+                <span class="material-symbols-outlined align-middle icon-md">lock</span> Verrouillé
+            </div>
+        </div>
+    `;
+}
+
 function renderShop() {
     const container = document.getElementById('shopGrid');
+
+    const levelBadge = document.getElementById('shopLevelBadge');
+    if (levelBadge && pageState.shopStatus) {
+        levelBadge.innerHTML = `<span class="material-symbols-outlined" style="font-size: 1rem;">upgrade</span> Niv. ${pageState.shopStatus.currentLevel}`;
+        levelBadge.style.display = 'flex';
+    }
 
     // Force the correct class in case HTML is cached
     container.className = 'shop-showcase';
 
     const dailyItems = pageState.shopItems.daily || [];
+    const lockedSlots = pageState.shopItems.lockedSlots || [];
 
-    if (dailyItems.length === 0) {
+    if (dailyItems.length === 0 && lockedSlots.length === 0) {
         container.innerHTML = `<div class="font-italic text-muted">La boutique est vide aujourd'hui.</div>`;
         return;
     }
@@ -242,6 +275,16 @@ function renderShop() {
         html += `</div>`;
     }
 
+    // Slots verrouillés à la fin de la grille
+    if (lockedSlots.length > 0) {
+        html += `<div class="shop-rarity-group shop-rarity-group--locked">
+            <div class="shop-rarity-title shop-rarity-title--locked">Verrouillé</div>`;
+        lockedSlots.forEach(slot => {
+            html += generateLockedSlotHtml(slot);
+        });
+        html += `</div>`;
+    }
+
     container.innerHTML = html;
 }
 
@@ -276,6 +319,17 @@ function renderSpecials() {
                 ${generateStandHtml(discountItem)}
             </div>
         `;
+    } else if (pageState.shopItems.isPromoLocked) {
+        const lockedPromoSlot = {
+            requiredLevel: "Promo",
+            hint: "Améliorez la boutique pour débloquer"
+        };
+        html += `
+            <div class="shop-rarity-group shop-rarity-group--locked">
+                <div class="shop-rarity-title shop-rarity-title--locked">EN PROMO</div>
+                ${generateLockedSlotHtml(lockedPromoSlot)}
+            </div>
+        `;
     }
 
     if (consumables.length > 0) {
@@ -290,11 +344,97 @@ function renderSpecials() {
     }
 
     container.innerHTML = html;
-
-    if (discountItem) {
-        startPromoCountdown();
-    }
 }
+
+/** Rend le panneau quête d'amélioration de la boutique */
+function renderUpgradePanel() {
+    const panel = document.getElementById('shopUpgradePanel');
+    if (!panel) return;
+
+    const status = pageState.shopStatus;
+    if (!status) {
+        panel.classList.add('is-hidden');
+        return;
+    }
+
+    // Niveau max = pas de nextLevel
+    if (!status.nextLevel) {
+        panel.classList.add('is-hidden');
+        return;
+    }
+
+    panel.classList.remove('is-hidden');
+
+    const requirementsHtml = (status.requirements || []).map(req => {
+        const fulfilled = req.fulfilled;
+        const color = fulfilled ? '#22c55e' : '#ef4444';
+        const progress = `${req.owned}/${req.required}`;
+
+        let labelHtml = '';
+        if (req.type === 'GOLD') {
+            labelHtml = `${req.required} Or`;
+        } else {
+            let aTemp = pageState.allAnomalies.find(a => a.name === req.name);
+            const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
+            const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
+            const tooltipData = getAnomalyTooltipHTML(aTemp, req.name);
+            labelHtml = `<span class="anomaly-badge tooltip-trigger inline-flex items-center gap-1 font-bold cursor-help rounded-md px-1.5 py-0.5 ml-1" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; font-size: 0.8rem;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
+                <span class="material-symbols-outlined align-middle" style="color: ${spiriColor}; font-size: 1rem;">${catIcon}</span> ${req.required}
+            </span>`;
+        }
+
+        return `<div class="upgrade-req ${fulfilled ? 'upgrade-req--ok' : 'upgrade-req--nok'}">
+            <span class="material-symbols-outlined" style="color: ${color}; font-size: 1rem;">${fulfilled ? 'check_circle' : 'cancel'}</span>
+            <span class="upgrade-req-label flex items-center">${labelHtml}</span>
+            <span class="upgrade-req-progress">${progress}</span>
+        </div>`;
+    }).join('');
+
+    panel.innerHTML = `
+        <div class="upgrade-panel-header">
+            <span class="material-symbols-outlined upgrade-panel-icon">storefront</span>
+            <div>
+                <div class="upgrade-panel-title">Améliorer la Boutique</div>
+                <div class="upgrade-panel-level">Niv. ${status.currentLevel} → Niv. ${status.nextLevel}</div>
+            </div>
+        </div>
+        <div class="upgrade-panel-desc">${status.nextLevelDescription}</div>
+        <div class="upgrade-requirements">
+            ${requirementsHtml}
+        </div>
+        <button
+            id="upgradeShopBtn"
+            class="upgrade-btn ${status.canUpgrade ? 'upgrade-btn--ready' : 'upgrade-btn--locked'}"
+            ${status.canUpgrade ? '' : 'disabled'}
+            onclick="window.doUpgradeShop()"
+        >
+            <span class="material-symbols-outlined">${status.canUpgrade ? 'upgrade' : 'lock'}</span>
+            ${status.canUpgrade ? 'Améliorer !' : 'Conditions non remplies'}
+        </button>
+    `;
+}
+
+window.doUpgradeShop = async function() {
+    const btn = document.getElementById('upgradeShopBtn');
+    if (btn) btn.classList.add('is-loading');
+
+    try {
+        const res = await globalFetch('/api/shop/upgrade', { method: 'POST' });
+        const data = await res.json();
+        if (res.ok) {
+            showNotif(data.message || 'Boutique améliorée !');
+            if (window.checkAuthStatus) window.checkAuthStatus();
+            await loadShop();
+        } else {
+            showNotif(data.error || 'Erreur lors de l\'amélioration.', true);
+        }
+    } catch (e) {
+        showNotif('Erreur réseau.', true);
+    } finally {
+        const btnAfter = document.getElementById('upgradeShopBtn');
+        if (btnAfter) btnAfter.classList.remove('is-loading');
+    }
+};
 
 window.updateBuyModalPrice = function() {
     let eq = window.currentBuyItem;
@@ -351,6 +491,11 @@ window.openBuyModal = function (id, isConsumable = false) {
         if (!eq && pageState.shopItems.discount) {
             if (pageState.shopItems.discount.id === parseInt(id)) {
                 eq = pageState.shopItems.discount;
+            }
+        }
+        if (!eq && pageState.shopItems.blackMarket) {
+            if (pageState.shopItems.blackMarket.id === parseInt(id)) {
+                eq = pageState.shopItems.blackMarket;
             }
         }
     }
@@ -428,35 +573,42 @@ window.openBuyModal = function (id, isConsumable = false) {
 let promoCountdownInterval = null;
 
 function startPromoCountdown() {
-    const countdownEl = document.querySelector('.promo-countdown');
-    if (!countdownEl) return;
-
-    const textEl = countdownEl.querySelector('.countdown-text');
-    const expiresAtStr = countdownEl.getAttribute('data-expires');
-    if (!expiresAtStr || expiresAtStr === '0') {
-        textEl.textContent = '--:--:--';
-        return;
-    }
-    const expiresAt = parseInt(expiresAtStr, 10);
+    const countdownEls = document.querySelectorAll('.promo-countdown');
+    if (!countdownEls || countdownEls.length === 0) return;
 
     if (promoCountdownInterval) clearInterval(promoCountdownInterval);
 
     const updateTimer = () => {
         const now = Date.now();
-        const diff = expiresAt - now;
+        
+        let allExpired = true;
 
-        if (diff <= 0) {
-            textEl.textContent = '00:00:00';
+        countdownEls.forEach(countdownEl => {
+            const textEl = countdownEl.querySelector('.countdown-text');
+            const expiresAtStr = countdownEl.getAttribute('data-expires');
+            if (!expiresAtStr || expiresAtStr === '0') {
+                if (textEl) textEl.textContent = '--:--:--';
+                return;
+            }
+            const expiresAt = parseInt(expiresAtStr, 10);
+            const diff = expiresAt - now;
+
+            if (diff <= 0) {
+                if (textEl) textEl.textContent = '00:00:00';
+            } else {
+                allExpired = false;
+                const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                const m = Math.floor((diff / 1000 / 60) % 60);
+                const s = Math.floor((diff / 1000) % 60);
+
+                if (textEl) textEl.textContent = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }
+        });
+
+        if (allExpired && countdownEls.length > 0) {
             clearInterval(promoCountdownInterval);
             loadShop();
-            return;
         }
-
-        const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
-        const m = Math.floor((diff / 1000 / 60) % 60);
-        const s = Math.floor((diff / 1000) % 60);
-
-        textEl.textContent = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     };
 
     updateTimer();
@@ -468,6 +620,45 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Attend que auth soit chargé pour fetch loadShop
 });
 
+function renderBlackMarket() {
+    let container = document.getElementById('blackMarketContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'blackMarketContainer';
+        container.style.position = 'fixed';
+        container.style.left = '10px';
+        container.style.top = '50%';
+        container.style.transform = 'translateY(-50%) scale(0.85)';
+        container.style.transformOrigin = 'left center';
+        container.style.zIndex = '50';
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.gap = '10px';
+        document.body.appendChild(container);
+    }
+
+    if (!pageState.shopItems || !pageState.shopItems.isBlackMarketActive) {
+        container.innerHTML = '';
+        return;
+    }
+
+    const { isBlackMarketLocked, blackMarket } = pageState.shopItems;
+
+    let html = `<div style="text-align:center; font-family:'Cinzel',serif; color:#ef4444; text-shadow:0 0 10px rgba(239,68,68,0.5); font-weight:bold; margin-bottom:5px; font-size:1.2rem; letter-spacing:2px;">Marché Noir</div>`;
+
+    if (isBlackMarketLocked) {
+        html += generateLockedSlotHtml({ requiredLevel: "Marché Noir", hint: "Débloquez-le via les améliorations de boutique" });
+    } else if (blackMarket) {
+        blackMarket.isBlackMarket = true;
+        // Appliquer un style spécifique pour le marché noir (rouge sombre / ombres rouges)
+        let standHtml = generateStandHtml(blackMarket);
+        standHtml = standHtml.replace('class="shop-stand"', 'class="shop-stand" style="border-color: #7f1d1d !important; box-shadow: 0 0 15px rgba(220,38,38,0.3) !important; background: linear-gradient(135deg, rgba(127,29,29,0.2) 0%, rgba(127,29,29,0.05) 100%) !important;"');
+        html += standHtml;
+    }
+
+    container.innerHTML = html;
+}
+
 window.addEventListener('authLoaded', () => {
     loadShop();
     const adminLink = document.getElementById('adminShopLink');
@@ -475,4 +666,3 @@ window.addEventListener('authLoaded', () => {
         adminLink.style.display = window.isAdmin ? 'inline-flex' : 'none';
     }
 });
-

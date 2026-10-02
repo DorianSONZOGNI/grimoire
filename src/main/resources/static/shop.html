@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="/styles/ui/components.css?v=1786180000001">
     <link rel="stylesheet" href="/styles/ui/utilities.css?v=1786180000001">
     <link rel="stylesheet" href="/styles/ui/equipment.css?v=1786180000001">
-    <link rel="stylesheet" href="/styles/pages/shop.css?v=1786180000001">
+    <link rel="stylesheet" href="/styles/pages/shop.css?v=1786180000002">
 
     <noscript>
         <link rel="stylesheet"
@@ -31,7 +31,7 @@
 
     <script defer src="/js/utils/utils.js"></script>
     <script type="module" src="/js/ui.js"></script>
-    <script defer src="/js/pages/shop.js?v=3"></script>
+    <script defer src="/js/pages/shop.js?v=4"></script>
     <script type="module" src="/js/services/auth.js?v=15"></script>
     
     <script defer src="/js/components/loader.js"></script>
@@ -42,6 +42,14 @@
     <app-navbar active-page="shop"></app-navbar>
 
     <div class="vault-main">
+
+        <!-- Panneau amélioration marchand : fixed à droite, indépendant du layout boutique -->
+        <aside class="shop-sidebar">
+            <div class="panel upgrade-panel-wrapper is-hidden" id="shopUpgradePanel">
+                <!-- Rempli dynamiquement par renderUpgradePanel() -->
+            </div>
+        </aside>
+
         <div class="panel">
             <div class="page-header mb-2">
                 <div class="page-header-content">
@@ -49,7 +57,10 @@
                         <span class="material-symbols-outlined text-[1.8rem]">storefront</span>
                     </div>
                     <div>
-                        <h2 class="page-header-title">Boutique du Jour</h2>
+                        <h2 class="page-header-title flex items-center" style="gap: 10px;">
+                            Boutique du Jour
+                            <span id="shopLevelBadge" style="display: none; font-size: 0.9rem; padding: 2px 8px; border-radius: 6px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; font-weight: bold; align-items: center; gap: 4px;"></span>
+                        </h2>
                         <div class="page-header-subtitle">Ces objets changent tous les jours à minuit.</div>
                     </div>
                 </div>
@@ -75,6 +86,7 @@
                 <app-loader message="Chargement des offres..."></app-loader>
             </div>
         </div>
+
     </div>
 
     <!-- Buy Confirmation Modal -->
