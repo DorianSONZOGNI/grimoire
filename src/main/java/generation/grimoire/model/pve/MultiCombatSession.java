@@ -33,6 +33,13 @@ public class MultiCombatSession {
     private String guestUsername;
     private List<Long> guestCharacterIds;
 
+    /** Consommables du guest (stockés séparément pour le merge final). */
+    private List<Long> guestConsumableIds;
+
+    /** État provisoire du guest pendant sa sélection (avant join définitif). */
+    private List<Long> pendingGuestCharacterIds;
+    private List<Long> pendingGuestConsumableIds;
+
     private Long dungeonId;
     private List<Long> consumableIds;
 

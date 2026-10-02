@@ -40,6 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class CombatService {
 
+    private final generation.grimoire.service.PersonnageService personnageService;
     private final PersonnageRepository personnageRepository;
     private final DonjonRepository donjonRepository;
     private final UserRepository userRepository;
@@ -137,6 +138,9 @@ public class CombatService {
         String sessionId = UUID.randomUUID().toString();
         CombatSession session = new CombatSession(sessionId, d, players);
         session.setFirstClear(!account.getCompletedDungeons().contains(d.getId()));
+        for (Personnage p : players) {
+            p.setEligibleForCatchupXp(personnageService.isEligibleForCatchupXp(p, session));
+        }
         questRepository.findByTypeAndActiveTrue("DAILY").ifPresent(quest -> {
             if (quest.getDungeonId().equals(d.getId())) {
                 session.setDailyChallengeDuo(quest.getDailyChallengeDuo());
@@ -270,6 +274,9 @@ public class CombatService {
         boolean hostFirstClear = !hostAccount.getCompletedDungeons().contains(d.getId());
         boolean guestFirstClear = !guestAccount.getCompletedDungeons().contains(d.getId());
         session.setFirstClear(hostFirstClear || guestFirstClear);
+        for (Personnage p : players) {
+            p.setEligibleForCatchupXp(personnageService.isEligibleForCatchupXp(p, session));
+        }
 
         if (consumableIds != null && !consumableIds.isEmpty()) {
             for (Long cid : consumableIds) {

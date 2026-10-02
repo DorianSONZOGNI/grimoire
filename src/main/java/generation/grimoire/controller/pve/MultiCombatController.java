@@ -74,6 +74,25 @@ public class MultiCombatController {
         }
     }
 
+    /**
+     * L'allié met à jour son état provisoire (héros sélectionnés + consomables)
+     * pendant qu'il est dans la modal de rejoindre. L'hôte reçoit l'event SSE "guest-update".
+     */
+    @PostMapping("/{multiId}/guest-update")
+    public ResponseEntity<?> updateGuestState(
+            @PathVariable String multiId,
+            @RequestParam(required = false) List<Long> characterIds,
+            @RequestParam(required = false) List<Long> consumableIds,
+            Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
+        try {
+            multiCombatService.updateGuestState(multiId, principal.getName(), characterIds, consumableIds);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // Recherche par code court
     // ─────────────────────────────────────────────────────────────────────────

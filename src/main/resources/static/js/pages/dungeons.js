@@ -119,10 +119,7 @@ function collectDungeonLootItemsLocal(salles) {
 
 
 function getMaxWeight() {
-    const toggle = document.getElementById('coopModeToggle');
-    const isCoop = toggle && toggle.checked;
-    const heroCount = isCoop ? (pageState.currentMaxHeroes || 1) : pageState.selectedCharIds.length;
-    return 10 + 5 * heroCount;
+    return 10 + 5 * pageState.selectedCharIds.length;
 }
 
 function getCurrentWeight() {
@@ -1318,7 +1315,7 @@ window.onCoopToggleChange = function () {
         btnCoop.classList.add('hidden');
     }
 
-    // Mettre à jour le poids (qui dépend du mode Co-op)
+    // Recalcule le poids (dépend du nb de héros sélect, pas du mode coop)
     if (typeof renderConsumablesList === 'function') {
         renderConsumablesList();
     }
@@ -1399,6 +1396,12 @@ window.createCoopLobby = async function () {
             '<span class="material-symbols-outlined" style="font-size:1rem; vertical-align:middle; animation: spin 1s linear infinite;">autorenew</span> En attente du joueur 2...';
         const overlay = document.getElementById('lobbyWaitingOverlay');
         overlay.style.display = 'flex';
+        
+        const preview = document.getElementById('lobbyGuestPreview');
+        if (preview) {
+            preview.innerHTML = '';
+            preview.style.display = 'none';
+        }
 
         // Ouvrir SSE sur ce multiSessionId pour recevoir "lobby-ready"
         coopLobbySSE = new EventSource(`/api/pve/multi/${coopLobbyId}/events`);
@@ -1409,6 +1412,12 @@ window.createCoopLobby = async function () {
         coopLobbySSE.addEventListener('lobby-cancelled', () => {
             window.showNotif('Lobby annulé.', true);
             closeLobbyOverlay();
+        });
+        coopLobbySSE.addEventListener('guest-update', (e) => {
+            try {
+                const data = JSON.parse(e.data);
+                onGuestUpdate(data);
+            } catch (_) {}
         });
         coopLobbySSE.onerror = () => {
             // SSE silently reconnects; only show error if lobby is gone
@@ -1445,22 +1454,181 @@ window.cancelCoopLobby = async function () {
 
 function closeLobbyOverlay() {
     document.getElementById('lobbyWaitingOverlay').style.display = 'none';
+    const preview = document.getElementById('lobbyGuestPreview');
+    if (preview) {
+        preview.innerHTML = '';
+        preview.style.display = 'none';
+    }
 }
+
+// ——— SSE handler guest-update côté hôte ——————————————————————————————————————
+
+function onGuestUpdate(data) {
+    const heroInfos = data.guestHeroInfos || [];
+    const consInfos = data.guestConsomableInfos || [];
+
+    // Section héros de l'allié
+    let heroHtml = '';
+    if (heroInfos.length === 0) {
+        heroHtml = '<div style="color:#64748b; font-size:0.85rem; width:100%; text-align:center; padding:1rem 0;">Aucun héros sélectionné</div>';
+    } else {
+        heroHtml = heroInfos.map(h => {
+            let iconsHtml = '';
+            let avatarName = '';
+            
+            const getVIcon = (nom) => {
+                const n = nom.toLowerCase();
+                if (n.includes('raison')) return { c: '#3b82f6', i: 'psychology' };
+                if (n.includes('sûreté') || n.includes('surete')) return { c: '#00e5cc', i: 'water_drop' };
+                if (n.includes('trahison')) return { c: '#ed5677', i: 'visibility_off' };
+                if (n.includes('consolidation')) return { c: '#99674c', i: 'foundation' };
+                if (n.includes('conviction')) return { c: '#b74c0b', i: 'volcano' };
+                if (n.includes('création') || n.includes('creation')) return { c: '#10b981', i: 'eco' };
+                if (n.includes('destruction')) return { c: '#ff0000', i: 'local_fire_department' };
+                if (n.includes('violence')) return { c: '#a70740', i: 'explosion' };
+                return { c: '#94a3b8', i: 'route' };
+            };
+            const getSIcon = (nom) => {
+                const n = nom.toLowerCase();
+                if (n.includes('esprit')) return { c: '#38bdf8', i: 'blur_on' };
+                if (n.includes('ténèbres') || n.includes('tenebres')) return { c: '#c084fc', i: 'dark_mode' };
+                if (n.includes('karma')) return { c: '#e7d198', i: 'all_inclusive' };
+                return { c: '#94a3b8', i: 'star' };
+            };
+
+            if (h.voieName) {
+                const vi = getVIcon(h.voieName);
+                iconsHtml += `<span class="material-symbols-outlined" style="font-size:0.85rem; color:${vi.c};" title="${h.voieName}">${vi.i}</span>`;
+                const vNom = h.voieName.toLowerCase();
+                if (vNom.includes('consolidation')) avatarName = 'consolidation';
+                else if (vNom.includes('conviction')) avatarName = 'conviction';
+                else if (vNom.includes('création') || vNom.includes('creation')) avatarName = 'creation';
+                else if (vNom.includes('destruction')) avatarName = 'destruction';
+                else if (vNom.includes('raison')) avatarName = 'raison';
+                else if (vNom.includes('sûreté') || vNom.includes('surete')) avatarName = 'surete';
+                else if (vNom.includes('trahison')) avatarName = 'trahison';
+                else if (vNom.includes('violence')) avatarName = 'violence';
+            }
+            if (h.spiritualiteName) {
+                const si = getSIcon(h.spiritualiteName);
+                iconsHtml += `<span class="material-symbols-outlined" style="font-size:0.85rem; color:${si.c};" title="${h.spiritualiteName}">${si.i}</span>`;
+            }
+
+            let avatarHtml = `<span class="material-symbols-outlined" style="font-size:1.1rem; color:#818cf8;">person</span>`;
+            if (avatarName) {
+                avatarHtml = `<img src="/images/avatar/${avatarName}.png" alt="${avatarName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+            }
+
+            return `
+                <div style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.75rem; border-radius:0.6rem; border:1px solid rgba(255,255,255,0.1); background:rgba(15,23,42,0.5); width:calc(50% - 0.2rem);">
+                    <div style="width:2.2rem; height:2.2rem; border-radius:50%; background:rgba(99,102,241,0.2); display:flex; flex-shrink:0; align-items:center; justify-content:center;">
+                        ${avatarHtml}
+                    </div>
+                    <div style="min-width:0; flex:1;">
+                        <div style="font-weight:600; color:#e2e8f0; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:4px;">
+                            ${h.name} ${iconsHtml}
+                        </div>
+                        <div style="color:#64748b; font-size:0.7rem;">Niv. ${h.level || 1} &bull; ${h.healthMax} PV max</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Section consomables de l'allié
+    let consHtml = '';
+    if (consInfos.length > 0) {
+        consHtml = consInfos.map(c => {
+            let iconName = 'inventory_2';
+            let iconColor = '#854c4c';
+            if (c.category && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[c.category]) {
+                iconName = window.CONSUMABLE_CATEGORIES[c.category].icon;
+                iconColor = window.CONSUMABLE_CATEGORIES[c.category].color;
+            }
+            return `
+                <span style="background:rgba(15,23,42,0.6); border:1px solid ${iconColor}40; border-radius:0.5rem; padding:0.3rem 0.6rem; font-size:0.8rem; color:#e2e8f0; display:inline-flex; align-items:center; gap:0.4rem;">
+                    <span class="material-symbols-outlined" style="font-size:1rem; color:${iconColor};">${iconName}</span>
+                    ${c.name} <span style="font-weight:700; color:#10b981;">x${c.count}</span>
+                </span>
+            `;
+        }).join('');
+    } else {
+        consHtml = '<div style="color:#64748b; font-size:0.8rem; width:100%; text-align:center; padding:0.5rem 0;">Aucun consomable</div>';
+    }
+
+    const section = document.getElementById('lobbyGuestPreview');
+    if (!section) return;
+    section.innerHTML = `
+        <div style="margin-top:1rem; border-top:1px solid rgba(255,255,255,0.1); padding-top:1rem;">
+            <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:#94a3b8; margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem;">
+                <span class="material-symbols-outlined" style="font-size:1rem; color:#38bdf8;">group</span>
+                Allié — Sélection en cours
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:1rem;">${heroHtml}</div>
+            <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:#94a3b8; margin-bottom:0.75rem; display:flex; align-items:center; gap:0.4rem;">
+                <span class="material-symbols-outlined" style="font-size:1rem; color:#10b981;">inventory_2</span>
+                Consomables
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">${consHtml}</div>
+        </div>
+    `;
+    section.style.display = 'block';
+}
+
 
 // â”€â”€â”€ Modal Rejoindre un lobby â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 let joinSelectedCharIds = [];
+let joinSelectedConsumableIds = [];
+let _joinLobbyMultiId = null; // multiSessionId du lobby rejoint
+let _joinLobbyHostHeroCount = 0; // nombre de héros de l'hôte
+let _joinLobbyHostConsumableWeight = 0; // Poids des consomables déjà sélectionnés par l'hôte
+let _joinAvailableConsumables = []; // consomables dispo chargés une fois
+let _joinLobbySSE = null; // EventSource pour le guest
+
+
+
+function _clearJoinSelections() {
+    joinSelectedCharIds.forEach(id => {
+        const el = document.getElementById(`joinChar_${id}`);
+        if (el) {
+            el.style.borderColor = 'rgba(255,255,255,0.1)';
+            el.style.background = '';
+        }
+    });
+    joinSelectedCharIds = [];
+    joinSelectedConsumableIds = [];
+    renderJoinConsumablesList();
+}
+
+function _setJoinCharSelectEnabled(enabled) {
+    const charSelect = document.getElementById('joinLobbyCharSelect');
+    if (charSelect) {
+        charSelect.style.opacity = enabled ? '1' : '0.4';
+        charSelect.style.pointerEvents = enabled ? 'auto' : 'none';
+    }
+}
 
 window.openJoinLobbyModal = function () {
-    joinSelectedCharIds = [];
+    _clearJoinSelections();
+    _joinLobbyMultiId = null;
+    _joinLobbyHostHeroCount = 0;
+    _joinLobbyHostConsumableWeight = 0;
+    if (_joinLobbySSE) {
+        _joinLobbySSE.close();
+        _joinLobbySSE = null;
+    }
     const modal = document.getElementById('joinLobbyModal');
     modal.style.display = 'flex';
+    _setJoinCharSelectEnabled(false);
 
     // Reset input and info
     const input = document.getElementById('joinLobbyCodeInput');
     if (input) input.value = '';
     const infoContainer = document.getElementById('joinLobbyInfoContainer');
     if (infoContainer) infoContainer.style.display = 'none';
+    const consSection = document.getElementById('joinLobbyConsomablesSection');
+    if (consSection) consSection.style.display = 'none';
     window.maxSelectableJoinChars = 4;
 
     // Remplir la liste de persos du joueur
@@ -1549,9 +1717,184 @@ window.toggleJoinChar = function (charId) {
         el.style.borderColor = 'rgba(255,255,255,0.1)';
         el.style.background = '';
     }
+
+    // Mettre à jour poids + section consomables
+    renderJoinConsumablesList();
+
+    // Envoyer guest-update au backend si multiId connu
+    _sendJoinGuestUpdate();
+};
+
+function _getJoinMaxWeight() {
+    return 10 + 5 * (_joinLobbyHostHeroCount + joinSelectedCharIds.length);
+}
+
+function _getJoinCurrentWeight() {
+    const guestWeight = pageState.availableConsumables
+        .filter(c => joinSelectedConsumableIds.includes(c.id))
+        .reduce((sum, c) => sum + (c.weight || 0), 0);
+    return guestWeight + _joinLobbyHostConsumableWeight;
+}
+
+function _sendJoinGuestUpdate() {
+    if (!_joinLobbyMultiId) return;
+    const charParam = joinSelectedCharIds.length > 0 ? `characterIds=${joinSelectedCharIds.join(',')}` : '';
+    const consParam = joinSelectedConsumableIds.length > 0 ? `consumableIds=${joinSelectedConsumableIds.join(',')}` : '';
+    const params = [charParam, consParam].filter(Boolean).join('&');
+    globalFetch(`/api/pve/multi/${_joinLobbyMultiId}/guest-update${params ? '?' + params : ''}`, { method: 'POST' })
+        .catch(e => console.error('guest-update error', e));
+}
+
+function renderJoinConsumablesList() {
+    const section = document.getElementById('joinLobbyConsomablesSection');
+    if (!section) return;
+
+    // N'afficher la section que si au moins 1 héros sélectionné
+    if (joinSelectedCharIds.length === 0) {
+        section.style.display = 'none';
+        return;
+    }
+    section.style.display = 'flex';
+
+    const curWeight = _getJoinCurrentWeight();
+    const maxWeight = _getJoinMaxWeight();
+    const isOver = curWeight > maxWeight;
+
+    const weightEl = document.getElementById('joinConsomableWeight');
+    if (weightEl) {
+        weightEl.textContent = `${+Number(curWeight).toFixed(1)} / ${maxWeight}`;
+        weightEl.style.color = isOver ? '#ef4444' : '#94a3b8';
+    }
+
+    const list = document.getElementById('joinConsomableList');
+    if (!list) return;
+    list.innerHTML = '';
+
+    if (pageState.availableConsumables.length === 0) {
+        list.innerHTML = '<div style="color:#64748b; font-size:0.8rem; text-align:center; padding:0.5rem;">Aucun consomable disponible.</div>';
+        return;
+    }
+
+    const groupedConsumables = {};
+    pageState.availableConsumables.forEach(c => {
+        if (!groupedConsumables[c.name]) {
+            groupedConsumables[c.name] = { base: c, ids: [], selectedIds: [] };
+        }
+        groupedConsumables[c.name].ids.push(c.id);
+        if (joinSelectedConsumableIds.includes(c.id)) {
+            groupedConsumables[c.name].selectedIds.push(c.id);
+        }
+    });
+
+    let html = '';
+    Object.values(groupedConsumables).forEach(group => {
+        const c = group.base;
+        const total = group.ids.length;
+        const selCount = group.selectedIds.length;
+        const isSelected = selCount > 0;
+
+        let iconName = 'inventory_2';
+        let iconColor = '#854c4c';
+        if (c.consumableCategory && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[c.consumableCategory]) {
+            iconName = window.CONSUMABLE_CATEGORIES[c.consumableCategory].icon;
+            iconColor = window.CONSUMABLE_CATEGORIES[c.consumableCategory].color;
+        }
+
+        let badgeHtml = '';
+        if (isSelected) {
+            badgeHtml = `
+            <div class="flex items-center gap-1 absolute shadow-md" style="bottom:-6px; right:-6px; background:#0f172a; border-radius:6px; padding:2px 4px; border:1px solid #334155; z-index:10;">
+                <button onclick="event.stopPropagation(); window.removeJoinConsumable('${c.name.replace(/'/g, "\\'")}')" style="display:flex; align-items:center; justify-content:center; width:18px; height:18px; background:none; border:none; color:#94a3b8; cursor:pointer; border-radius:4px;">
+                    <span class="material-symbols-outlined" style="font-size:14px;">remove</span>
+                </button>
+                <span style="font-size:0.7rem; font-weight:700; color:#10b981; padding:0 2px;">${selCount}/${total}</span>
+                <button onclick="event.stopPropagation(); window.addJoinConsumable('${c.name.replace(/'/g, "\\'")}')" style="display:flex; align-items:center; justify-content:center; width:18px; height:18px; background:none; border:none; color:#94a3b8; cursor:pointer; border-radius:4px;">
+                    <span class="material-symbols-outlined" style="font-size:14px;">add</span>
+                </button>
+            </div>`;
+        } else {
+            badgeHtml = `<div style="position:absolute; bottom:-5px; right:-5px; background:rgba(15,23,42,0.9); padding:3px 6px; border-radius:6px; border:1px solid #334155; font-size:0.7rem; font-weight:700; color:#64748b;">0/${total}</div>`;
+        }
+
+        let cardTooltip = '';
+        if (c.consumableCategory === 'CLE') {
+            cardTooltip = ` onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="Permet d'augmenter les chances de loot lors d'ouverture de coffre" style="cursor: help;"`;
+        } else if (c.consumableCategory === 'CORDE') {
+            cardTooltip = ` onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="Permet d'éviter certain piège" style="cursor: help;"`;
+        }
+
+        html += `
+            <div class="consumable-card ${isSelected ? 'selected' : ''} relative overflow-visible cursor-pointer" 
+                 onclick="addJoinConsumable('${c.name.replace(/'/g, "\\'")}')" 
+                 style="margin-bottom:0;" ${cardTooltip}>
+                <span class="material-symbols-outlined flex-shrink-0" style="font-size: 1.1rem; color: ${isSelected ? '#10b981' : iconColor};">${iconName}</span>
+                <div class="flex-1 min-w-0">
+                    <div class="flex-between items-center">
+                        <div class="whitespace-nowrap text-slate-50 font-semibold text-[0.7rem] truncate" title="${c.name}">${c.name}</div>
+                        <div class="text-xxs font-bold text-muted bg-black/30 px-1 py-0.5 rounded inline-flex items-center gap-1"><span class="material-symbols-outlined" style="font-size: 0.7rem;">scale</span>${+Number(c.weight).toFixed(1)}</div>
+                    </div>
+                    <div class="text-muted text-xs flex gap-1.5 flex-wrap overflow-visible items-center mt-[2px]" style="min-height: 18px;">
+                        ${c.bonusHealthMax ? `<span class="inline-flex items-center text-pink-500" title="PV">+${c.bonusHealthMax}<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">favorite</span></span>` : ''}
+                        ${c.bonusManaMax ? `<span class="inline-flex items-center text-sky-500" title="Mana">+${c.bonusManaMax}<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">water_drop</span></span>` : ''}
+                        ${c.consumableHpPercent ? `<span class="inline-flex items-center text-pink-500" title="PV Max">+${c.consumableHpPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">favorite</span></span>` : ''}
+                        ${c.consumableManaPercent ? `<span class="inline-flex items-center text-sky-500" title="Mana Max">+${c.consumableManaPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">water_drop</span></span>` : ''}
+                        ${c.consumableMissingHpPercent ? `<span class="inline-flex items-center text-red-500" title="PV Manq">+${c.consumableMissingHpPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">healing</span></span>` : ''}
+                        ${c.consumableMissingManaPercent ? `<span class="inline-flex items-center text-purple-500" title="Mana Manq">+${c.consumableMissingManaPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">cyclone</span></span>` : ''}
+                        ${c.consumableBonusXpPercent ? `<span class="inline-flex items-center text-yellow-400" title="XP">${c.consumableBonusXpPercent > 0 ? '+' : ''}${c.consumableBonusXpPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">star</span></span>` : ''}
+                        ${c.consumableBonusMagicalDamagePercent ? `<span class="inline-flex items-center text-purple-400" title="Dégâts Magiques">${c.consumableBonusMagicalDamagePercent > 0 ? '+' : ''}${c.consumableBonusMagicalDamagePercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">auto_awesome</span></span>` : ''}
+                        ${c.consumableBonusPhysicalDamagePercent ? `<span class="inline-flex items-center text-red-400" title="Dégâts Physiques">${c.consumableBonusPhysicalDamagePercent > 0 ? '+' : ''}${c.consumableBonusPhysicalDamagePercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">fitness_center</span></span>` : ''}
+                        ${c.consumableBonusArmorFlat ? `<span class="inline-flex items-center text-blue-400" title="Armure">${c.consumableBonusArmorFlat > 0 ? '+' : ''}${c.consumableBonusArmorFlat}<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">shield</span></span>` : ''}
+                        ${c.consumableBonusResistanceFlat ? `<span class="inline-flex items-center text-emerald-400" title="Résistance">${c.consumableBonusResistanceFlat > 0 ? '+' : ''}${c.consumableBonusResistanceFlat}<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">shield</span></span>` : ''}
+                        ${c.consumableCategory === 'CLE' && c.specialEffectValue ? `<span class="inline-flex items-center text-yellow-400" title="Bonus butin coffre">+${c.specialEffectValue}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">diamond</span></span>` : ''}
+                    </div>
+                </div>
+                ${badgeHtml}
+            </div>`;
+    });
+    list.innerHTML = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem;">${html}</div>`;
+}
+
+window.addJoinConsumable = function(name) {
+    const groupItems = pageState.availableConsumables.filter(c => c.name === name);
+    if (!groupItems.length) return;
+    const unselected = groupItems.find(c => !joinSelectedConsumableIds.includes(c.id));
+    if (unselected) {
+        if (_getJoinCurrentWeight() + (unselected.weight || 0) > _getJoinMaxWeight()) {
+            window.showNotif('Poids maximum dépassé !', true);
+            return;
+        }
+        joinSelectedConsumableIds.push(unselected.id);
+        renderJoinConsumablesList();
+        _sendJoinGuestUpdate();
+    } else {
+        window.showNotif('Pas d\'autre exemplaire disponible.', true);
+    }
+};
+
+window.removeJoinConsumable = function(name) {
+    const groupItems = pageState.availableConsumables.filter(c => c.name === name);
+    if (!groupItems.length) return;
+    const selectedId = groupItems.find(c => joinSelectedConsumableIds.includes(c.id))?.id;
+    if (selectedId !== undefined) {
+        const idx = joinSelectedConsumableIds.indexOf(selectedId);
+        if (idx !== -1) {
+            joinSelectedConsumableIds.splice(idx, 1);
+            renderJoinConsumablesList();
+            _sendJoinGuestUpdate();
+        }
+    }
 };
 
 window.closeJoinLobbyModal = function () {
+    if (_joinLobbyMultiId) {
+        _clearJoinSelections();
+        _sendJoinGuestUpdate();
+    }
+    if (_joinLobbySSE) {
+        _joinLobbySSE.close();
+        _joinLobbySSE = null;
+    }
+    _joinLobbyMultiId = null;
     document.getElementById('joinLobbyModal').style.display = 'none';
 };
 
@@ -1695,26 +2038,66 @@ document.addEventListener('DOMContentLoaded', () => {
                                 '<div style="font-size:0.75rem; color:#64748b; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">Héros de l\'hôte</div>' +
                                 '<div style="display:flex; flex-wrap:wrap; gap:0.4rem;">' +
                                 info.hostHeroInfos.map(h => {
-                                    let vHtml = '';
+                                    let iconsHtml = '';
+                                    let avatarName = '';
+
                                     if (h.voieName) {
-                                        const v = getVIcon(h.voieName);
-                                        vHtml = `<span class="material-symbols-outlined" style="font-size:0.9rem; color:${v.c};" title="${h.voieName}">${v.i}</span>`;
+                                        const vi = getVIcon(h.voieName);
+                                        iconsHtml += `<span class="material-symbols-outlined" style="font-size:0.85rem; color:${vi.c};" title="${h.voieName}">${vi.i}</span>`;
+                                        const vNom = h.voieName.toLowerCase();
+                                        if (vNom.includes('consolidation')) avatarName = 'consolidation';
+                                        else if (vNom.includes('conviction')) avatarName = 'conviction';
+                                        else if (vNom.includes('création') || vNom.includes('creation')) avatarName = 'creation';
+                                        else if (vNom.includes('destruction')) avatarName = 'destruction';
+                                        else if (vNom.includes('raison')) avatarName = 'raison';
+                                        else if (vNom.includes('sûreté') || vNom.includes('surete')) avatarName = 'surete';
+                                        else if (vNom.includes('trahison')) avatarName = 'trahison';
+                                        else if (vNom.includes('violence')) avatarName = 'violence';
                                     }
-                                    let sHtml = '';
                                     if (h.spiritualiteName) {
-                                        const s = getSIcon(h.spiritualiteName);
-                                        sHtml = `<span class="material-symbols-outlined" style="font-size:0.9rem; color:${s.c};" title="${h.spiritualiteName}">${s.i}</span>`;
+                                        const si = getSIcon(h.spiritualiteName);
+                                        iconsHtml += `<span class="material-symbols-outlined" style="font-size:0.85rem; color:${si.c};" title="${h.spiritualiteName}">${si.i}</span>`;
                                     }
+
+                                    let avatarHtml = `<span class="material-symbols-outlined" style="font-size:1.1rem; color:#818cf8;">person</span>`;
+                                    if (avatarName) {
+                                        avatarHtml = `<img src="/images/avatar/${avatarName}.png" alt="${avatarName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                                    }
+
                                     return `
-                                    <div style="flex:1 1 calc(50% - 0.2rem); background:rgba(0,0,0,0.2); padding:0.4rem 0.6rem; border-radius:0.4rem; border:1px solid rgba(255,255,255,0.05);">
-                                        <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.15rem;">
-                                            <div style="font-weight:600; color:#f8fafc; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${h.name}</div>
-                                            <div style="display:flex; align-items:center; gap:0.25rem;">${vHtml}${sHtml}</div>
+                                    <div style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.75rem; border-radius:0.6rem; border:1px solid rgba(255,255,255,0.05); background:rgba(0,0,0,0.2); width:calc(50% - 0.2rem);">
+                                        <div style="width:2.2rem; height:2.2rem; border-radius:50%; background:rgba(99,102,241,0.2); display:flex; flex-shrink:0; align-items:center; justify-content:center;">
+                                            ${avatarHtml}
                                         </div>
-                                        <div style="color:#94a3b8; font-size:0.75rem; white-space:nowrap;">
-                                            Niv. ${h.level} &bull; ${h.healthMax} PV max
+                                        <div style="min-width:0; flex:1;">
+                                            <div style="font-weight:600; color:#e2e8f0; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:4px;">
+                                                ${h.name} ${iconsHtml}
+                                            </div>
+                                            <div style="color:#94a3b8; font-size:0.7rem;">Niv. ${h.level} &bull; ${h.healthMax} PV max</div>
                                         </div>
                                     </div>`;
+                                }).join('') +
+                                '</div></div>';
+                        }
+
+                                                let hostConsHtml = '';
+                        if (info.hostConsumables && info.hostConsumables.length > 0) {
+                            hostConsHtml = '<div style="margin-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.75rem;">' +
+                                '<div style="font-size:0.75rem; color:#64748b; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">Consomables de l\'hôte</div>' +
+                                '<div style="display:flex; flex-wrap:wrap; gap:0.4rem;">' +
+                                info.hostConsumables.map(c => {
+                                    let iconName = 'inventory_2';
+                                    let iconColor = '#854c4c';
+                                    if (c.consumableCategory && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[c.consumableCategory]) {
+                                        iconName = window.CONSUMABLE_CATEGORIES[c.consumableCategory].icon;
+                                        iconColor = window.CONSUMABLE_CATEGORIES[c.consumableCategory].color;
+                                    }
+                                    return `
+                                        <span style="background:rgba(0,0,0,0.2); border:1px solid ${iconColor}40; border-radius:0.5rem; padding:0.3rem 0.6rem; font-size:0.8rem; color:#e2e8f0; display:inline-flex; align-items:center; gap:0.4rem;">
+                                            <span class="material-symbols-outlined" style="font-size:1rem; color:${iconColor};">${iconName}</span>
+                                            ${c.name} <span style="font-weight:700; color:#10b981;">x${c.quantity}</span>
+                                        </span>
+                                    `;
                                 }).join('') +
                                 '</div></div>';
                         }
@@ -1728,9 +2111,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span style="color:${info.availableSlots > 0 ? '#10b981' : '#f43f5e'}; font-weight:600;">Places restantes : ${info.availableSlots}</span>
                             </div>
                             ${hostHeroesHtml}
+                            ${hostConsHtml}
                         `;
 
                         window.updateJoinCharAvailability(info);
+                        _setJoinCharSelectEnabled(true);
 
                         // Auto-unselect characters if we are over the new limit
                         while (joinSelectedCharIds.length > window.maxSelectableJoinChars) {
@@ -1738,25 +2123,64 @@ document.addEventListener('DOMContentLoaded', () => {
                             window.toggleJoinChar(removedId);
                         }
 
+                        // Stocker le multiId pour guest-update en temps réel
+                        try {
+                            const findRes = await window.globalFetch(`/api/pve/multi/find/${code}`);
+                            if (findRes.ok) {
+                                const lobby = await findRes.json();
+                                _joinLobbyMultiId = lobby.multiSessionId;
+                                _joinLobbyHostHeroCount = lobby.hostCharacterIds ? lobby.hostCharacterIds.length : 0;
+                                                                _joinLobbyHostConsumableWeight = (info.hostConsumables || [])
+                                    .reduce((sum, c) => sum + (c.weight || 0) * (c.quantity || 1), 0);
+
+                                if (_joinLobbySSE) {
+                                    _joinLobbySSE.close();
+                                }
+                                _joinLobbySSE = new EventSource(`/api/pve/multi/${_joinLobbyMultiId}/events`);
+                                _joinLobbySSE.addEventListener('lobby-cancelled', () => {
+                                    window.showNotif('Lobby annulé par l\'hôte.', true);
+                                    window.closeJoinLobbyModal();
+                                });
+                                _joinLobbySSE.onerror = () => {
+                                    if (_joinLobbySSE) _joinLobbySSE.close();
+                                };
+                            }
+                        } catch (_) {}
+
                     } else {
                         infoContainer.style.display = 'none';
+                        _joinLobbyMultiId = null;
+                        _setJoinCharSelectEnabled(false);
+                        _clearJoinSelections();
+                        _joinLobbyHostHeroCount = 0;
+                        _joinLobbyHostConsumableWeight = 0;
                         window.maxSelectableJoinChars = 4;
                         window.updateJoinCharAvailability(null);
                     }
                 } catch (err) {
                     console.error("Erreur lors de la récupération des infos du lobby", err);
                     infoContainer.style.display = 'none';
+                    _joinLobbyMultiId = null;
+                    _joinLobbyHostHeroCount = 0;
+                    _joinLobbyHostConsumableWeight = 0;
                     window.maxSelectableJoinChars = 4;
                     window.updateJoinCharAvailability(1);
                 }
             } else {
                 infoContainer.style.display = 'none';
+                _joinLobbyMultiId = null;
+                _setJoinCharSelectEnabled(false);
+                _clearJoinSelections();
+                _joinLobbyHostHeroCount = 0;
+                _joinLobbyHostConsumableWeight = 0;
                 window.maxSelectableJoinChars = 4;
                 window.updateJoinCharAvailability(1);
             }
         });
     }
 });
+
+
 
 window.submitJoinLobby = async function () {
     const code = document.getElementById('joinLobbyCodeInput').value.trim().toUpperCase();
@@ -1784,11 +2208,12 @@ window.submitJoinLobby = async function () {
         }
         const lobby = await findRes.json();
 
-        // 2. Rejoindre
-        const joinRes = await globalFetch(
-            `/api/pve/multi/${lobby.multiSessionId}/join?characterIds=${joinSelectedCharIds.join(',')}`,
-            { method: 'POST' }
-        );
+        // 2. Rejoindre (avec les consomables sélectionnés)
+        let joinUrl = `/api/pve/multi/${lobby.multiSessionId}/join?characterIds=${joinSelectedCharIds.join(',')}`;
+        if (joinSelectedConsumableIds.length > 0) {
+            joinUrl += `&consumableIds=${joinSelectedConsumableIds.join(',')}`;
+        }
+        const joinRes = await globalFetch(joinUrl, { method: 'POST' });
         if (!joinRes.ok) {
             const err = await joinRes.text();
             window.showNotif(err || 'Erreur lors du join.', true);

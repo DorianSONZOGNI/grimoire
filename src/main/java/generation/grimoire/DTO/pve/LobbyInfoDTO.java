@@ -21,4 +21,5 @@ public class LobbyInfoDTO {
     private int requiredSecretLevel;
     private int unlockCostGold;
     private List<HostHeroInfoDTO> hostHeroInfos;
+    private java.util.List<java.util.Map<String, Object>> hostConsumables;
 }

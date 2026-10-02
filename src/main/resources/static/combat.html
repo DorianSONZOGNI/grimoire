@@ -137,6 +137,7 @@
             <div id="eventSidePanelWrapper"
                 class="absolute inset-y-0 left-0 w-[320px] z-20 -translate-x-full transition-transform duration-300">
 
+
                 <div
                     class="custom-scrollbar w-full h-full bg-slate-900/95 border-r border-white/10 p-6 flex flex-col overflow-y-auto relative">
                     <!-- Inventory Content -->
@@ -395,5 +396,9 @@
 
 
 </body>
+
+<!-- Hero HP/Mana stats panel: fixed on screen, visible from any overlay -->
+<div id="eventOverlayHeroesStats"
+    style="display:none; position:fixed; left:332px; top:20px; width:190px; flex-direction:column; gap:6px; z-index:999; pointer-events:none;"></div>
 
 </html>

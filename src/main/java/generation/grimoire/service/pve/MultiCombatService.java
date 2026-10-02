@@ -29,6 +29,7 @@ public class MultiCombatService {
     private final CombatEventEmitter eventEmitter;
     private final DonjonRepository donjonRepository;
     private final PersonnageRepository personnageRepository;
+    private final generation.grimoire.repository.EquipmentRepository equipmentRepository;
 
     /** multiSessionId → MultiCombatSession */
     private final Map<String, MultiCombatSession> lobbies = new ConcurrentHashMap<>();
@@ -86,9 +87,11 @@ public class MultiCombatService {
         List<Long> allCharIds = new ArrayList<>(lobby.getHostCharacterIds());
         allCharIds.addAll(guestCharacterIds);
 
-        // Merge des consommables (on part du sac de l'hôte, on ne valide que les siens)
+        // Merge des consommables hôte + guest
         List<Long> allConsumables = new ArrayList<>(lobby.getConsumableIds());
-        if (guestConsumableIds != null) allConsumables.addAll(guestConsumableIds);
+        List<Long> guestConsIds = guestConsumableIds != null ? guestConsumableIds : new ArrayList<>();
+        allConsumables.addAll(guestConsIds);
+        lobby.setGuestConsumableIds(new ArrayList<>(guestConsIds));
 
         Long dungeonId = lobby.getDungeonId();
         if (dungeonId == null) {
@@ -160,6 +163,83 @@ public class MultiCombatService {
         return lobby;
     }
 
+    // ────────────────────────────────────────────────────
+    // Mise à jour en temps réel de l'état provisoire de l'allié
+    // ────────────────────────────────────────────────────
+
+    /**
+     * L'allié met à jour ses héros / consomables provisoirement.
+     * L'hôte reçoit un event SSE "guest-update".
+     */
+    public void updateGuestState(String multiSessionId, String guestUsername,
+                                 List<Long> charIds, List<Long> consumableIds) {
+        MultiCombatSession lobby = getOrThrow(multiSessionId);
+        if (lobby.getStatus() != MultiCombatSession.Status.WAITING) {
+            throw new IllegalStateException("Ce lobby n'est plus en attente.");
+        }
+        lobby.setPendingGuestCharacterIds(charIds != null ? new ArrayList<>(charIds) : new ArrayList<>());
+        lobby.setPendingGuestConsumableIds(consumableIds != null ? new ArrayList<>(consumableIds) : new ArrayList<>());
+
+        // Enrichir le payload avec les noms des héros
+        List<Map<String, Object>> heroInfos = new ArrayList<>();
+        if (charIds != null) {
+            charIds.forEach(cid -> {
+                if (cid == null) return;
+                Personnage p = personnageRepository.findById(cid).orElse(null);
+                if (p != null) {
+                    Map<String, Object> hInfo = new java.util.HashMap<>();
+                    hInfo.put("id", cid);
+                    hInfo.put("name", p.getName());
+                    hInfo.put("level", p.getVoieLevel());
+                    hInfo.put("healthMax", p.getHealthMax());
+                    if (p.getVoie() != null) {
+                        hInfo.put("voieName", p.getVoie().getNom());
+                    }
+                    if (p.getSpiritualite() != null) {
+                        hInfo.put("spiritualiteName", p.getSpiritualite().getNom());
+                    }
+                    heroInfos.add(hInfo);
+                }
+            });
+        }
+
+        // Enrichir le payload avec les noms des consomables (groupés par nom)
+        Map<String, generation.grimoire.entity.Equipment> eqMap = new java.util.HashMap<>();
+        Map<String, Long> consomablesGrouped = new java.util.LinkedHashMap<>();
+        if (consumableIds != null) {
+            consumableIds.forEach(eid -> {
+                if (eid == null) return;
+                generation.grimoire.entity.Equipment eq =
+                        equipmentRepository.findById(eid).orElse(null);
+                if (eq != null) {
+                    consomablesGrouped.merge(eq.getName(), 1L, (a, b) -> a + b);
+                    eqMap.putIfAbsent(eq.getName(), eq);
+                }
+            });
+        }
+        List<Map<String, Object>> consInfos = new ArrayList<>();
+        consomablesGrouped.forEach((name, count) -> {
+            Map<String, Object> cInfo = new java.util.HashMap<>();
+            cInfo.put("name", name);
+            cInfo.put("count", count);
+            generation.grimoire.entity.Equipment eq = eqMap.get(name);
+            if (eq != null && eq.getConsumableCategory() != null) {
+                cInfo.put("category", eq.getConsumableCategory().name());
+            }
+            consInfos.add(cInfo);
+        });
+
+        // Broadcaster l'état à l'hôte
+        eventEmitter.broadcastEvent(multiSessionId, "guest-update", Map.of(
+                "pendingGuestCharacterIds", lobby.getPendingGuestCharacterIds(),
+                "pendingGuestConsumableIds", lobby.getPendingGuestConsumableIds(),
+                "guestHeroInfos", heroInfos,
+                "guestConsomableInfos", consInfos
+        ));
+        log.debug("[MultiCombat] guest-update lobby={} chars={} consos={}",
+                multiSessionId, charIds, consumableIds);
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // Récupération des informations du lobby
     // ─────────────────────────────────────────────────────────────────────────
@@ -200,6 +280,32 @@ public class MultiCombatService {
             }
         }
 
+                java.util.Map<String, generation.grimoire.entity.Equipment> eqMap = new java.util.HashMap<>();
+        java.util.Map<String, Long> consomablesGrouped = new java.util.LinkedHashMap<>();
+        if (lobby.getConsumableIds() != null) {
+            lobby.getConsumableIds().forEach(eid -> {
+                if (eid == null) return;
+                generation.grimoire.entity.Equipment eq = equipmentRepository.findById(eid).orElse(null);
+                if (eq != null) {
+                    eqMap.put(eq.getName(), eq);
+                    consomablesGrouped.put(eq.getName(), consomablesGrouped.getOrDefault(eq.getName(), 0L) + 1);
+                }
+            });
+        }
+        
+        List<java.util.Map<String, Object>> hostConsInfos = new ArrayList<>();
+        consomablesGrouped.forEach((name, count) -> {
+            generation.grimoire.entity.Equipment eq = eqMap.get(name);
+            java.util.Map<String, Object> cInfo = new java.util.HashMap<>();
+            cInfo.put("name", name);
+            cInfo.put("quantity", count);
+            cInfo.put("weight", eq.getWeight());
+            if (eq.getConsumableCategory() != null) {
+                cInfo.put("consumableCategory", eq.getConsumableCategory().name());
+            }
+            hostConsInfos.add(cInfo);
+        });
+
         return new LobbyInfoDTO(
                 lobby.getShortCode(),
                 lobby.getHostUsername(),
@@ -212,7 +318,8 @@ public class MultiCombatService {
                 donjon.getRequiredSecret(),
                 donjon.getRequiredSecretLevel(),
                 (int) donjon.getUnlockCostGold(),
-                hostHeroInfos
+                hostHeroInfos,
+                hostConsInfos
         );
     }
 }

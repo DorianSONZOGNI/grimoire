@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -222,8 +222,8 @@
     </main>
 
     <!-- Overlay Lobby Attente (Co-op hôte) -->
-    <div id="lobbyWaitingOverlay" class="lobby-waiting-overlay">
-        <div class="lobby-modal">
+    <div id="lobbyWaitingOverlay" class="lobby-waiting-overlay" onclick="cancelCoopLobby()">
+        <div class="lobby-modal" onclick="event.stopPropagation()">
             <div class="lobby-modal-icon">⚔️</div>
             <h3 class="lobby-modal-title">Lobby Co-op Créé !</h3>
             <p class="lobby-modal-subtitle">Partagez ce code à votre allié :</p>
@@ -238,6 +238,9 @@
                 ⚠️ Vous paierez <strong id="lobbyCostAmount">0</strong> Or au moment de lancer le donjon.
             </div>
 
+            <!-- Aperçu en direct des choix de l'allié -->
+            <div id="lobbyGuestPreview" style="display:none;"></div>
+
             <div id="lobbyWaitingStatus" class="lobby-waiting-status">
                 <span class="material-symbols-outlined">autorenew</span>
                 En attente du joueur 2...
@@ -249,40 +252,79 @@
         </div>
     </div>
 
-    <!-- Modal Rejoindre un lobby co-op -->
-    <div id="joinLobbyModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:1001; align-items:center; justify-content:center;">
-        <div style="background:linear-gradient(135deg,#0f1629,#1a2744); border:1px solid rgba(14,165,233,0.3); border-radius:1.5rem; padding:2rem 2.5rem; max-width:440px; width:90%;">
-            <h3 style="font-size:1.3rem; font-weight:700; color:#e2e8f0; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem;">
-                <span class="material-symbols-outlined" style="color:#38bdf8;">group_add</span>
-                Rejoindre un Co-op
-            </h3>
-            <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:1.5rem;">Entrez le code à 6 caractères partagé par votre allié.</p>
+        <!-- Modal Rejoindre un lobby co-op -->
+    <div id="joinLobbyModal" style="display:none; position:fixed; inset:0; z-index:1001; align-items:center; justify-content:center;">
+        <!-- Backdrop -->
+        <div onclick="closeJoinLobbyModal()" style="position:absolute; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(2px);"></div>
+        
+        <!-- Center Panel: Hero Selection & Lobby Info -->
+        <div style="position:relative; background:linear-gradient(135deg,#0f1629,#1a2744); border:1px solid rgba(14,165,233,0.3); border-radius:1.5rem; padding:2rem 2.5rem; max-width:480px; width:90%; max-height:92vh; display:flex; flex-direction:column; z-index:1002; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+            <!-- Header -->
+            <div style="flex-shrink:0;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.25rem;">
+                    <h3 style="font-size:1.3rem; font-weight:700; color:#e2e8f0; margin:0; display:flex; align-items:center; gap:0.5rem;">
+                        <span class="material-symbols-outlined" style="color:#38bdf8;">group_add</span>
+                        Rejoindre un Co-op
+                    </h3>
+                    <button onclick="closeJoinLobbyModal()" style="background:none; border:none; color:#64748b; cursor:pointer; padding:0.25rem; border-radius:0.5rem; display:flex; align-items:center;">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:1.5rem;">Entrez le code à 6 caractères partagé par votre allié.</p>
 
-            <div style="margin-bottom:1rem; display:flex; gap:0.5rem;">
-                <input id="joinLobbyCodeInput" type="text" maxlength="6"
-                    placeholder="EX: A3F7K2"
-                    style="flex:1; padding:0.85rem 1rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15); border-radius:0.75rem; color:#f8fafc; font-size:1.2rem; text-align:center; letter-spacing:0.2em; text-transform:uppercase; outline:none;">
-                <button onclick="pasteLobbyCode()" title="Coller le code"
-                    style="padding:0 1rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15); border-radius:0.75rem; color:#94a3b8; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">
-                    <span class="material-symbols-outlined">content_paste</span>
-                </button>
+                <div style="margin-bottom:1rem; display:flex; gap:0.5rem;">
+                    <input id="joinLobbyCodeInput" type="text" maxlength="6"
+                        placeholder="EX: A3F7K2"
+                        style="flex:1; padding:0.85rem 1rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15); border-radius:0.75rem; color:#f8fafc; font-size:1.2rem; text-align:center; letter-spacing:0.2em; text-transform:uppercase; outline:none;">
+                    <button onclick="pasteLobbyCode()" title="Coller le code"
+                        style="padding:0 1rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15); border-radius:0.75rem; color:#94a3b8; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">
+                        <span class="material-symbols-outlined">content_paste</span>
+                    </button>
+                </div>
+
+                <div id="joinLobbyInfoContainer" style="display:none; margin-bottom:1rem; padding:1rem; background:rgba(0,0,0,0.3); border:1px solid rgba(14,165,233,0.3); border-radius:0.75rem;">
+                    <!-- Info injected by JS -->
+                </div>
+                <div id="joinLobbyErrorMsg" style="color:#ef4444; font-size:0.85rem; font-weight:600; text-align:center; margin-bottom:0.75rem; display:none;"></div>
             </div>
 
-            <div id="joinLobbyInfoContainer" style="display:none; margin-bottom:1rem; padding:1rem; background:rgba(0,0,0,0.3); border:1px solid rgba(14,165,233,0.3); border-radius:0.75rem;">
-                <!-- Info injected by JS -->
+            <!-- Corps scrollable : héros -->
+            <div style="flex:1; overflow-y:auto; padding-right:0.5rem; margin-bottom:1rem;" class="custom-scrollbar">
+                <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:#64748b; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.35rem;">
+                    <span class="material-symbols-outlined" style="font-size:0.9rem; color:#818cf8;">group</span>
+                    Vos héros
+                </div>
+                <div id="joinLobbyCharSelect">
+                    <!-- rempli par JS -->
+                </div>
             </div>
 
-            <div id="joinLobbyErrorMsg" style="color:#ef4444; font-size:0.85rem; font-weight:600; text-align:center; margin-bottom:0.75rem; display:none;"></div>
-            <div id="joinLobbyCharSelect" class="custom-scrollbar" style="margin-bottom:1.5rem; max-height:200px; overflow-y:auto; padding-right:0.5rem;">
-                <!-- rempli par JS -->
-            </div>
-
-            <div style="display:flex; gap:0.75rem;">
+            <!-- Footer fixe -->
+            <div style="flex-shrink:0; display:flex; gap:0.75rem; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.1);">
                 <button onclick="closeJoinLobbyModal()" style="flex:1; padding:0.75rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:0.75rem; color:#94a3b8; cursor:pointer;">Annuler</button>
                 <button onclick="submitJoinLobby()" id="btnSubmitJoin" style="flex:2; padding:0.75rem; background:linear-gradient(135deg,#0ea5e9,#6366f1); border:none; border-radius:0.75rem; color:white; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
                     <span class="material-symbols-outlined" style="font-size:1.1rem;">login</span>
                     Rejoindre
                 </button>
+            </div>
+        </div>
+
+        <!-- Right Panel: Consumables (drawer droit) -->
+        <div id="joinLobbyConsomablesSection" style="display:none; position:absolute; right:24px; top:50%; transform:translateY(-50%); height:max-content; max-height:92vh; border-radius:1.5rem; width:min(460px,100%); background:linear-gradient(180deg,#0f1629 0%,#111b35 100%); border:1px solid rgba(14,165,233,0.3); flex-direction:column; overflow:hidden; box-shadow:-8px 0 32px rgba(0,0,0,0.5); z-index:1003;">
+            <div style="padding:1.5rem 1.5rem 1rem; border-bottom:1px solid rgba(255,255,255,0.07); flex-shrink:0;">
+                <div style="font-size:1rem; font-weight:700; color:#e2e8f0; display:flex; align-items:center; justify-content:space-between;">
+                    <span style="display:flex; align-items:center; gap:0.5rem;">
+                        <span class="material-symbols-outlined" style="font-size:1.2rem; color:#10b981;">inventory_2</span>
+                        Consomables
+                    </span>
+                    <span id="joinConsomableWeight" style="font-size:0.9rem; font-weight:700; color:#94a3b8; font-variant-numeric:tabular-nums; background:rgba(0,0,0,0.3); padding:0.25rem 0.5rem; border-radius:0.5rem; border:1px solid rgba(255,255,255,0.1);">0 / 0</span>
+                </div>
+                <p style="color:#64748b; font-size:0.75rem; margin:0.5rem 0 0 0;">Sélectionnez les objets pour la partie.</p>
+            </div>
+            <div style="flex:1; padding:1rem 1.5rem;">
+                <div id="joinConsomableList">
+                    <!-- rempli par JS -->
+                </div>
             </div>
         </div>
     </div>
