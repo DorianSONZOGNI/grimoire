@@ -621,6 +621,14 @@ window.renderHeroStatsPanel = function () {
             }
         }
 
+        // Voie icon
+        let voieIconName = 'route';
+        let voieIconColor = '#94a3b8';
+        if (p.voie && p.voie.nom && window.getSpiritualiteIcon) {
+            voieIconName = window.getSpiritualiteIcon(p.voie.nom);
+            voieIconColor = window.getSpiritualiteColor ? window.getSpiritualiteColor(p.voie.nom) : '#94a3b8';
+        }
+
         // Spiritualité icon
         let spIconName = 'auto_awesome';
         let spIconColor = '#94a3b8';
@@ -630,9 +638,10 @@ window.renderHeroStatsPanel = function () {
         }
 
         statsHtml += `<div style="display:flex; flex-direction:column; gap:4px; padding:8px 10px; background:rgba(15,23,42,0.92); border:1px solid rgba(255,255,255,0.08); border-radius:10px;">
-            <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
+            <div style="display:flex; align-items:center; gap:5px; margin-bottom:2px;">
                 ${avatarHtml}
-                <span class="material-symbols-outlined" style="font-size:1rem; color:${spIconColor}; flex-shrink:0;">${spIconName}</span>
+                <span class="material-symbols-outlined" title="${p.voie ? p.voie.nom : ''}" style="font-size:0.9rem; color:${voieIconColor}; flex-shrink:0;">${voieIconName}</span>
+                <span class="material-symbols-outlined" title="${p.spiritualite ? p.spiritualite.nom : ''}" style="font-size:0.9rem; color:${spIconColor}; flex-shrink:0;">${spIconName}</span>
                 <span style="font-size:0.72rem; font-weight:600; color:#e2e8f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1;">${p.name}</span>
             </div>
             <div style="display:flex; align-items:center; gap:4px;">
