@@ -280,6 +280,32 @@ public class MultiCombatService {
             }
         }
 
+                java.util.Map<String, generation.grimoire.entity.Equipment> eqMap = new java.util.HashMap<>();
+        java.util.Map<String, Long> consomablesGrouped = new java.util.LinkedHashMap<>();
+        if (lobby.getConsumableIds() != null) {
+            lobby.getConsumableIds().forEach(eid -> {
+                if (eid == null) return;
+                generation.grimoire.entity.Equipment eq = equipmentRepository.findById(eid).orElse(null);
+                if (eq != null) {
+                    eqMap.put(eq.getName(), eq);
+                    consomablesGrouped.put(eq.getName(), consomablesGrouped.getOrDefault(eq.getName(), 0L) + 1);
+                }
+            });
+        }
+        
+        List<java.util.Map<String, Object>> hostConsInfos = new ArrayList<>();
+        consomablesGrouped.forEach((name, count) -> {
+            generation.grimoire.entity.Equipment eq = eqMap.get(name);
+            java.util.Map<String, Object> cInfo = new java.util.HashMap<>();
+            cInfo.put("name", name);
+            cInfo.put("quantity", count);
+            cInfo.put("weight", eq.getWeight());
+            if (eq.getConsumableCategory() != null) {
+                cInfo.put("consumableCategory", eq.getConsumableCategory().name());
+            }
+            hostConsInfos.add(cInfo);
+        });
+
         return new LobbyInfoDTO(
                 lobby.getShortCode(),
                 lobby.getHostUsername(),
@@ -292,7 +318,8 @@ public class MultiCombatService {
                 donjon.getRequiredSecret(),
                 donjon.getRequiredSecretLevel(),
                 (int) donjon.getUnlockCostGold(),
-                hostHeroInfos
+                hostHeroInfos,
+                hostConsInfos
         );
     }
 }

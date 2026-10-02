@@ -1396,6 +1396,12 @@ window.createCoopLobby = async function () {
             '<span class="material-symbols-outlined" style="font-size:1rem; vertical-align:middle; animation: spin 1s linear infinite;">autorenew</span> En attente du joueur 2...';
         const overlay = document.getElementById('lobbyWaitingOverlay');
         overlay.style.display = 'flex';
+        
+        const preview = document.getElementById('lobbyGuestPreview');
+        if (preview) {
+            preview.innerHTML = '';
+            preview.style.display = 'none';
+        }
 
         // Ouvrir SSE sur ce multiSessionId pour recevoir "lobby-ready"
         coopLobbySSE = new EventSource(`/api/pve/multi/${coopLobbyId}/events`);
@@ -1448,6 +1454,11 @@ window.cancelCoopLobby = async function () {
 
 function closeLobbyOverlay() {
     document.getElementById('lobbyWaitingOverlay').style.display = 'none';
+    const preview = document.getElementById('lobbyGuestPreview');
+    if (preview) {
+        preview.innerHTML = '';
+        preview.style.display = 'none';
+    }
 }
 
 // ——— SSE handler guest-update côté hôte ——————————————————————————————————————
@@ -2050,6 +2061,28 @@ document.addEventListener('DOMContentLoaded', () => {
                                 '</div></div>';
                         }
 
+                                                let hostConsHtml = '';
+                        if (info.hostConsumables && info.hostConsumables.length > 0) {
+                            hostConsHtml = '<div style="margin-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.75rem;">' +
+                                '<div style="font-size:0.75rem; color:#64748b; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">Consomables de l\'hôte</div>' +
+                                '<div style="display:flex; flex-wrap:wrap; gap:0.4rem;">' +
+                                info.hostConsumables.map(c => {
+                                    let iconName = 'inventory_2';
+                                    let iconColor = '#854c4c';
+                                    if (c.consumableCategory && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[c.consumableCategory]) {
+                                        iconName = window.CONSUMABLE_CATEGORIES[c.consumableCategory].icon;
+                                        iconColor = window.CONSUMABLE_CATEGORIES[c.consumableCategory].color;
+                                    }
+                                    return `
+                                        <span style="background:rgba(0,0,0,0.2); border:1px solid ${iconColor}40; border-radius:0.5rem; padding:0.3rem 0.6rem; font-size:0.8rem; color:#e2e8f0; display:inline-flex; align-items:center; gap:0.4rem;">
+                                            <span class="material-symbols-outlined" style="font-size:1rem; color:${iconColor};">${iconName}</span>
+                                            ${c.name} <span style="font-weight:700; color:#10b981;">x${c.quantity}</span>
+                                        </span>
+                                    `;
+                                }).join('') +
+                                '</div></div>';
+                        }
+
                         infoContainer.style.display = 'block';
                         infoContainer.innerHTML = `
                             <div style="font-weight:600; color:#e2e8f0; margin-bottom:0.25rem;">Hôte : <span style="color:#38bdf8;">${info.hostUsername}</span></div>
@@ -2059,6 +2092,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span style="color:${info.availableSlots > 0 ? '#10b981' : '#f43f5e'}; font-weight:600;">Places restantes : ${info.availableSlots}</span>
                             </div>
                             ${hostHeroesHtml}
+                            ${hostConsHtml}
                         `;
 
                         window.updateJoinCharAvailability(info);
@@ -2077,12 +2111,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const lobby = await findRes.json();
                                 _joinLobbyMultiId = lobby.multiSessionId;
                                 _joinLobbyHostHeroCount = lobby.hostCharacterIds ? lobby.hostCharacterIds.length : 0;
-                                _joinLobbyHostConsumableWeight = (lobby.consumableIds || [])
-                                    .map(cid => {
-                                        const c = pageState.availableConsumables.find(ac => ac.id === cid);
-                                        return c ? (c.weight || 0) : 0;
-                                    })
-                                .reduce((a, b) => a + b, 0);
+                                                                _joinLobbyHostConsumableWeight = (info.hostConsumables || [])
+                                    .reduce((sum, c) => sum + (c.weight || 0) * (c.quantity || 1), 0);
 
                                 if (_joinLobbySSE) {
                                     _joinLobbySSE.close();
