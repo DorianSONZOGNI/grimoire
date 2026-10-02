@@ -52,6 +52,31 @@
                 <div class="text-muted font-italic">Chargement des articles...</div>
             </div>
         </div>
+
+        <!-- Section paliers d'amélioration -->
+        <div class="panel mt-4">
+            <div class="page-header">
+                <div class="page-header-content">
+                    <div class="page-header-icon" style="background: rgba(168,85,247,0.15); color: #a855f7;">
+                        <span class="material-symbols-outlined text-3xl">upgrade</span>
+                    </div>
+                    <div>
+                        <h2 class="page-header-title text-2xl">Paliers d'amélioration</h2>
+                        <div class="page-header-subtitle">Configurer les conditions de déblocage de chaque niveau boutique</div>
+                    </div>
+                </div>
+                <button
+                    class="px-4 py-2 flex items-center gap-2 font-semibold cursor-pointer border-none rounded-lg transition-all shadow-lg"
+                    style="background: linear-gradient(135deg,#a855f7,#7c3aed); color:white;"
+                    id="btnCreateUpgrade" onclick="openCreateUpgradeModal()">
+                    <span class="material-symbols-outlined text-xl">add</span>
+                    Nouveau palier
+                </button>
+            </div>
+            <div class="mt-4" id="upgradesGrid">
+                <div class="text-muted font-italic">Chargement...</div>
+            </div>
+        </div>
     </main>
 
     <!-- Create/Edit Equipment Modal -->

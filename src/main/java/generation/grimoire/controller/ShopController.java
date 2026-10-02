@@ -2,6 +2,7 @@ package generation.grimoire.controller;
 
 import generation.grimoire.dto.equipment.EquipmentRequestDTO;
 import generation.grimoire.dto.equipment.EquipmentShopDTO;
+import generation.grimoire.dto.shop.ShopStatusDTO;
 import generation.grimoire.entity.Equipment;
 import generation.grimoire.entity.auth.AppUser;
 import generation.grimoire.entity.Anomalie;
@@ -38,7 +39,91 @@ public class ShopController {
     @Autowired
     private EquipmentMapper equipmentMapper;
 
+    @Autowired
+    private generation.grimoire.repository.ShopUpgradeConfigRepository shopUpgradeConfigRepository;
+
+    // ============================================================
+    // NIVEAUX BOUTIQUE — lecture depuis BDD
+    // ============================================================
+
+    private generation.grimoire.entity.ShopUpgradeConfig getUpgradeConfigFromDb(int targetLevel) {
+        return shopUpgradeConfigRepository.findByTargetLevel(targetLevel).orElse(null);
+    }
+
     // --- DAILY SHOP ---
+
+    @GetMapping("/level")
+    public ResponseEntity<?> getShopLevel(Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
+        AppUser user = userRepository.findByUsername(principal.getName()).orElse(null);
+        if (user == null) return ResponseEntity.status(401).build();
+
+        int currentLevel = user.getShopLevel();
+        int nextLevel = currentLevel + 1;
+        var config = getUpgradeConfigFromDb(nextLevel);
+
+        if (config == null) {
+            return ResponseEntity.ok(new ShopStatusDTO(currentLevel, null, null, List.of(), false));
+        }
+
+        List<Anomalie> userAnomalies = anomalieRepository.findByOwnerUsername(user.getUsername());
+        List<ShopStatusDTO.UpgradeRequirementDTO> reqs = new ArrayList<>();
+        boolean canUpgrade = true;
+
+        if (config.getGoldCost() > 0) {
+            boolean ok = user.getMonnaie() >= config.getGoldCost();
+            reqs.add(new ShopStatusDTO.UpgradeRequirementDTO(
+                    "GOLD", "Or", config.getGoldCost(), (int) user.getMonnaie(), ok));
+            if (!ok) canUpgrade = false;
+        }
+
+        for (Map.Entry<String, Integer> entry : config.getAnomalyCost().entrySet()) {
+            long owned = userAnomalies.stream().filter(a -> entry.getKey().equals(a.getName())).count();
+            boolean ok = owned >= entry.getValue();
+            reqs.add(new ShopStatusDTO.UpgradeRequirementDTO(
+                    "ANOMALIE", entry.getKey(), entry.getValue(), (int) owned, ok));
+            if (!ok) canUpgrade = false;
+        }
+
+        return ResponseEntity.ok(new ShopStatusDTO(currentLevel, nextLevel, config.getDescription(), reqs, canUpgrade));
+    }
+
+    @PostMapping("/upgrade")
+    public ResponseEntity<?> upgradeShop(Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
+        AppUser user = userRepository.findByUsername(principal.getName()).orElse(null);
+        if (user == null) return ResponseEntity.status(401).build();
+
+        int nextLevel = user.getShopLevel() + 1;
+        var config = getUpgradeConfigFromDb(nextLevel);
+        if (config == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Niveau maximum atteint ou non configuré."));
+        }
+
+        if (user.getMonnaie() < config.getGoldCost()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Or insuffisant."));
+        }
+
+        List<Anomalie> userAnomalies = anomalieRepository.findByOwnerUsername(user.getUsername());
+        List<Anomalie> toConsume = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : config.getAnomalyCost().entrySet()) {
+            List<Anomalie> matches = userAnomalies.stream()
+                    .filter(a -> entry.getKey().equals(a.getName()))
+                    .collect(Collectors.toList());
+            if (matches.size() < entry.getValue()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Anomalie manquante : " + entry.getKey()));
+            }
+            toConsume.addAll(matches.subList(0, entry.getValue()));
+        }
+
+        user.setMonnaie(user.getMonnaie() - config.getGoldCost());
+        user.setShopLevel(nextLevel);
+        userRepository.save(user);
+        if (!toConsume.isEmpty()) anomalieRepository.deleteAll(toConsume);
+
+        return ResponseEntity.ok(Map.of("message", "Boutique améliorée au niveau " + nextLevel + " !", "newLevel", nextLevel));
+    }
 
     @GetMapping("/daily")
     public ResponseEntity<Map<String, Object>> getDailyShop(Principal principal) {
@@ -46,15 +131,17 @@ public class ShopController {
         if (principal != null) {
             user = userRepository.findByUsername(principal.getName()).orElse(null);
         }
-        
+
+        int shopLevel = (user != null) ? user.getShopLevel() : 1;
+
         final java.util.Set<String> ownedEquipments = new java.util.HashSet<>();
         if (user != null) {
             java.time.LocalDate today = java.time.LocalDate.now(java.time.ZoneId.of("Europe/Paris"));
             if (today.equals(user.getLastShopPurchaseDate()) && user.getDailyShopPurchases() != null) {
                 ownedEquipments.addAll(user.getDailyShopPurchases());
             }
-            System.out.println("DEBUG getDailyShop - user: " + user.getUsername() + ", today: " + today + ", lastShopPurchaseDate: " + user.getLastShopPurchaseDate() + ", dailyShopPurchases: " + user.getDailyShopPurchases() + ", ownedEquipments: " + ownedEquipments);
         }
+
         List<Equipment> templates = equipmentRepository.findByIsTemplateTrueAndAvailableInShopTrue();
 
         List<Equipment> equipmentTemplates = templates.stream()
@@ -65,25 +152,34 @@ public class ShopController {
                 .filter(e -> e.getSlot() == EquipmentSlot.CONSOMMABLE)
                 .toList();
 
-        List<Equipment> commons = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.COMMUN).toList();
-        List<Equipment> rares = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.RARE).toList();
-        List<Equipment> legendaries = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.LEGENDAIRE).toList();
+        List<Equipment> commons    = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.COMMUN).toList();
+        List<Equipment> unusuals   = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.INHABITUEL).toList();
+        List<Equipment> rares      = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.RARE).toList();
+        List<Equipment> legendaries= equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.LEGENDAIRE).toList();
 
-        // Seeded random based on today's date
         long seed = LocalDate.now(java.time.ZoneId.of("Europe/Paris")).toEpochDay();
         Random random = new Random(seed);
 
         List<Equipment> dailySelection = new ArrayList<>();
+        // Slot 1-3 : COMMUN (toujours dispo)
         dailySelection.addAll(pickRandom(commons, 3, random));
-        dailySelection.addAll(pickRandom(rares, 1, random));
-        dailySelection.addAll(pickRandom(legendaries, 1, random));
+
+        // Slot 4 : INHABITUEL — débloqué au niveau 2 (pas de RARE encore)
+        List<LockedSlotDTO> lockedSlots = new ArrayList<>();
+        if (shopLevel >= 2) {
+            dailySelection.addAll(pickRandom(unusuals, 1, random));
+        } else {
+            // Consommer le random pour garder la cohérence du seed
+            pickRandom(unusuals, 1, random);
+            lockedSlots.add(new LockedSlotDTO(4, "Niveau 2", "Améliorer la boutique pour débloquer ce slot"));
+        }
 
         List<Equipment> consumableTemplates = pickRandom(allConsumables, 4, random);
 
-        // Promo (rotates every 2 hours)
+        // Promo (toutes les 2h)
         List<Equipment> remainingTemplates = new ArrayList<>(equipmentTemplates);
         remainingTemplates.removeAll(dailySelection);
-        
+
         long currentEpochMillis = System.currentTimeMillis();
         long twoHoursInMillis = 2 * 60 * 60 * 1000L;
         long promoSeed = currentEpochMillis / twoHoursInMillis;
@@ -96,6 +192,8 @@ public class ShopController {
         }
 
         Map<String, Object> response = new HashMap<>();
+        response.put("shopLevel", shopLevel);
+        response.put("lockedSlots", lockedSlots);
         response.put("daily", dailySelection.stream().map(e -> toShopDto(e, ownedEquipments)).toList());
         response.put("promoExpiresAt", promoExpiresAt);
 
@@ -108,7 +206,6 @@ public class ShopController {
             response.put("discount", promoDto);
         }
 
-        // Consumables from templates
         List<EquipmentShopDTO> consumables = consumableTemplates.stream()
                 .map(e -> toShopDto(e, ownedEquipments))
                 .toList();
@@ -116,6 +213,9 @@ public class ShopController {
 
         return ResponseEntity.ok(response);
     }
+
+    /** Représente un slot verrouillé dans la grille daily. */
+    private record LockedSlotDTO(int slotNumber, String requiredLevel, String hint) {}
 
 
     private List<Equipment> pickRandom(List<Equipment> source, int count, Random random) {
@@ -138,6 +238,12 @@ public class ShopController {
             return ResponseEntity.badRequest().body(Map.of("message", "Objet introuvable dans la boutique."));
         }
 
+        AppUser user = userRepository.findByUsername(principal.getName()).orElse(null);
+        if (user == null)
+            return ResponseEntity.status(401).build();
+
+        int shopLevel = user.getShopLevel();
+
         // Verify it's in today's selection
         long seed = LocalDate.now(java.time.ZoneId.of("Europe/Paris")).toEpochDay();
         Random random = new Random(seed);
@@ -151,15 +257,19 @@ public class ShopController {
                 .filter(e -> e.getSlot() == EquipmentSlot.CONSOMMABLE)
                 .toList();
 
-        List<Equipment> commons = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.COMMUN).toList();
-        List<Equipment> rares = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.RARE).toList();
-        List<Equipment> legendaries = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.LEGENDAIRE)
-                .toList();
+        List<Equipment> commons    = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.COMMUN).toList();
+        List<Equipment> unusuals   = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.INHABITUEL).toList();
+        List<Equipment> rares      = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.RARE).toList();
+        List<Equipment> legendaries= equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.LEGENDAIRE).toList();
 
         List<Equipment> dailySelection = new ArrayList<>();
         dailySelection.addAll(pickRandom(commons, 3, random));
-        dailySelection.addAll(pickRandom(rares, 1, random));
-        dailySelection.addAll(pickRandom(legendaries, 1, random));
+        // Slot 4 INHABITUEL : accessible seulement niveau 2+
+        if (shopLevel >= 2) {
+            dailySelection.addAll(pickRandom(unusuals, 1, random));
+        } else {
+            pickRandom(unusuals, 1, random); // consume seed
+        }
 
         List<Equipment> consumableTemplates = pickRandom(allConsumables, 4, random);
 
@@ -183,10 +293,6 @@ public class ShopController {
         if (!isDaily && !isPromo && !isConsumable) {
             return ResponseEntity.badRequest().body(Map.of("message", "Cet objet n'est pas en vente aujourd'hui."));
         }
-
-        AppUser user = userRepository.findByUsername(principal.getName()).orElse(null);
-        if (user == null)
-            return ResponseEntity.status(401).build();
 
         double price = template.calculateShopPrice();
         if (isPromo) {
@@ -324,14 +430,13 @@ public class ShopController {
             equipmentMapper.updateEntity(dto, eq);
             equipmentRepository.save(eq);
 
-            // Update all instances with the same old name
             if (oldName != null && !oldName.isEmpty()) {
                 List<Equipment> instances = equipmentRepository.findByName(oldName);
                 for (Equipment instance : instances) {
                     if (instance.getId().equals(eq.getId()))
                         continue;
                     equipmentMapper.updateEntity(dto, instance);
-                    instance.setTemplate(false); // ensure it remains an instance
+                    instance.setTemplate(false);
                     equipmentRepository.save(instance);
                 }
                 renameCascadeService.cascadeEquipmentRename(oldName, eq.getName());
@@ -357,14 +462,56 @@ public class ShopController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    // ============================================================
+    // ADMIN — CRUD paliers d'amélioration boutique
+    // ============================================================
+
+    @GetMapping("/admin/upgrades")
+    public ResponseEntity<?> getUpgradeConfigs(Principal principal) {
+        if (principal == null || !isAdmin(principal)) return ResponseEntity.status(403).build();
+        return ResponseEntity.ok(shopUpgradeConfigRepository.findAll());
+    }
+
+    @PostMapping("/admin/upgrades")
+    public ResponseEntity<?> createUpgradeConfig(
+            @RequestBody generation.grimoire.entity.ShopUpgradeConfig dto, Principal principal) {
+        if (principal == null || !isAdmin(principal)) return ResponseEntity.status(403).build();
+        if (shopUpgradeConfigRepository.findByTargetLevel(dto.getTargetLevel()).isPresent()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Un palier niveau " + dto.getTargetLevel() + " existe déjà."));
+        }
+        dto.setId(null);
+        return ResponseEntity.ok(shopUpgradeConfigRepository.save(dto));
+    }
+
+    @PutMapping("/admin/upgrades/{id}")
+    public ResponseEntity<?> updateUpgradeConfig(
+            @PathVariable Long id,
+            @RequestBody generation.grimoire.entity.ShopUpgradeConfig dto, Principal principal) {
+        if (principal == null || !isAdmin(principal)) return ResponseEntity.status(403).build();
+        return shopUpgradeConfigRepository.findById(id).map(existing -> {
+            existing.setTargetLevel(dto.getTargetLevel());
+            existing.setDescription(dto.getDescription());
+            existing.setGoldCost(dto.getGoldCost());
+            existing.setAnomalyCost(dto.getAnomalyCost() != null ? dto.getAnomalyCost() : new java.util.HashMap<>());
+            return ResponseEntity.ok(shopUpgradeConfigRepository.save(existing));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/admin/upgrades/{id}")
+    public ResponseEntity<?> deleteUpgradeConfig(
+            @PathVariable Long id, Principal principal) {
+        if (principal == null || !isAdmin(principal)) return ResponseEntity.status(403).build();
+        if (!shopUpgradeConfigRepository.existsById(id)) return ResponseEntity.notFound().build();
+        shopUpgradeConfigRepository.deleteById(id);
+        return ResponseEntity.ok().build();
+    }
+
     // --- HELPERS ---
 
     private boolean isAdmin(Principal principal) {
         return ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
     }
-
-
 
     private EquipmentShopDTO toShopDto(Equipment e, java.util.Set<String> ownedEquipments) {
         EquipmentShopDTO dto = equipmentMapper.toShopDto(e);

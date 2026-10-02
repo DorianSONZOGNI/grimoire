@@ -109,4 +109,7 @@ public class AppUser {
     private Set<String> dailyShopPurchases = new HashSet<>();
 
     private java.time.LocalDate lastShopPurchaseDate;
+
+    @Column(nullable = false)
+    private int shopLevel = 1;
 }
