@@ -102,7 +102,9 @@ class CombatTurnService {
                             allEnemies);
                 }
             });
-            spellService.endTurn(p);
+            if (!session.areAllEnemiesDead()) {
+                spellService.endTurn(p);
+            }
         }
         session.advanceTurnIndex();
         advanceToNextLiveTurn(session);
