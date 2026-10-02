@@ -29,6 +29,7 @@ public class MultiCombatService {
     private final CombatEventEmitter eventEmitter;
     private final DonjonRepository donjonRepository;
     private final PersonnageRepository personnageRepository;
+    private final generation.grimoire.repository.EquipmentRepository equipmentRepository;
 
     /** multiSessionId → MultiCombatSession */
     private final Map<String, MultiCombatSession> lobbies = new ConcurrentHashMap<>();
@@ -86,9 +87,11 @@ public class MultiCombatService {
         List<Long> allCharIds = new ArrayList<>(lobby.getHostCharacterIds());
         allCharIds.addAll(guestCharacterIds);
 
-        // Merge des consommables (on part du sac de l'hôte, on ne valide que les siens)
+        // Merge des consommables hôte + guest
         List<Long> allConsumables = new ArrayList<>(lobby.getConsumableIds());
-        if (guestConsumableIds != null) allConsumables.addAll(guestConsumableIds);
+        List<Long> guestConsIds = guestConsumableIds != null ? guestConsumableIds : new ArrayList<>();
+        allConsumables.addAll(guestConsIds);
+        lobby.setGuestConsumableIds(new ArrayList<>(guestConsIds));
 
         Long dungeonId = lobby.getDungeonId();
         if (dungeonId == null) {
@@ -158,6 +161,67 @@ public class MultiCombatService {
         MultiCombatSession lobby = lobbies.get(multiSessionId);
         if (lobby == null) throw new IllegalArgumentException("Lobby introuvable : " + multiSessionId);
         return lobby;
+    }
+
+    // ────────────────────────────────────────────────────
+    // Mise à jour en temps réel de l'état provisoire de l'allié
+    // ────────────────────────────────────────────────────
+
+    /**
+     * L'allié met à jour ses héros / consomables provisoirement.
+     * L'hôte reçoit un event SSE "guest-update".
+     */
+    public void updateGuestState(String multiSessionId, String guestUsername,
+                                 List<Long> charIds, List<Long> consumableIds) {
+        MultiCombatSession lobby = getOrThrow(multiSessionId);
+        if (lobby.getStatus() != MultiCombatSession.Status.WAITING) {
+            throw new IllegalStateException("Ce lobby n'est plus en attente.");
+        }
+        lobby.setPendingGuestCharacterIds(charIds != null ? new ArrayList<>(charIds) : new ArrayList<>());
+        lobby.setPendingGuestConsumableIds(consumableIds != null ? new ArrayList<>(consumableIds) : new ArrayList<>());
+
+        // Enrichir le payload avec les noms des héros
+        List<Map<String, Object>> heroInfos = new ArrayList<>();
+        if (charIds != null) {
+            charIds.forEach(cid -> {
+                if (cid == null) return;
+                Personnage p = personnageRepository.findById(cid).orElse(null);
+                if (p != null) {
+                    heroInfos.add(Map.of(
+                            "id", cid,
+                            "name", p.getName(),
+                            "level", p.getVoieLevel(),
+                            "healthMax", p.getHealthMax()
+                    ));
+                }
+            });
+        }
+
+        // Enrichir le payload avec les noms des consomables (groupés par nom)
+        Map<String, Long> consomablesGrouped = new java.util.LinkedHashMap<>();
+        if (consumableIds != null) {
+            consumableIds.forEach(eid -> {
+                if (eid == null) return;
+                generation.grimoire.entity.Equipment eq =
+                        equipmentRepository.findById(eid).orElse(null);
+                if (eq != null) {
+                    consomablesGrouped.merge(eq.getName(), 1L, (a, b) -> a + b);
+                }
+            });
+        }
+        List<Map<String, Object>> consInfos = new ArrayList<>();
+        consomablesGrouped.forEach((name, count) ->
+                consInfos.add(Map.of("name", name, "count", count)));
+
+        // Broadcaster l'état à l'hôte
+        eventEmitter.broadcastEvent(multiSessionId, "guest-update", Map.of(
+                "pendingGuestCharacterIds", lobby.getPendingGuestCharacterIds(),
+                "pendingGuestConsumableIds", lobby.getPendingGuestConsumableIds(),
+                "guestHeroInfos", heroInfos,
+                "guestConsomableInfos", consInfos
+        ));
+        log.debug("[MultiCombat] guest-update lobby={} chars={} consos={}",
+                multiSessionId, charIds, consumableIds);
     }
 
     // ─────────────────────────────────────────────────────────────────────────

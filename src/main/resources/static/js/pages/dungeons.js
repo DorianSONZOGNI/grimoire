@@ -119,10 +119,7 @@ function collectDungeonLootItemsLocal(salles) {
 
 
 function getMaxWeight() {
-    const toggle = document.getElementById('coopModeToggle');
-    const isCoop = toggle && toggle.checked;
-    const heroCount = isCoop ? (pageState.currentMaxHeroes || 1) : pageState.selectedCharIds.length;
-    return 10 + 5 * heroCount;
+    return 10 + 5 * pageState.selectedCharIds.length;
 }
 
 function getCurrentWeight() {
@@ -1318,7 +1315,7 @@ window.onCoopToggleChange = function () {
         btnCoop.classList.add('hidden');
     }
 
-    // Mettre à jour le poids (qui dépend du mode Co-op)
+    // Recalcule le poids (dépend du nb de héros sélect, pas du mode coop)
     if (typeof renderConsumablesList === 'function') {
         renderConsumablesList();
     }
@@ -1410,6 +1407,12 @@ window.createCoopLobby = async function () {
             window.showNotif('Lobby annulé.', true);
             closeLobbyOverlay();
         });
+        coopLobbySSE.addEventListener('guest-update', (e) => {
+            try {
+                const data = JSON.parse(e.data);
+                onGuestUpdate(data);
+            } catch (_) {}
+        });
         coopLobbySSE.onerror = () => {
             // SSE silently reconnects; only show error if lobby is gone
         };
@@ -1447,12 +1450,74 @@ function closeLobbyOverlay() {
     document.getElementById('lobbyWaitingOverlay').style.display = 'none';
 }
 
+// ——— SSE handler guest-update côté hôte ——————————————————————————————————————
+
+function onGuestUpdate(data) {
+    const heroInfos = data.guestHeroInfos || [];
+    const consInfos = data.guestConsomableInfos || [];
+
+    // Section héros de l'allié
+    let heroHtml = '';
+    if (heroInfos.length === 0) {
+        heroHtml = '<span style="color:#64748b; font-size:0.85rem;">Aucun héros sélectionné</span>';
+    } else {
+        heroHtml = heroInfos.map(h =>
+            `<span style="background:rgba(14,165,233,0.15); border:1px solid rgba(14,165,233,0.4); border-radius:0.5rem; padding:0.25rem 0.6rem; font-size:0.8rem; color:#38bdf8; display:inline-flex; align-items:center; gap:0.3rem;">
+                <span class="material-symbols-outlined" style="font-size:0.9rem;">person</span>
+                ${h.name} <span style="color:#64748b; font-size:0.72rem;">Niv.${h.level}</span>
+            </span>`
+        ).join('');
+    }
+
+    // Section consomables de l'allié
+    let consHtml = '';
+    if (consInfos.length > 0) {
+        consHtml = consInfos.map(c =>
+            `<span style="background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); border-radius:0.5rem; padding:0.2rem 0.5rem; font-size:0.78rem; color:#10b981; display:inline-flex; align-items:center; gap:0.3rem;">
+                <span class="material-symbols-outlined" style="font-size:0.85rem;">inventory_2</span>
+                ${c.name} x${c.count}
+            </span>`
+        ).join('');
+    } else {
+        consHtml = '<span style="color:#64748b; font-size:0.8rem;">Aucun consomable</span>';
+    }
+
+    const section = document.getElementById('lobbyGuestPreview');
+    if (!section) return;
+    section.innerHTML = `
+        <div style="margin-top:1rem; border-top:1px solid rgba(255,255,255,0.1); padding-top:1rem;">
+            <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:#64748b; margin-bottom:0.5rem;">
+                <span class="material-symbols-outlined" style="font-size:0.9rem; vertical-align:middle; color:#38bdf8;">group</span>
+                Allié — Sélection en cours
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-bottom:0.5rem;">${heroHtml}</div>
+            <div style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:#64748b; margin-bottom:0.4rem; margin-top:0.5rem;">
+                <span class="material-symbols-outlined" style="font-size:0.9rem; vertical-align:middle; color:#10b981;">inventory_2</span>
+                Consomables
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">${consHtml}</div>
+        </div>
+    `;
+    section.style.display = 'block';
+}
+
+
 // â”€â”€â”€ Modal Rejoindre un lobby â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 let joinSelectedCharIds = [];
+let joinSelectedConsumableIds = [];
+let _joinLobbyMultiId = null; // multiSessionId du lobby rejoint
+let _joinLobbyHostHeroCount = 0; // nombre de héros de l'hôte
+let _joinLobbyHostConsumableWeight = 0; // Poids des consomables déjà sélectionnés par l'hôte
+let _joinAvailableConsumables = []; // consomables dispo chargés une fois
+
 
 window.openJoinLobbyModal = function () {
     joinSelectedCharIds = [];
+    joinSelectedConsumableIds = [];
+    _joinLobbyMultiId = null;
+    _joinLobbyHostHeroCount = 0;
+    _joinLobbyHostConsumableWeight = 0;
     const modal = document.getElementById('joinLobbyModal');
     modal.style.display = 'flex';
 
@@ -1461,6 +1526,8 @@ window.openJoinLobbyModal = function () {
     if (input) input.value = '';
     const infoContainer = document.getElementById('joinLobbyInfoContainer');
     if (infoContainer) infoContainer.style.display = 'none';
+    const consSection = document.getElementById('joinLobbyConsomablesSection');
+    if (consSection) consSection.style.display = 'none';
     window.maxSelectableJoinChars = 4;
 
     // Remplir la liste de persos du joueur
@@ -1548,6 +1615,153 @@ window.toggleJoinChar = function (charId) {
         joinSelectedCharIds.splice(idx, 1);
         el.style.borderColor = 'rgba(255,255,255,0.1)';
         el.style.background = '';
+    }
+
+    // Mettre à jour poids + section consomables
+    renderJoinConsumablesList();
+
+    // Envoyer guest-update au backend si multiId connu
+    _sendJoinGuestUpdate();
+};
+
+function _getJoinMaxWeight() {
+    return 10 + 5 * (_joinLobbyHostHeroCount + joinSelectedCharIds.length);
+}
+
+function _getJoinCurrentWeight() {
+    const guestWeight = pageState.availableConsumables
+        .filter(c => joinSelectedConsumableIds.includes(c.id))
+        .reduce((sum, c) => sum + (c.weight || 0), 0);
+    return guestWeight + _joinLobbyHostConsumableWeight;
+}
+
+function _sendJoinGuestUpdate() {
+    if (!_joinLobbyMultiId) return;
+    const charParam = joinSelectedCharIds.length > 0 ? `characterIds=${joinSelectedCharIds.join(',')}` : '';
+    const consParam = joinSelectedConsumableIds.length > 0 ? `consumableIds=${joinSelectedConsumableIds.join(',')}` : '';
+    const params = [charParam, consParam].filter(Boolean).join('&');
+    globalFetch(`/api/pve/multi/${_joinLobbyMultiId}/guest-update${params ? '?' + params : ''}`, { method: 'POST' })
+        .catch(e => console.error('guest-update error', e));
+}
+
+function renderJoinConsumablesList() {
+    const section = document.getElementById('joinLobbyConsomablesSection');
+    if (!section) return;
+
+    // N'afficher la section que si au moins 1 héros sélectionné
+    if (joinSelectedCharIds.length === 0) {
+        section.style.display = 'none';
+        return;
+    }
+    section.style.display = 'flex';
+
+    const curWeight = _getJoinCurrentWeight();
+    const maxWeight = _getJoinMaxWeight();
+    const isOver = curWeight > maxWeight;
+
+    const weightEl = document.getElementById('joinConsomableWeight');
+    if (weightEl) {
+        weightEl.textContent = `${+Number(curWeight).toFixed(1)} / ${maxWeight}`;
+        weightEl.style.color = isOver ? '#ef4444' : '#94a3b8';
+    }
+
+    const list = document.getElementById('joinConsomableList');
+    if (!list) return;
+    list.innerHTML = '';
+
+    if (pageState.availableConsumables.length === 0) {
+        list.innerHTML = '<div style="color:#64748b; font-size:0.8rem; text-align:center; padding:0.5rem;">Aucun consomable disponible.</div>';
+        return;
+    }
+
+    const groupedConsumables = {};
+    pageState.availableConsumables.forEach(c => {
+        if (!groupedConsumables[c.name]) {
+            groupedConsumables[c.name] = { base: c, ids: [], selectedIds: [] };
+        }
+        groupedConsumables[c.name].ids.push(c.id);
+        if (joinSelectedConsumableIds.includes(c.id)) {
+            groupedConsumables[c.name].selectedIds.push(c.id);
+        }
+    });
+
+    let html = '';
+    Object.values(groupedConsumables).forEach(group => {
+        const c = group.base;
+        const total = group.ids.length;
+        const selCount = group.selectedIds.length;
+        const isSelected = selCount > 0;
+
+        let iconName = 'inventory_2';
+        let iconColor = '#854c4c';
+        if (c.consumableCategory && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[c.consumableCategory]) {
+            iconName = window.CONSUMABLE_CATEGORIES[c.consumableCategory].icon;
+            iconColor = window.CONSUMABLE_CATEGORIES[c.consumableCategory].color;
+        }
+
+        let badgeHtml = '';
+        if (isSelected) {
+            badgeHtml = `
+            <div class="flex items-center gap-1 absolute shadow-md" style="bottom:-6px; right:-6px; background:#0f172a; border-radius:6px; padding:2px 4px; border:1px solid #334155; z-index:10;">
+                <button onclick="event.stopPropagation(); window.removeJoinConsumable('${c.name.replace(/'/g, "\\'")}')" style="display:flex; align-items:center; justify-content:center; width:18px; height:18px; background:none; border:none; color:#94a3b8; cursor:pointer; border-radius:4px;">
+                    <span class="material-symbols-outlined" style="font-size:14px;">remove</span>
+                </button>
+                <span style="font-size:0.7rem; font-weight:700; color:#10b981; padding:0 2px;">${selCount}/${total}</span>
+                <button onclick="event.stopPropagation(); window.addJoinConsumable('${c.name.replace(/'/g, "\\'")}')" style="display:flex; align-items:center; justify-content:center; width:18px; height:18px; background:none; border:none; color:#94a3b8; cursor:pointer; border-radius:4px;">
+                    <span class="material-symbols-outlined" style="font-size:14px;">add</span>
+                </button>
+            </div>`;
+        } else {
+            badgeHtml = `<div style="position:absolute; bottom:-5px; right:-5px; background:rgba(15,23,42,0.9); padding:3px 6px; border-radius:6px; border:1px solid #334155; font-size:0.7rem; font-weight:700; color:#64748b;">0/${total}</div>`;
+        }
+
+        html += `
+            <div class="consumable-card ${isSelected ? 'selected' : ''} relative overflow-visible cursor-pointer"
+                 onclick="addJoinConsumable('${c.name.replace(/'/g, "\\'")}')"
+                 style="margin-bottom:0;">
+                <span class="material-symbols-outlined flex-shrink-0" style="font-size:1.1rem; color:${isSelected ? '#10b981' : iconColor};">${iconName}</span>
+                <div class="flex-1 min-w-0">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="white-space:nowrap; color:#f8fafc; font-weight:600; font-size:0.7rem; overflow:hidden; text-overflow:ellipsis;" title="${c.name}">${c.name}</div>
+                        <div style="font-size:0.65rem; font-weight:700; color:#64748b; background:rgba(0,0,0,0.3); padding:1px 4px; border-radius:4px; display:flex; align-items:center; gap:2px;">
+                            <span class="material-symbols-outlined" style="font-size:0.65rem;">scale</span>${+Number(c.weight).toFixed(1)}
+                        </div>
+                    </div>
+                </div>
+                ${badgeHtml}
+            </div>`;
+    });
+    list.innerHTML = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem;">${html}</div>`;
+}
+
+window.addJoinConsumable = function(name) {
+    const groupItems = pageState.availableConsumables.filter(c => c.name === name);
+    if (!groupItems.length) return;
+    const unselected = groupItems.find(c => !joinSelectedConsumableIds.includes(c.id));
+    if (unselected) {
+        if (_getJoinCurrentWeight() + (unselected.weight || 0) > _getJoinMaxWeight()) {
+            window.showNotif('Poids maximum dépassé !', true);
+            return;
+        }
+        joinSelectedConsumableIds.push(unselected.id);
+        renderJoinConsumablesList();
+        _sendJoinGuestUpdate();
+    } else {
+        window.showNotif('Pas d\'autre exemplaire disponible.', true);
+    }
+};
+
+window.removeJoinConsumable = function(name) {
+    const groupItems = pageState.availableConsumables.filter(c => c.name === name);
+    if (!groupItems.length) return;
+    const selectedId = groupItems.find(c => joinSelectedConsumableIds.includes(c.id))?.id;
+    if (selectedId !== undefined) {
+        const idx = joinSelectedConsumableIds.indexOf(selectedId);
+        if (idx !== -1) {
+            joinSelectedConsumableIds.splice(idx, 1);
+            renderJoinConsumablesList();
+            _sendJoinGuestUpdate();
+        }
     }
 };
 
@@ -1738,25 +1952,52 @@ document.addEventListener('DOMContentLoaded', () => {
                             window.toggleJoinChar(removedId);
                         }
 
+                        // Stocker le multiId pour guest-update en temps réel
+                        try {
+                            const findRes = await window.globalFetch(`/api/pve/multi/find/${code}`);
+                            if (findRes.ok) {
+                                const lobby = await findRes.json();
+                                _joinLobbyMultiId = lobby.multiSessionId;
+                                _joinLobbyHostHeroCount = lobby.hostCharacterIds ? lobby.hostCharacterIds.length : 0;
+                                _joinLobbyHostConsumableWeight = (lobby.consumableIds || [])
+                                    .map(cid => {
+                                        const c = pageState.availableConsumables.find(ac => ac.id === cid);
+                                        return c ? (c.weight || 0) : 0;
+                                    })
+                                    .reduce((a, b) => a + b, 0);
+                            }
+                        } catch (_) {}
+
                     } else {
                         infoContainer.style.display = 'none';
+                        _joinLobbyMultiId = null;
+                        _joinLobbyHostHeroCount = 0;
+                        _joinLobbyHostConsumableWeight = 0;
                         window.maxSelectableJoinChars = 4;
                         window.updateJoinCharAvailability(null);
                     }
                 } catch (err) {
                     console.error("Erreur lors de la récupération des infos du lobby", err);
                     infoContainer.style.display = 'none';
+                    _joinLobbyMultiId = null;
+                    _joinLobbyHostHeroCount = 0;
+                    _joinLobbyHostConsumableWeight = 0;
                     window.maxSelectableJoinChars = 4;
                     window.updateJoinCharAvailability(1);
                 }
             } else {
                 infoContainer.style.display = 'none';
+                _joinLobbyMultiId = null;
+                _joinLobbyHostHeroCount = 0;
+                _joinLobbyHostConsumableWeight = 0;
                 window.maxSelectableJoinChars = 4;
                 window.updateJoinCharAvailability(1);
             }
         });
     }
 });
+
+
 
 window.submitJoinLobby = async function () {
     const code = document.getElementById('joinLobbyCodeInput').value.trim().toUpperCase();
@@ -1784,11 +2025,12 @@ window.submitJoinLobby = async function () {
         }
         const lobby = await findRes.json();
 
-        // 2. Rejoindre
-        const joinRes = await globalFetch(
-            `/api/pve/multi/${lobby.multiSessionId}/join?characterIds=${joinSelectedCharIds.join(',')}`,
-            { method: 'POST' }
-        );
+        // 2. Rejoindre (avec les consomables sélectionnés)
+        let joinUrl = `/api/pve/multi/${lobby.multiSessionId}/join?characterIds=${joinSelectedCharIds.join(',')}`;
+        if (joinSelectedConsumableIds.length > 0) {
+            joinUrl += `&consumableIds=${joinSelectedConsumableIds.join(',')}`;
+        }
+        const joinRes = await globalFetch(joinUrl, { method: 'POST' });
         if (!joinRes.ok) {
             const err = await joinRes.text();
             window.showNotif(err || 'Erreur lors du join.', true);
