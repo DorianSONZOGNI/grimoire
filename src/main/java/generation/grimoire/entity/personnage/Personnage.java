@@ -202,6 +202,17 @@ public class Personnage {
 
     private int consumableBonusXpPercent = 0;
     private int consumableBonusXpTurns = 0;
+    
+    @Transient
+    private boolean eligibleForCatchupXp = false;
+
+    public boolean isEligibleForCatchupXp() {
+        return eligibleForCatchupXp;
+    }
+
+    public void setEligibleForCatchupXp(boolean eligibleForCatchupXp) {
+        this.eligibleForCatchupXp = eligibleForCatchupXp;
+    }
 
 
     public void setLowestHpReached(Integer lowestHpReached) {
