@@ -115,8 +115,90 @@ function collectDungeonLootItemsLocal(salles) {
     });
 }
 
+/**
+ * Construit le HTML du contenu du dropdown loot (équipements + consommables trouvables).
+ * Utilisé dans la modal de préparation ET dans les cards de la liste de donjons.
+ */
+function buildLootDropdownHtml(lootItems) {
+    if (!lootItems || lootItems.length === 0) return '';
 
+    const colorMap = {
+        'COMMUN': '#94a3b8', 'INHABITUEL': '#22c55e', 'RARE': '#3b82f6', 'MYTHIQUE': '#f97316', 'LEGENDAIRE': '#eab308',
+        'EPIQUE': '#ef4444', 'RELIQUE': '#a855f7', 'MAUDIT': '#7f1d1d'
+    };
+    const rarityOrder = {
+        'COMMUN': 0, 'INHABITUEL': 1, 'RARE': 2, 'MYTHIQUE': 3,
+        'LEGENDAIRE': 4, 'EPIQUE': 5, 'RELIQUE': 6, 'MAUDIT': 7
+    };
 
+    const equipments = [];
+    const consumables = [];
+    lootItems.forEach(eq => {
+        const slotName = eq.slot?.name || eq.slot;
+        if (slotName === 'CONSOMMABLE') consumables.push(eq);
+        else equipments.push(eq);
+    });
+
+    const sortFn = (a, b) => {
+        const rA = a.rarity?.name || a.rarity;
+        const rB = b.rarity?.name || b.rarity;
+        return (rarityOrder[rB] ?? 0) - (rarityOrder[rA] ?? 0);
+    };
+    equipments.sort(sortFn);
+    consumables.sort(sortFn);
+
+    const generateListHtml = (items) => {
+        return items.map(eq => {
+            const slotName = eq.slot?.name || eq.slot;
+            const slotInfo = Object.assign({}, window.SLOT_LABELS && window.SLOT_LABELS[slotName]
+                ? window.SLOT_LABELS[slotName]
+                : { label: slotName, icon: 'help', color: '#94a3b8', extraClass: '' });
+            const rarityName = eq.rarity?.name || eq.rarity;
+            const rarityColor = colorMap[rarityName] || '#f8fafc';
+
+            if (slotName === 'CONSOMMABLE') {
+                const catName = eq.consumableCategory?.name || eq.consumableCategory;
+                if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
+                    slotInfo.icon = window.CONSUMABLE_CATEGORIES[catName].icon;
+                    slotInfo.color = window.CONSUMABLE_CATEGORIES[catName].color;
+                } else if (catName) {
+                    slotInfo.icon = 'inventory_2';
+                    slotInfo.color = '#854c4c';
+                }
+            }
+
+            let dropPctStr = '';
+            if (eq.effectiveDropRate !== undefined) {
+                const pct = (eq.effectiveDropRate * 100);
+                const pctStr = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(1);
+                dropPctStr = `<span style="color:#facc15; font-size:0.8rem; margin-right:4px;">[${pctStr}%]</span>`;
+            }
+
+            return `<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem; cursor:help;"
+                         onmouseenter="window.showGlobalTooltip && window.showGlobalTooltip(this)"
+                         onmouseleave="window.hideGlobalTooltip && window.hideGlobalTooltip()"
+                         data-tooltip-html="${(window.getEquipmentTooltipHTML ? window.getEquipmentTooltipHTML(eq) : '').replace(/"/g, '&quot;')}">
+                <span class="material-symbols-outlined text-[1.1rem] ${slotInfo.extraClass || ''}" style="color:${slotInfo.color || rarityColor};">${slotInfo.icon}</span>
+                <span style="color:${rarityColor}; font-weight:500; font-size:0.9rem;">${dropPctStr}${eq.name}</span>
+            </div>`;
+        }).join('');
+    };
+
+    let listHtml = generateListHtml(equipments);
+    if (consumables.length > 0) {
+        if (equipments.length > 0) {
+            listHtml += `<div style="height: 1px; background: rgba(255,255,255,0.2); margin: 0.5rem 0;"></div>`;
+        }
+        listHtml += generateListHtml(consumables);
+    }
+
+    return `
+        <div style="font-weight:600; color:#f59e0b; margin-bottom:0.5rem; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em; display:flex; align-items:center; gap:0.25rem;">
+            <span class="material-symbols-outlined text-[1.1rem]">shopping_bag</span> Équipements trouvables
+        </div>
+        <div style="display:flex; flex-direction:column; padding-right: 0.5rem;">${listHtml}</div>
+    `;
+}
 
 function getMaxWeight() {
     return 10 + 5 * pageState.selectedCharIds.length;
@@ -314,7 +396,10 @@ async function loadDungeons() {
                 section.appendChild(grid);
                 contentContainer.appendChild(section);
 
-                // Populate Grid
+                // Populate Grid — première passe : HTML pur
+                const dungeonLootMap = new Map(); // id → lootItems
+                let allCardsHtml = '';
+
                 cat.dungeons.forEach(d => {
                     let totalSalles = d.salles ? d.salles.length : 0;
                     let combats = 0, bosses = 0, treasures = 0, events = 0, totalMobs = 0, totalBossMobs = 0;
@@ -422,7 +507,7 @@ async function loadDungeons() {
                     }
                     leftBadges += `</div>`;
 
-                    const cardHtml = `
+                    allCardsHtml += `
                         <div class="dungeon-card ${isLocked ? 'locked' : ''}" id="dungeon-card-${d.id}" style="position: relative;" ${isLocked ? '' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0}, ${d.recommendedLevel || 1}, ${d.dailyQuest ? 'true' : 'false'}, ${d.weeklyQuest ? 'true' : 'false'}, ${d.dailyChallengeDuo ? `'${d.dailyChallengeDuo}'` : 'null'})"`}>
                             ${lockedHtml}
                             ${leftBadges}
@@ -455,8 +540,53 @@ async function loadDungeons() {
                         </div>
                     `;
 
-                    grid.innerHTML += cardHtml;
+                    // Stocker les loot items pour la 2e passe
+                    const cardLootItems = collectDungeonLootItemsLocal(d.salles || []);
+                    if (cardLootItems.length > 0) dungeonLootMap.set(d.id, cardLootItems);
                 });
+
+                // Injection HTML unique — évite la destruction des listeners lors de innerHTML +=
+                grid.innerHTML = allCardsHtml;
+
+                // Deuxième passe : ajouter les shields via DOM (event listeners préservés)
+                dungeonLootMap.forEach((lootItems, dungeonId) => {
+                    const cardEl = document.getElementById(`dungeon-card-${dungeonId}`);
+                    if (!cardEl) return;
+
+                    const dropdownId = `card-loot-dropdown-${dungeonId}`;
+                    const shieldEl = document.createElement('div');
+                    shieldEl.className = 'dungeon-card-loot-shield';
+                    shieldEl.onclick = (e) => e.stopPropagation();
+                    shieldEl.innerHTML = `
+                        <span class="material-symbols-outlined" style="font-size:1.1rem;">shield</span>
+                        <div id="${dropdownId}" class="dungeon-card-loot-dropdown" style="display:none;"></div>
+                    `;
+
+                    shieldEl.addEventListener('mouseenter', () => {
+                        clearTimeout(shieldEl._hideT);
+                        const dropEl = shieldEl.querySelector('.dungeon-card-loot-dropdown');
+                        if (dropEl) dropEl.style.display = 'flex';
+                    });
+                    shieldEl.addEventListener('mouseleave', () => {
+                        shieldEl._hideT = setTimeout(() => {
+                            const dropEl = shieldEl.querySelector('.dungeon-card-loot-dropdown');
+                            if (dropEl) dropEl.style.display = 'none';
+                        }, 150);
+                    });
+
+                    cardEl.appendChild(shieldEl);
+
+                    const dropEl = shieldEl.querySelector('.dungeon-card-loot-dropdown');
+                    if (dropEl) {
+                        dropEl.innerHTML = buildLootDropdownHtml(lootItems);
+                        dropEl.addEventListener('mouseenter', () => clearTimeout(shieldEl._hideT));
+                        dropEl.addEventListener('mouseleave', () => {
+                            shieldEl._hideT = setTimeout(() => { dropEl.style.display = 'none'; }, 150);
+                        });
+                    }
+                });
+
+
 
                 firstTab = false;
             });
@@ -1031,82 +1161,7 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
             tooltipTrigger.classList.remove('flex');
             tooltipTrigger.removeAttribute('data-tooltip-html');
         } else {
-            const colorMap = {
-                'COMMUN': '#94a3b8', 'INHABITUEL': '#22c55e', 'RARE': '#3b82f6', 'MYTHIQUE': '#f97316', 'LEGENDAIRE': '#eab308',
-                'EPIQUE': '#ef4444', 'RELIQUE': '#a855f7', 'MAUDIT': '#7f1d1d'
-            };
-            
-            const rarityOrder = {
-                'COMMUN': 0, 'INHABITUEL': 1, 'RARE': 2, 'MYTHIQUE': 3, 
-                'LEGENDAIRE': 4, 'EPIQUE': 5, 'RELIQUE': 6, 'MAUDIT': 7
-            };
-
-            const equipments = [];
-            const consumables = [];
-            lootItems.forEach(eq => {
-                const slotName = eq.slot?.name || eq.slot;
-                if (slotName === 'CONSOMMABLE') consumables.push(eq);
-                else equipments.push(eq);
-            });
-
-            const sortFn = (a, b) => {
-                const rA = a.rarity?.name || a.rarity;
-                const rB = b.rarity?.name || b.rarity;
-                return (rarityOrder[rB] ?? 0) - (rarityOrder[rA] ?? 0);
-            };
-
-            equipments.sort(sortFn);
-            consumables.sort(sortFn);
-
-            const generateListHtml = (items) => {
-                return items.map(eq => {
-                    const slotName = eq.slot?.name || eq.slot;
-                    const slotInfo = Object.assign({}, window.SLOT_LABELS && window.SLOT_LABELS[slotName] ? window.SLOT_LABELS[slotName] : { label: slotName, icon: 'help', color: '#94a3b8', extraClass: '' });
-                    const rarityName = eq.rarity?.name || eq.rarity;
-                    const rarityColor = colorMap[rarityName] || '#f8fafc';
-
-                    if (slotName === 'CONSOMMABLE') {
-                        const catName = eq.consumableCategory?.name || eq.consumableCategory;
-                        if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
-                            slotInfo.icon = window.CONSUMABLE_CATEGORIES[catName].icon;
-                            slotInfo.color = window.CONSUMABLE_CATEGORIES[catName].color;
-                        } else if (catName) {
-                            slotInfo.icon = 'inventory_2';
-                            slotInfo.color = '#854c4c';
-                        }
-                    }
-
-                    let dropPctStr = '';
-                    if (eq.effectiveDropRate !== undefined) {
-                        const pct = (eq.effectiveDropRate * 100);
-                        const pctStr = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(1);
-                        dropPctStr = `<span style="color:#facc15; font-size:0.8rem; margin-right:4px;">[${pctStr}%]</span>`;
-                    }
-
-                    return `<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem; cursor:help;"
-                                 onmouseenter="window.showGlobalTooltip && window.showGlobalTooltip(this)"
-                                 onmouseleave="window.hideGlobalTooltip && window.hideGlobalTooltip()"
-                                 data-tooltip-html="${(window.getEquipmentTooltipHTML ? window.getEquipmentTooltipHTML(eq) : '').replace(/"/g, '&quot;')}">
-                        <span class="material-symbols-outlined text-[1.1rem] ${slotInfo.extraClass || ''}" style="color:${slotInfo.color || rarityColor};">${slotInfo.icon}</span>
-                        <span style="color:${rarityColor}; font-weight:500; font-size:0.9rem;">${dropPctStr}${eq.name}</span>
-                    </div>`;
-                }).join('');
-            };
-
-            let listHtml = generateListHtml(equipments);
-            if (consumables.length > 0) {
-                if (equipments.length > 0) {
-                    listHtml += `<div style="height: 1px; background: rgba(255,255,255,0.2); margin: 0.5rem 0;"></div>`;
-                }
-                listHtml += generateListHtml(consumables);
-            }
-
-            const tooltipContent = `
-                <div style="font-weight:600; color:#f59e0b; margin-bottom:0.5rem; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em; display:flex; align-items:center; gap:0.25rem;">
-                    <span class="material-symbols-outlined text-[1.1rem]">shopping_bag</span> Équipements trouvables
-                </div>
-                <div style="display:flex; flex-direction:column; padding-right: 0.5rem;">${listHtml}</div>
-            `;
+            const tooltipContent = buildLootDropdownHtml(lootItems);
 
             const dropdown = document.getElementById('prepLootDropdown');
             if (dropdown) dropdown.innerHTML = tooltipContent;
