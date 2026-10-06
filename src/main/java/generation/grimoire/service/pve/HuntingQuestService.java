@@ -254,10 +254,7 @@ public class HuntingQuestService {
                 entry.setAccountName(accountName);
                 entry.setCompletionCount(entry.getCompletionCount() + 1);
                 
-                if (entry.getFirstCompletionTime() == null) {
-                    entry.setFirstCompletionTime(Instant.now());
-                }
-
+                boolean scoreImproved = false;
                 // Check challenges based on duo
                 if (quest.getDailyChallengeDuo() != null && session != null) {
                     boolean c1Failed = false;
@@ -284,8 +281,18 @@ public class HuntingQuestService {
                     boolean c2Run = !c2Failed;
                     
                     // On accumule les challenges réussis au fil des runs
-                    if (c1Run) entry.setChallenge1Completed(true);
-                    if (c2Run) entry.setChallenge2Completed(true);
+                    if (c1Run && !entry.isChallenge1Completed()) {
+                        entry.setChallenge1Completed(true);
+                        scoreImproved = true;
+                    }
+                    if (c2Run && !entry.isChallenge2Completed()) {
+                        entry.setChallenge2Completed(true);
+                        scoreImproved = true;
+                    }
+                }
+
+                if (entry.getFirstCompletionTime() == null || scoreImproved) {
+                    entry.setFirstCompletionTime(Instant.now());
                 }
 
                 entryRepository.save(entry);
@@ -325,21 +332,28 @@ public class HuntingQuestService {
 
 
     private void recalculateWeeklyRanks(Long questId) {
-        // Classement par nombre de tours ASC, puis timestamp ASC comme départage
-        List<HuntingQuestEntry> ranked = entryRepository.findByQuestIdOrderByBestTurnCountAsc(questId);
-        for (int i = 0; i < ranked.size(); i++) {
-            ranked.get(i).setRank(i + 1);
-        }
-        entryRepository.saveAll(ranked);
-
-        // Les joueurs sans bestTurnCount (jamais terminé) → rank = 0
         List<HuntingQuestEntry> all = entryRepository.findByQuestId(questId);
+        all.sort((a, b) -> {
+            if (a.getBestTurnCount() == null && b.getBestTurnCount() != null) return 1;
+            if (a.getBestTurnCount() != null && b.getBestTurnCount() == null) return -1;
+            if (a.getBestTurnCount() != null && b.getBestTurnCount() != null && !a.getBestTurnCount().equals(b.getBestTurnCount())) {
+                return Integer.compare(a.getBestTurnCount(), b.getBestTurnCount());
+            }
+            if (a.getFirstCompletionTime() != null && b.getFirstCompletionTime() != null) {
+                return a.getFirstCompletionTime().compareTo(b.getFirstCompletionTime());
+            }
+            return 0;
+        });
+
+        int currentRank = 1;
         for (HuntingQuestEntry e : all) {
-            if (e.getBestTurnCount() == null && e.getRank() != 0) {
+            if (e.getBestTurnCount() != null) {
+                e.setRank(currentRank++);
+            } else {
                 e.setRank(0);
-                entryRepository.save(e);
             }
         }
+        entryRepository.saveAll(all);
     }
 
     /** Calcule le seuil top 20% pour une quête weekly */
@@ -545,16 +559,35 @@ public class HuntingQuestService {
     private List<Map<String, Object>> getLeaderboard(Long questId) {
         if (questId == null)
             return List.of();
-        // Récupérer toutes les entrées triées
         HuntingQuest quest = questRepository.findById(questId).orElse(null);
         if (quest == null)
             return List.of();
 
-        List<HuntingQuestEntry> entries;
+        List<HuntingQuestEntry> entries = entryRepository.findByQuestId(questId);
         if ("DAILY".equals(quest.getType())) {
-            entries = entryRepository.findByQuestIdOrderByFirstCompletionTimeAsc(questId);
+            entries.sort((a, b) -> {
+                int challA = (a.isChallenge1Completed() ? 1 : 0) + (a.isChallenge2Completed() ? 1 : 0);
+                int challB = (b.isChallenge1Completed() ? 1 : 0) + (b.isChallenge2Completed() ? 1 : 0);
+                if (challA != challB) {
+                    return Integer.compare(challB, challA);
+                }
+                if (a.getFirstCompletionTime() != null && b.getFirstCompletionTime() != null) {
+                    return a.getFirstCompletionTime().compareTo(b.getFirstCompletionTime());
+                }
+                return 0;
+            });
         } else {
-            entries = entryRepository.findByQuestIdOrderByBestTurnCountAsc(questId);
+            entries.sort((a, b) -> {
+                if (a.getBestTurnCount() == null && b.getBestTurnCount() != null) return 1;
+                if (a.getBestTurnCount() != null && b.getBestTurnCount() == null) return -1;
+                if (a.getBestTurnCount() != null && b.getBestTurnCount() != null && !a.getBestTurnCount().equals(b.getBestTurnCount())) {
+                    return Integer.compare(a.getBestTurnCount(), b.getBestTurnCount());
+                }
+                if (a.getFirstCompletionTime() != null && b.getFirstCompletionTime() != null) {
+                    return a.getFirstCompletionTime().compareTo(b.getFirstCompletionTime());
+                }
+                return 0;
+            });
         }
 
         return entries.stream().map(this::entryToMap).collect(Collectors.toList());
