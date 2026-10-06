@@ -327,9 +327,9 @@ window.checkAuthStatus = async function checkAuthStatus() {
                     ${data.username}
                     ${data.claimableSecretRewardsCount > 0 ? `<span style="position:absolute; top:-2px; right:-8px; background:red; color:white; border-radius:50%; font-size:0.7rem; padding:1px 5px; font-weight:bold; pointer-events:none;">${data.claimableSecretRewardsCount}</span>` : ''}
                 </a>
-                <div class="flex-center font-bold text-amber text-sm ml-2" title="Monnaie" style="gap: 0.2rem; min-width: 70px; justify-content: flex-end;">
+                <div class="flex-center font-bold text-amber text-sm ml-2" title="Monnaie" style="gap: 0.2rem; min-width: 90px; justify-content: flex-end;">
                     <span class="material-symbols-outlined text-lg">monetization_on</span>
-                    <span id="navUserGold" style="display:inline-block; transition: transform 0.1s ease;">${(window.animateGoldValue && prevGold !== currentGold) ? Number(prevGold).toFixed(1) : Number(currentGold).toFixed(1)}</span>
+                    <span id="navUserGold" style="display:inline-block; transition: transform 0.1s ease; font-variant-numeric: tabular-nums; text-align: right;">${(window.animateGoldValue && prevGold !== currentGold) ? Number(prevGold).toFixed(1) : Number(currentGold).toFixed(1)}</span>
                 </div>
                 <button class="flex-center text-xs text-error rounded px-2 py-1 cursor-pointer font-family-inherit ml-2 transition-all" onclick="logout()" style="background: transparent; border: 1px solid rgba(239, 68, 68, 0.3);">
                     <span class="material-symbols-outlined icon-sm">logout</span>

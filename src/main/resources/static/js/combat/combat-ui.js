@@ -23,9 +23,9 @@ export function renderAndAnimateXPCards(containerId, players, prefix, isFirstCle
     let cardsHtml = '';
     players.forEach(p => {
         let oldExp = pageState.previousPlayerXP[p.id] !== undefined ? pageState.previousPlayerXP[p.id] : p.experience;
-        let oldStats = getExpStats(oldExp, p.voieLevel);
+        let oldStats = getExpStats(oldExp);
         let oldSpiritExp = pageState.previousPlayerSpiritXP[p.id] !== undefined ? pageState.previousPlayerSpiritXP[p.id] : (p.spiritualiteExperience || 0);
-        let oldSpiritStats = getSpiritExpStats(oldSpiritExp, p.spiritualiteLevel);
+        let oldSpiritStats = getSpiritExpStats(oldSpiritExp);
 
         let gainedExp = p.experience - oldExp;
         let x2Badge = '';
@@ -103,7 +103,7 @@ export function renderAndAnimateXPCards(containerId, players, prefix, isFirstCle
                 let easeT = t * (2 - t);
 
                 let currentExp = Math.floor(oldExp + (endExp - oldExp) * easeT);
-                let stats = getExpStats(currentExp, p.voieLevel);
+                let stats = getExpStats(currentExp);
                 if (bar && text && lvlText) {
                     bar.style.width = Math.min(100, stats.progress) + "%";
                     text.innerText = currentExp + " / " + (stats.level === 10 ? 'MAX' : stats.nextLvlXp) + " XP";
@@ -120,7 +120,7 @@ export function renderAndAnimateXPCards(containerId, players, prefix, isFirstCle
                 }
 
                 let currentSpiritExp = Math.floor(oldSpiritExp + (endSpiritExp - oldSpiritExp) * easeT);
-                let spiritStats = getSpiritExpStats(currentSpiritExp, p.spiritualiteLevel);
+                let spiritStats = getSpiritExpStats(currentSpiritExp);
                 if (spiritBar && spiritText && spiritLvlText) {
                     spiritBar.style.width = Math.min(100, spiritStats.progress) + "%";
                     spiritText.innerText = currentSpiritExp + " / " + (spiritStats.level === 10 ? 'MAX' : spiritStats.nextLvlXp) + " XP";
@@ -1427,12 +1427,24 @@ export function updateUI(data) {
                                                 const extraClass = '';
                                                 const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
 
-                                                logHtml = `
-                                                    <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                                        ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
-                                                        <span class="material-symbols-outlined${extraClass}" style="color: ${slotColor};">${slotIcon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor};` : ''}">${eqName}</span>
-                                                    </div>
-                                                `;
+                                                if (user === pageState.currentUsername) {
+                                                    logHtml = `
+                                                        <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                            ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
+                                                            <span class="material-symbols-outlined${extraClass}" style="color: ${slotColor};">${slotIcon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor};` : ''}">${eqName}</span>
+                                                        </div>
+                                                    `;
+                                                } else {
+                                                    logHtml = `
+                                                        <div class="flex items-center gap-2 mb-2 p-2 rounded relative" style="background: rgba(0,0,0,0.3); border: 1px solid ${rarityColor}50; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.9);">
+                                                            <span class="material-symbols-outlined text-sm${extraClass}" style="color: ${slotColor};">${slotIcon}</span>
+                                                            <span class="text-sm font-semibold relative" style="color: ${rarityColor}; ${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor}; cursor: help;` : ''}" ${tooltipAttrs}>
+                                                                ${eqName}
+                                                                ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
+                                                            </span>
+                                                        </div>
+                                                    `;
+                                                }
                                             }
                                         } else if (log.includes("sacrifi")) {
                                             const sacMatch = log.match(/sacrifi. l'item : (.*) !/) || log.match(/sacrifi. l'anomalie : (.*)\./);
@@ -1807,30 +1819,38 @@ export function updateUI(data) {
                         if (data.combatLog) {
                             for (let i = data.combatLog.length - 1; i >= Math.max(0, data.combatLog.length - 5); i--) {
                                 const log = data.combatLog[i];
-                                const match = log.match(/a obtenu l'item : (.*?) !/);
-                                if (match && Array.isArray(window.allAnomaliesCombat)) {
+                                const match = log.match(/a obtenu l'item : (.*?) !/) || log.match(/découvrez l'anomalie : (.*?) !/);
+                                if (match) {
                                     const eqName = match[1];
-                                    const an = window.allAnomaliesCombat.find(a => a.name === eqName);
-                                    if (an) {
-                                        icon.textContent = 'crown';
-                                        icon.className = 'material-symbols-outlined mb-4 text-[5rem] text-gold';
-                                        title.textContent = 'Trésor';
+                                    let an = null;
+                                    if (Array.isArray(window.allAnomaliesCombat)) {
+                                        an = window.allAnomaliesCombat.find(a => a.name === eqName);
+                                    }
+                                    
+                                    icon.textContent = 'crown';
+                                    icon.className = 'material-symbols-outlined mb-4 text-[5rem] text-gold';
+                                    title.textContent = 'Trésor';
 
-                                        const spColor = getSpiritualiteColor(an.spiritualite);
-                                        const catIcon = an.category ? getCategoryIcon(an.category) : 'star';
-                                        let tooltipDataHtml = '';
+                                    let spColor = '#d946ef';
+                                    let catIcon = 'star';
+                                    let tooltipDataHtml = '';
+
+                                    if (an) {
+                                        spColor = getSpiritualiteColor(an.spiritualite);
+                                        catIcon = an.category ? getCategoryIcon(an.category) : 'star';
                                         if (typeof getAnomalyTooltipHTML === 'function') {
                                             tooltipDataHtml = getAnomalyTooltipHTML(an, eqName);
                                         }
-                                        const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
-
-                                        anomalyHtml += `
-                                            <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${spColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${spColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; transform: scale(0.8);">
-                                                ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
-                                                <span class="material-symbols-outlined" style="color: ${spColor};">${catIcon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${spColor};` : ''}">${eqName}</span>
-                                            </div>
-                                        `;
                                     }
+
+                                    const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
+
+                                    anomalyHtml += `
+                                        <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${spColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${spColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; transform: scale(0.8);">
+                                            ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
+                                            <span class="material-symbols-outlined" style="color: ${spColor};">${catIcon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${spColor};` : ''}">${eqName}</span>
+                                        </div>
+                                    `;
                                 }
                             }
                         }
@@ -2080,8 +2100,12 @@ export function updateUI(data) {
 
     // Check finish
     if (data.finished) {
+        window.isAutoTurnInProgress = false;
         showResult(data);
     } else if (isActiveEnemy) {
+        if (window.isAutoTurnInProgress) return;
+        window.isAutoTurnInProgress = true;
+
         // Disable UI
         document.getElementById('btnAttack').disabled = true;
         const btnEnd = document.getElementById('btnEndTurn');
@@ -2111,6 +2135,7 @@ export function updateUI(data) {
                 try {
                     const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/auto-turn`, { method: 'POST' });
                     const newData = await res.json();
+                    window.isAutoTurnInProgress = false;
                     updateUI(newData);
                 } catch (e) {
                     console.error('Auto-turn error:', e);
@@ -2118,9 +2143,11 @@ export function updateUI(data) {
                     try {
                         const retryRes = await globalFetch(`/api/pve/combat/${pageState.sessionId}/resume`, { method: 'POST' });
                         const retryData = await retryRes.json();
+                        window.isAutoTurnInProgress = false;
                         updateUI(retryData);
                     } catch (e2) {
                         console.error('Auto-turn recovery failed:', e2);
+                        window.isAutoTurnInProgress = false;
                         // Last resort: re-enable buttons so user isn't stuck
                         const btnAttack = document.getElementById('btnAttack');
                         if (btnAttack) { btnAttack.disabled = false; btnAttack.classList.remove('disabled'); }
@@ -2134,6 +2161,7 @@ export function updateUI(data) {
             }, 600); // Fetch next turn
         }, 500); // Pause before attack animation
     } else {
+        window.isAutoTurnInProgress = false;
         // Player turn: enable buttons
         const btnAttack = document.getElementById('btnAttack');
         if (btnAttack) {

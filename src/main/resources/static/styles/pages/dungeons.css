@@ -61,6 +61,7 @@
     cursor: pointer;
     transition: all 0.3s;
     position: relative;
+    z-index: 0;
 }
 
 .dungeon-card::before {
@@ -95,6 +96,54 @@
     transform: none;
     box-shadow: none;
 }
+
+/* --- Loot Shield (bouton bas-droite de chaque card) --- */
+.dungeon-card-loot-shield {
+    position: absolute !important;
+    bottom: 12px;
+    right: 12px;
+    z-index: 20;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    color: #f59e0b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: help;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.dungeon-card-loot-shield:hover {
+    background: rgba(245, 158, 11, 0.22);
+    border-color: rgba(245, 158, 11, 0.7);
+    transform: scale(1.1);
+}
+
+.dungeon-card-loot-dropdown {
+    position: absolute !important;
+    bottom: calc(100% + 8px);
+    right: 0;
+    min-width: 260px;
+    max-width: 320px;
+    overflow-y: auto;
+    background: rgba(15, 23, 42, 0.97);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: #f8fafc;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(245, 158, 11, 0.1);
+    z-index: 99999;
+    display: none;
+    flex-direction: column;
+    pointer-events: auto;
+    white-space: nowrap;
+}
+
 
 .dungeon-lock-overlay {
     position: absolute;

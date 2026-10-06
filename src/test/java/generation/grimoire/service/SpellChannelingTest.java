@@ -81,15 +81,9 @@ class SpellChannelingTest {
         assertThat(ally.getActiveBuffs().get(0).getFlatValue()).isEqualTo(20);
         
         // Assert caster state
-        assertThat(caster.getRemainingChannelingTurns()).isEqualTo(3);
+        assertThat(caster.getRemainingChannelingTurns()).isEqualTo(2);
         assertThat(caster.getChanneledSpell()).isEqualTo(channeledSpell);
         assertThat(caster.getChannelingAlly()).isEqualTo(ally);
-
-        // End of Turn 1
-        spellService.tickChanneling(caster, enemy, null, ally, allAllies, allEnemies);
-        
-        // Assert caster state
-        assertThat(caster.getRemainingChannelingTurns()).isEqualTo(2);
 
         // Turn 2
         spellService.tickChanneling(caster, enemy, null, ally, allAllies, allEnemies);
@@ -135,10 +129,7 @@ class SpellChannelingTest {
         spellService.castSpellGroup(channeledSpell, caster, enemy, null, allAllies, allEnemies, null);
         assertThat(caster.getActiveBuffs()).isEmpty(); // Not turn 2
 
-        // End of Turn 1
-        spellService.tickChanneling(caster, enemy, null, null, allAllies, allEnemies);
-
-        // Turn 2
+        // End of Turn 1        // Turn 2
         spellService.tickChanneling(caster, enemy, null, null, allAllies, allEnemies);
         assertThat(caster.getActiveBuffs()).hasSize(1); // Turn 2!
 

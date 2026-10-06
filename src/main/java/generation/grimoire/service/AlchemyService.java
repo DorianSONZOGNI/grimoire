@@ -78,10 +78,25 @@ public class AlchemyService {
         }
 
         java.util.Set<String> discovered = new java.util.HashSet<>(user.getDiscoveredItems());
+        boolean hasNewDiscoveredItems = false;
         
         // Ensure all currently owned items are considered discovered (fixes items obtained via combat/quests)
-        anomalieRepository.findByOwnerUsername(user.getUsername()).forEach(a -> discovered.add(a.getName()));
-        equipmentRepository.findByOwnerUsername(user.getUsername()).forEach(e -> discovered.add(e.getName()));
+        for (Anomalie a : anomalieRepository.findByOwnerUsername(user.getUsername())) {
+            if (discovered.add(a.getName())) {
+                user.getDiscoveredItems().add(a.getName());
+                hasNewDiscoveredItems = true;
+            }
+        }
+        for (Equipment e : equipmentRepository.findByOwnerUsername(user.getUsername())) {
+            if (discovered.add(e.getName())) {
+                user.getDiscoveredItems().add(e.getName());
+                hasNewDiscoveredItems = true;
+            }
+        }
+
+        if (hasNewDiscoveredItems) {
+            userRepository.save(user);
+        }
 
         return filteredBySecret.stream().filter(recipe -> {
 
@@ -179,7 +194,7 @@ public class AlchemyService {
                 int requiredQty = entry.getValue();
                 
                 List<Anomalie> matchingProvided = anomalieIds.stream()
-                        .map(id -> userAnomalies.stream().filter(a -> a.getId().equals(id)).findFirst().orElse(null))
+                        .map(id -> userAnomalies.stream().filter(a -> String.valueOf(a.getId()).equals(String.valueOf(id))).findFirst().orElse(null))
                         .filter(a -> a != null && a.getName().equalsIgnoreCase(requiredName) && !a.isTemplate())
                         .toList();
                         
@@ -213,7 +228,7 @@ public class AlchemyService {
                 int requiredQty = entry.getValue();
 
                 List<Equipment> matchingProvided = consumableIds.stream()
-                        .map(id -> userEquipments.stream().filter(e -> e.getId().equals(id)).findFirst().orElse(null))
+                        .map(id -> userEquipments.stream().filter(e -> String.valueOf(e.getId()).equals(String.valueOf(id))).findFirst().orElse(null))
                         .filter(e -> e != null && e.getSlot() == EquipmentSlot.CONSOMMABLE && e.getName().equalsIgnoreCase(requiredName) && !e.isTemplate())
                         .toList();
 

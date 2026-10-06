@@ -359,4 +359,51 @@ class AlchemyServiceTest {
         verify(personnageRepository, times(2)).save(any(Personnage.class));
         assertTrue(result.contains("a gagné 100 XP de Spiritualité"));
     }
+
+    @Test
+    void getDiscoveredRecipes_ignoresGoldAndSpiritXp_whenItemsDiscovered() {
+        AppUser testUser = new AppUser();
+        testUser.setUsername("testuser");
+        testUser.setRole("USER");
+        testUser.setMonnaie(0); // No gold
+        testUser.setDiscoveredItems(new HashSet<>(List.of("AnoRequired")));
+
+        AlchemyRecipe r = new AlchemyRecipe();
+        r.setId(1L);
+        r.setCostGold(1000); // Requires gold
+        r.setCostSpiritXp(500); // Requires spirit XP
+        r.setRewardType(RecipeRewardType.GIVE_CONSUMABLE);
+        r.setRequiredAnomalies(Map.of("AnoRequired", 1));
+
+        when(recipeRepository.findAll()).thenReturn(List.of(r));
+        when(anomalieRepository.findByOwnerUsername("testuser")).thenReturn(new ArrayList<>());
+        when(equipmentRepository.findByOwnerUsername("testuser")).thenReturn(new ArrayList<>());
+
+        List<AlchemyRecipe> result = alchemyService.getDiscoveredRecipes(testUser);
+
+        assertEquals(1, result.size(), "Recipe should be visible even without enough gold or spirit XP");
+        assertEquals(1L, result.get(0).getId());
+    }
+
+    @Test
+    void getDiscoveredRecipes_hidesRecipe_whenItemsNotDiscovered() {
+        AppUser testUser = new AppUser();
+        testUser.setUsername("testuser");
+        testUser.setRole("USER");
+        testUser.setMonnaie(1000);
+        testUser.setDiscoveredItems(new HashSet<>());
+
+        AlchemyRecipe r = new AlchemyRecipe();
+        r.setId(1L);
+        r.setRewardType(RecipeRewardType.GIVE_CONSUMABLE);
+        r.setRequiredAnomalies(Map.of("AnoRequired", 1));
+
+        when(recipeRepository.findAll()).thenReturn(List.of(r));
+        when(anomalieRepository.findByOwnerUsername("testuser")).thenReturn(new ArrayList<>());
+        when(equipmentRepository.findByOwnerUsername("testuser")).thenReturn(new ArrayList<>());
+
+        List<AlchemyRecipe> result = alchemyService.getDiscoveredRecipes(testUser);
+
+        assertEquals(0, result.size(), "Recipe should be hidden because ingredients are not discovered");
+    }
 }

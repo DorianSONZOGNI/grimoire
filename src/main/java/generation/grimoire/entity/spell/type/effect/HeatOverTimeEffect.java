@@ -21,11 +21,7 @@ public class HeatOverTimeEffect extends SpellEffect {
     private double percentage;
     private int duration;
     
-    @jakarta.persistence.Transient
-    @com.fasterxml.jackson.annotation.JsonIgnore
-    private boolean newlyApplied = true;
-
-    @Enumerated(jakarta.persistence.EnumType.STRING)
+@Enumerated(jakarta.persistence.EnumType.STRING)
     private Source source = Source.TARGET_HEALTH_MAX;
 
     @EqualsAndHashCode.Exclude
@@ -35,11 +31,7 @@ public class HeatOverTimeEffect extends SpellEffect {
     private Personnage caster;
 
     public void tick(Personnage target) {
-        if (newlyApplied) {
-            newlyApplied = false;
-            return;
-        }
-        if (duration > 0) {
+if (duration > 0) {
             int amount = fixedValue;
             if (percentage > 0) {
                 double sourceValue = generation.grimoire.utils.StatCalculator.getSourceValue(source, caster, target);
@@ -80,7 +72,7 @@ public class HeatOverTimeEffect extends SpellEffect {
     public void apply(Personnage caster, Personnage target) {
         HeatOverTimeEffect clone = this.cloneEffect();
         clone.caster = caster;
-        target.addHeatOverTimeEffect(clone);
+target.addHeatOverTimeEffect(clone);
         System.out.println("Heat over time (Chaleur continue) appliqué sur " + target.getName() + " pour " + duration + " tours.");
     }
 }

@@ -37,11 +37,7 @@ public class BuffDebuffEffect extends SpellEffect {
     // Duration 0 -> tours en cours (on invalide les buff duration == 0 en fin de tours et duration -1 après)
     private int duration;
 
-    @jakarta.persistence.Transient
-    @com.fasterxml.jackson.annotation.JsonIgnore
-    private boolean newlyApplied = true;
-
-    /**
+/**
      * Liste des sorts qui ont été impactés par ce buff (pour suivi ou log).
      */
     @EqualsAndHashCode.Exclude
@@ -71,8 +67,7 @@ public class BuffDebuffEffect extends SpellEffect {
         clone.setDuration(this.duration);
         clone.setModifierSource(this.getModifierSource());
         clone.setSourceName(this.getSourceName());
-        clone.setNewlyApplied(this.newlyApplied);
-        return clone;
+return clone;
     }
 
     @Override
@@ -87,7 +82,7 @@ public class BuffDebuffEffect extends SpellEffect {
             } else {
                 BuffDebuffEffect clone = this.cloneEffect();
                 clone.setDuration(2);
-                target.getActiveBuffs().add(clone);
+        target.getActiveBuffs().add(clone);
                 System.out.println(target.getName() + " reçoit l'état Âme Détachée pour 2 tours.");
             }
             return;
@@ -133,13 +128,13 @@ public class BuffDebuffEffect extends SpellEffect {
                     BuffDebuffEffect cloneFlat = this.cloneEffect();
                     cloneFlat.setFlatValue(totalFlatToApply);
                     cloneFlat.setModifier(0);
-                    target.getActiveBuffs().add(cloneFlat);
+target.getActiveBuffs().add(cloneFlat);
                 }
                 if (totalModifierToApply != 0) {
                     BuffDebuffEffect cloneMult = this.cloneEffect();
                     cloneMult.setFlatValue(0);
                     cloneMult.setModifier(totalModifierToApply);
-                    target.getActiveBuffs().add(cloneMult);
+target.getActiveBuffs().add(cloneMult);
                 }
                 System.out.println(target.getName() + " reçoit un effet sur " + statAffected + " (fixe: " + totalFlatToApply + ", mult: " + totalModifierToApply + ") pour " + duration + " tours.");
             } else {
@@ -150,7 +145,7 @@ public class BuffDebuffEffect extends SpellEffect {
                     BuffDebuffEffect cloneMult = this.cloneEffect();
                     cloneMult.setFlatValue(0);
                     cloneMult.setModifier(totalModifierToApply);
-                    target.getActiveBuffs().add(cloneMult);
+target.getActiveBuffs().add(cloneMult);
                 }
             }
         }

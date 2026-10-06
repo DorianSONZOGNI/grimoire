@@ -322,6 +322,7 @@ public class CombatRoomService {
                 }
                 if (personnageService.isEligibleForCatchupXp(p, session)) actualExp *= 2;
                 p.setExperience(p.getExperience() + actualExp);
+                p.setEligibleForCatchupXp(personnageService.isEligibleForCatchupXp(p, session));
                 personnageService.save(p);
                 totalActualExp += actualExp;
             }
@@ -448,6 +449,7 @@ public class CombatRoomService {
                         if (p.getExperience() < 0)
                             p.setExperience(0);
 
+                        p.setEligibleForCatchupXp(personnageService.isEligibleForCatchupXp(p, session));
                         personnageService.save(p);
 
                         String rewardType = room.getAlterationRewardType();
@@ -824,8 +826,7 @@ public class CombatRoomService {
                     effect.setModifier(toConsume.getConsumableBonusMagicalDamagePercent() / 100.0);
                     effect.setDuration(toConsume.getConsumableDurationTurns());
                     effect.setSourceName("Consommable");
-                    effect.setNewlyApplied(true);
-                    target.getActiveBuffs().add(effect);
+target.getActiveBuffs().add(effect);
                     buffApplied = true;
                 }
                 
@@ -840,8 +841,7 @@ public class CombatRoomService {
                     effect.setModifier(toConsume.getConsumableBonusPhysicalDamagePercent() / 100.0);
                     effect.setDuration(toConsume.getConsumableDurationTurns());
                     effect.setSourceName("Consommable");
-                    effect.setNewlyApplied(true);
-                    target.getActiveBuffs().add(effect);
+target.getActiveBuffs().add(effect);
                     buffApplied = true;
                 }
                 
@@ -856,8 +856,7 @@ public class CombatRoomService {
                     effect.setFlatValue(toConsume.getConsumableBonusArmorFlat());
                     effect.setDuration(toConsume.getConsumableDurationTurns());
                     effect.setSourceName("Consommable");
-                    effect.setNewlyApplied(true);
-                    target.getActiveBuffs().add(effect);
+target.getActiveBuffs().add(effect);
                     buffApplied = true;
                 }
                 
@@ -872,8 +871,7 @@ public class CombatRoomService {
                     effect.setFlatValue(toConsume.getConsumableBonusResistanceFlat());
                     effect.setDuration(toConsume.getConsumableDurationTurns());
                     effect.setSourceName("Consommable");
-                    effect.setNewlyApplied(true);
-                    target.getActiveBuffs().add(effect);
+target.getActiveBuffs().add(effect);
                     buffApplied = true;
                 }
                 
