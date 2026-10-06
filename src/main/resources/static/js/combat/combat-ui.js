@@ -23,9 +23,9 @@ export function renderAndAnimateXPCards(containerId, players, prefix, isFirstCle
     let cardsHtml = '';
     players.forEach(p => {
         let oldExp = pageState.previousPlayerXP[p.id] !== undefined ? pageState.previousPlayerXP[p.id] : p.experience;
-        let oldStats = getExpStats(oldExp, p.voieLevel);
+        let oldStats = getExpStats(oldExp);
         let oldSpiritExp = pageState.previousPlayerSpiritXP[p.id] !== undefined ? pageState.previousPlayerSpiritXP[p.id] : (p.spiritualiteExperience || 0);
-        let oldSpiritStats = getSpiritExpStats(oldSpiritExp, p.spiritualiteLevel);
+        let oldSpiritStats = getSpiritExpStats(oldSpiritExp);
 
         let gainedExp = p.experience - oldExp;
         let x2Badge = '';
@@ -103,7 +103,7 @@ export function renderAndAnimateXPCards(containerId, players, prefix, isFirstCle
                 let easeT = t * (2 - t);
 
                 let currentExp = Math.floor(oldExp + (endExp - oldExp) * easeT);
-                let stats = getExpStats(currentExp, p.voieLevel);
+                let stats = getExpStats(currentExp);
                 if (bar && text && lvlText) {
                     bar.style.width = Math.min(100, stats.progress) + "%";
                     text.innerText = currentExp + " / " + (stats.level === 10 ? 'MAX' : stats.nextLvlXp) + " XP";
@@ -120,7 +120,7 @@ export function renderAndAnimateXPCards(containerId, players, prefix, isFirstCle
                 }
 
                 let currentSpiritExp = Math.floor(oldSpiritExp + (endSpiritExp - oldSpiritExp) * easeT);
-                let spiritStats = getSpiritExpStats(currentSpiritExp, p.spiritualiteLevel);
+                let spiritStats = getSpiritExpStats(currentSpiritExp);
                 if (spiritBar && spiritText && spiritLvlText) {
                     spiritBar.style.width = Math.min(100, spiritStats.progress) + "%";
                     spiritText.innerText = currentSpiritExp + " / " + (spiritStats.level === 10 ? 'MAX' : spiritStats.nextLvlXp) + " XP";
