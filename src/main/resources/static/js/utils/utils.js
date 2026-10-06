@@ -371,7 +371,7 @@ function getEquipmentTooltipHTML(eq) {
                     <span class="material-symbols-outlined" style="color:#94a3b8; font-size: 1rem;">scale</span>
                     Poids
                 </div>
-                <span style="font-weight: 600; color: #cbd5e1; font-size: 0.85rem;">${weightValue}</span>
+                <span style="font-weight: 600; color: #cbd5e1; font-size: 0.85rem;">${+Number(weightValue).toFixed(1)}</span>
             </div>`;
         }
     }
