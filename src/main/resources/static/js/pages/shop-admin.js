@@ -971,10 +971,26 @@ function renderUpgradeModal(cfg, nextLevel = 2, isEditing = true) {
                 
                 <h4 style="margin-bottom: 0;">Déblocage des Slots</h4>
                 <div class="flex gap-4 flex-wrap text-sm text-slate-300">
-                    <label class="flex items-center gap-1"><input type="checkbox" id="upSlot4" ${cfg?.unlocksSlot4 ? 'checked' : ''}> Slot 4</label>
-                    <label class="flex items-center gap-1"><input type="checkbox" id="upSlot5" ${cfg?.unlocksSlot5 ? 'checked' : ''}> Slot 5</label>
-                    <label class="flex items-center gap-1"><input type="checkbox" id="upPromo" ${cfg?.unlocksPromo ? 'checked' : ''}> Promo</label>
-                    <label class="flex items-center gap-1"><input type="checkbox" id="upBlackMarket" ${cfg?.unlocksBlackMarket ? 'checked' : ''}> Marché Noir</label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="upSlot4" class="shop-toggle" ${cfg?.unlocksSlot4 ? 'checked' : ''}>
+                        <span class="shop-toggle-track"><span class="shop-toggle-thumb"></span></span>
+                        Slot 4
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="upSlot5" class="shop-toggle" ${cfg?.unlocksSlot5 ? 'checked' : ''}>
+                        <span class="shop-toggle-track"><span class="shop-toggle-thumb"></span></span>
+                        Slot 5
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="upPromo" class="shop-toggle" ${cfg?.unlocksPromo ? 'checked' : ''}>
+                        <span class="shop-toggle-track"><span class="shop-toggle-thumb"></span></span>
+                        Promo
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="upBlackMarket" class="shop-toggle" ${cfg?.unlocksBlackMarket ? 'checked' : ''}>
+                        <span class="shop-toggle-track"><span class="shop-toggle-thumb"></span></span>
+                        Marché Noir
+                    </label>
                 </div>
 
                 <hr style="border-color: rgba(255,255,255,0.1); margin: 0.5rem 0;">
@@ -988,7 +1004,7 @@ function renderUpgradeModal(cfg, nextLevel = 2, isEditing = true) {
                             <span class="material-symbols-outlined text-base">add</span> Règle
                         </button>
                     </label>
-                    <div id="upSlotRuleRows" style="display:flex;flex-direction:column;gap:0.5rem;">
+                    <div id="upSlotRuleRows" style="display:flex;flex-direction:column;gap:0.4rem;">
                         ${(cfg?.slotRules || []).map(rule => upgradeSlotRuleRowHtml(rule.slotIndex, rule.rarity, rule.weight)).join('')}
                     </div>
                 </div>
@@ -1058,20 +1074,30 @@ window.addUpgradeAnomalyRow = function() {
 };
 
 window.upgradeSlotRuleRowHtml = function(slotIndex = 1, rarity = 'COMMUN', weight = 100) {
+    const RARITY_COLORS = {
+        'COMMUN': '#94a3b8', 'INHABITUEL': '#22c55e', 'RARE': '#3b82f6', 'MYTHIQUE': '#f97316',
+        'LEGENDAIRE': '#eab308', 'EPIQUE': '#ef4444', 'RELIQUE': '#a855f7', 'MAUDIT': '#7f1d1d'
+    };
+    const RARITY_LABELS = {
+        'COMMUN': 'Commun', 'INHABITUEL': 'Inhabituel', 'RARE': 'Rare', 'MYTHIQUE': 'Mythique',
+        'LEGENDAIRE': 'Légendaire', 'EPIQUE': 'Épique', 'RELIQUE': 'Relique', 'MAUDIT': 'Maudit'
+    };
+    const SLOT_LABELS = {
+        1: 'Slot 1', 2: 'Slot 2', 3: 'Slot 3', 4: 'Slot 4', 5: 'Slot 5', 6: 'Promo', 7: 'Marché Noir'
+    };
     const rarities = ['COMMUN', 'INHABITUEL', 'RARE', 'MYTHIQUE', 'LEGENDAIRE', 'EPIQUE', 'RELIQUE', 'MAUDIT'];
-    const rarityOptions = rarities.map(r => `<option value="${r}" ${rarity === r ? 'selected' : ''}>${r}</option>`).join('');
+    const rarityOptions = rarities.map(r => `<option value="${r}" ${rarity === r ? 'selected' : ''} style="color:${RARITY_COLORS[r]};background:#1e293b;">${RARITY_LABELS[r]}</option>`).join('');
+    const slotOptions = Object.entries(SLOT_LABELS).map(([idx, label]) => `<option value="${idx}" ${slotIndex === parseInt(idx) ? 'selected' : ''}>${label}</option>`).join('');
+    const rarColor = RARITY_COLORS[rarity] || '#94a3b8';
     
-    return `<div class="flex gap-2 items-center slot-rule-row">
-        <select class="rule-slot-index" style="width:70px;background:#1e293b;border:1px solid #334155;color:white;border-radius:6px;padding:6px;font-size:0.9rem;">
-            <option value="1" ${slotIndex === 1 ? 'selected' : ''}>Slot 1</option>
-            <option value="2" ${slotIndex === 2 ? 'selected' : ''}>Slot 2</option>
-            <option value="3" ${slotIndex === 3 ? 'selected' : ''}>Slot 3</option>
-            <option value="4" ${slotIndex === 4 ? 'selected' : ''}>Slot 4</option>
-            <option value="5" ${slotIndex === 5 ? 'selected' : ''}>Slot 5</option>
-            <option value="6" ${slotIndex === 6 ? 'selected' : ''}>Promo</option>
-            <option value="7" ${slotIndex === 7 ? 'selected' : ''}>M. Noir</option>
+    return `<div class="flex gap-2 items-center slot-rule-row" data-slot="${slotIndex}" data-rarity="${rarity}"
+                style="border-left: 3px solid ${rarColor}; padding-left: 0.5rem; border-radius: 4px; background: rgba(255,255,255,0.02);">
+        <select class="rule-slot-index" style="width:100px;background:#1e293b;border:1px solid #334155;color:white;border-radius:6px;padding:6px;font-size:0.9rem;"
+            onchange="this.closest('.slot-rule-row').dataset.slot=this.value; sortSlotRuleRows()">
+            ${slotOptions}
         </select>
-        <select class="rule-rarity flex-1" style="background:#1e293b;border:1px solid #334155;color:white;border-radius:6px;padding:6px;font-size:0.9rem;">
+        <select class="rule-rarity flex-1" style="background:#1e293b;border:1px solid #334155;color:${rarColor};font-weight:600;border-radius:6px;padding:6px;font-size:0.9rem;"
+            onchange="const c=this.closest('.slot-rule-row');c.dataset.rarity=this.value;const colors=${JSON.stringify(RARITY_COLORS)};const col=colors[this.value]||'#94a3b8';this.style.color=col;c.style.borderLeftColor=col; sortSlotRuleRows()">
             ${rarityOptions}
         </select>
         <input type="number" class="rule-weight" min="1" value="${weight}" title="Probabilité (poids)"
@@ -1084,12 +1110,27 @@ window.upgradeSlotRuleRowHtml = function(slotIndex = 1, rarity = 'COMMUN', weigh
     </div>`;
 }
 
+window.sortSlotRuleRows = function() {
+    const container = document.getElementById('upSlotRuleRows');
+    if (!container) return;
+    const rows = [...container.querySelectorAll('.slot-rule-row')];
+    const rarityOrder = { 'COMMUN': 8, 'INHABITUEL': 7, 'RARE': 6, 'MYTHIQUE': 5, 'LEGENDAIRE': 4, 'EPIQUE': 3, 'RELIQUE': 2, 'MAUDIT': 1 };
+    rows.sort((a, b) => {
+        const slotA = parseInt(a.dataset.slot) || 1;
+        const slotB = parseInt(b.dataset.slot) || 1;
+        if (slotA !== slotB) return slotA - slotB;
+        return (rarityOrder[a.dataset.rarity] || 99) - (rarityOrder[b.dataset.rarity] || 99);
+    });
+    rows.forEach(r => container.appendChild(r));
+};
+
 window.addUpgradeSlotRuleRow = function() {
     const container = document.getElementById('upSlotRuleRows');
     if (!container) return;
     const div = document.createElement('div');
     div.innerHTML = upgradeSlotRuleRowHtml();
     container.appendChild(div.firstElementChild);
+    sortSlotRuleRows();
 };
 
 window.submitUpgrade = async function() {
