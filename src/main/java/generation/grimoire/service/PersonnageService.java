@@ -50,7 +50,7 @@ public class PersonnageService {
         
         java.util.List<Personnage> accountPersos = persoRepo.findByUser_Username(p.getUser().getUsername());
         long higherLevelCount = accountPersos.stream()
-                .filter(other -> other.getExperience() > p.getExperience())
+                .filter(other -> other.getVoieLevel() > p.getVoieLevel())
                 .count();
                 
         return higherLevelCount >= 2;
