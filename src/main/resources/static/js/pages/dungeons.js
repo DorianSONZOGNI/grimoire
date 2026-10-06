@@ -200,6 +200,37 @@ function buildLootDropdownHtml(lootItems) {
     `;
 }
 
+function buildAnomalyDropdownHtml(anomalyNames) {
+    if (!anomalyNames || anomalyNames.length === 0) return '';
+    const anomalies = [];
+    anomalyNames.forEach(name => {
+        const an = pageState.allAnomalies.find(a => a.name === name);
+        if (an) anomalies.push(an);
+    });
+    if (anomalies.length === 0) return '';
+    
+    anomalies.sort((a, b) => a.name.localeCompare(b.name));
+    
+    const listHtml = anomalies.map(an => {
+        const slotIcon = (typeof window.getCategoryIcon === 'function' && an.category) ? window.getCategoryIcon(an.category) : 'star';
+        const slotColor = typeof window.getSpiritualiteColor === 'function' ? window.getSpiritualiteColor(an.spiritualite) : '#d946ef';
+        return `<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem; cursor:help;"
+                     onmouseenter="window.showGlobalTooltip && window.showGlobalTooltip(this)"
+                     onmouseleave="window.hideGlobalTooltip && window.hideGlobalTooltip()"
+                     data-tooltip-html="${(window.getAnomalyTooltipHTML ? window.getAnomalyTooltipHTML(an, true) : '').replace(/"/g, '&quot;')}">
+            <span class="material-symbols-outlined text-[1.1rem]" style="color:${slotColor};">${slotIcon}</span>
+            <span style="color:${slotColor}; font-weight:500; font-size:0.9rem;">${an.name}</span>
+        </div>`;
+    }).join('');
+
+    return `
+        <div style="font-weight:600; color:#d946ef; margin-bottom:0.5rem; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em; display:flex; align-items:center; gap:0.25rem;">
+            <span class="material-symbols-outlined text-[1.1rem]">auto_awesome</span> Anomalies trouvables
+        </div>
+        <div style="display:flex; flex-direction:column; padding-right: 0.5rem;">${listHtml}</div>
+    `;
+}
+
 function getMaxWeight() {
     return 10 + 5 * pageState.selectedCharIds.length;
 }
@@ -398,6 +429,7 @@ async function loadDungeons() {
 
                 // Populate Grid — première passe : HTML pur
                 const dungeonLootMap = new Map(); // id → lootItems
+                const dungeonAnomalyMap = new Map(); // id → anomalyNames
                 let allCardsHtml = '';
 
                 cat.dungeons.forEach(d => {
@@ -543,46 +575,89 @@ async function loadDungeons() {
                     // Stocker les loot items pour la 2e passe
                     const cardLootItems = collectDungeonLootItemsLocal(d.salles || []);
                     if (cardLootItems.length > 0) dungeonLootMap.set(d.id, cardLootItems);
+
+                    const cardAnomalyNames = collectDungeonAnomaliesLocal(d.salles || []);
+                    if (cardAnomalyNames.length > 0) dungeonAnomalyMap.set(d.id, cardAnomalyNames);
                 });
 
                 // Injection HTML unique — évite la destruction des listeners lors de innerHTML +=
                 grid.innerHTML = allCardsHtml;
 
                 // Deuxième passe : ajouter les shields via DOM (event listeners préservés)
-                dungeonLootMap.forEach((lootItems, dungeonId) => {
+                cat.dungeons.forEach(d => {
+                    const dungeonId = d.id;
                     const cardEl = document.getElementById(`dungeon-card-${dungeonId}`);
                     if (!cardEl) return;
 
-                    const dropdownId = `card-loot-dropdown-${dungeonId}`;
-                    const shieldEl = document.createElement('div');
-                    shieldEl.className = 'dungeon-card-loot-shield';
-                    shieldEl.onclick = (e) => e.stopPropagation();
-                    shieldEl.innerHTML = `
-                        <span class="material-symbols-outlined" style="font-size:1.1rem;">shield</span>
-                        <div id="${dropdownId}" class="dungeon-card-loot-dropdown" style="display:none;"></div>
-                    `;
+                    const lootItems = dungeonLootMap.get(dungeonId);
+                    if (lootItems && lootItems.length > 0) {
+                        const dropdownId = `card-loot-dropdown-${dungeonId}`;
+                        const shieldEl = document.createElement('div');
+                        shieldEl.className = 'dungeon-card-loot-shield';
+                        shieldEl.onclick = (e) => e.stopPropagation();
+                        shieldEl.innerHTML = `
+                            <span class="material-symbols-outlined" style="font-size:1.1rem;">shield</span>
+                            <div id="${dropdownId}" class="dungeon-card-loot-dropdown" style="display:none;"></div>
+                        `;
 
-                    shieldEl.addEventListener('mouseenter', () => {
-                        clearTimeout(shieldEl._hideT);
-                        const dropEl = shieldEl.querySelector('.dungeon-card-loot-dropdown');
-                        if (dropEl) dropEl.style.display = 'flex';
-                    });
-                    shieldEl.addEventListener('mouseleave', () => {
-                        shieldEl._hideT = setTimeout(() => {
+                        shieldEl.addEventListener('mouseenter', () => {
+                            clearTimeout(shieldEl._hideT);
                             const dropEl = shieldEl.querySelector('.dungeon-card-loot-dropdown');
-                            if (dropEl) dropEl.style.display = 'none';
-                        }, 150);
-                    });
-
-                    cardEl.appendChild(shieldEl);
-
-                    const dropEl = shieldEl.querySelector('.dungeon-card-loot-dropdown');
-                    if (dropEl) {
-                        dropEl.innerHTML = buildLootDropdownHtml(lootItems);
-                        dropEl.addEventListener('mouseenter', () => clearTimeout(shieldEl._hideT));
-                        dropEl.addEventListener('mouseleave', () => {
-                            shieldEl._hideT = setTimeout(() => { dropEl.style.display = 'none'; }, 150);
+                            if (dropEl) dropEl.style.display = 'flex';
                         });
+                        shieldEl.addEventListener('mouseleave', () => {
+                            shieldEl._hideT = setTimeout(() => {
+                                const dropEl = shieldEl.querySelector('.dungeon-card-loot-dropdown');
+                                if (dropEl) dropEl.style.display = 'none';
+                            }, 150);
+                        });
+
+                        cardEl.appendChild(shieldEl);
+
+                        const dropEl = shieldEl.querySelector('.dungeon-card-loot-dropdown');
+                        if (dropEl) {
+                            dropEl.innerHTML = buildLootDropdownHtml(lootItems);
+                            dropEl.addEventListener('mouseenter', () => clearTimeout(shieldEl._hideT));
+                            dropEl.addEventListener('mouseleave', () => {
+                                shieldEl._hideT = setTimeout(() => { dropEl.style.display = 'none'; }, 150);
+                            });
+                        }
+                    }
+
+                    const anomalyNames = dungeonAnomalyMap.get(dungeonId);
+                    if (anomalyNames && anomalyNames.length > 0) {
+                        const anomalyDropdownId = `card-anomaly-dropdown-${dungeonId}`;
+                        const starEl = document.createElement('div');
+                        starEl.className = 'dungeon-card-loot-shield';
+                        starEl.style.right = (lootItems && lootItems.length > 0) ? '45px' : '8px';
+                        starEl.onclick = (e) => e.stopPropagation();
+                        starEl.innerHTML = `
+                            <span class="material-symbols-outlined" style="font-size:1.1rem; color:#d946ef;">auto_awesome</span>
+                            <div id="${anomalyDropdownId}" class="dungeon-card-loot-dropdown" style="display:none;"></div>
+                        `;
+
+                        starEl.addEventListener('mouseenter', () => {
+                            clearTimeout(starEl._hideT);
+                            const dropEl = starEl.querySelector('.dungeon-card-loot-dropdown');
+                            if (dropEl) dropEl.style.display = 'flex';
+                        });
+                        starEl.addEventListener('mouseleave', () => {
+                            starEl._hideT = setTimeout(() => {
+                                const dropEl = starEl.querySelector('.dungeon-card-loot-dropdown');
+                                if (dropEl) dropEl.style.display = 'none';
+                            }, 150);
+                        });
+
+                        cardEl.appendChild(starEl);
+
+                        const dropEl = starEl.querySelector('.dungeon-card-loot-dropdown');
+                        if (dropEl) {
+                            dropEl.innerHTML = buildAnomalyDropdownHtml(anomalyNames);
+                            dropEl.addEventListener('mouseenter', () => clearTimeout(starEl._hideT));
+                            dropEl.addEventListener('mouseleave', () => {
+                                starEl._hideT = setTimeout(() => { dropEl.style.display = 'none'; }, 150);
+                            });
+                        }
                     }
                 });
 
