@@ -194,7 +194,7 @@ public class AlchemyService {
                 int requiredQty = entry.getValue();
                 
                 List<Anomalie> matchingProvided = anomalieIds.stream()
-                        .map(id -> userAnomalies.stream().filter(a -> a.getId().equals(id)).findFirst().orElse(null))
+                        .map(id -> userAnomalies.stream().filter(a -> String.valueOf(a.getId()).equals(String.valueOf(id))).findFirst().orElse(null))
                         .filter(a -> a != null && a.getName().equalsIgnoreCase(requiredName) && !a.isTemplate())
                         .toList();
                         
@@ -228,7 +228,7 @@ public class AlchemyService {
                 int requiredQty = entry.getValue();
 
                 List<Equipment> matchingProvided = consumableIds.stream()
-                        .map(id -> userEquipments.stream().filter(e -> e.getId().equals(id)).findFirst().orElse(null))
+                        .map(id -> userEquipments.stream().filter(e -> String.valueOf(e.getId()).equals(String.valueOf(id))).findFirst().orElse(null))
                         .filter(e -> e != null && e.getSlot() == EquipmentSlot.CONSOMMABLE && e.getName().equalsIgnoreCase(requiredName) && !e.isTemplate())
                         .toList();
 
