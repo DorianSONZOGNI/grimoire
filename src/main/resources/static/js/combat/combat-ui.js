@@ -1807,30 +1807,38 @@ export function updateUI(data) {
                         if (data.combatLog) {
                             for (let i = data.combatLog.length - 1; i >= Math.max(0, data.combatLog.length - 5); i--) {
                                 const log = data.combatLog[i];
-                                const match = log.match(/a obtenu l'item : (.*?) !/);
-                                if (match && Array.isArray(window.allAnomaliesCombat)) {
+                                const match = log.match(/a obtenu l'item : (.*?) !/) || log.match(/découvrez l'anomalie : (.*?) !/);
+                                if (match) {
                                     const eqName = match[1];
-                                    const an = window.allAnomaliesCombat.find(a => a.name === eqName);
-                                    if (an) {
-                                        icon.textContent = 'crown';
-                                        icon.className = 'material-symbols-outlined mb-4 text-[5rem] text-gold';
-                                        title.textContent = 'Trésor';
+                                    let an = null;
+                                    if (Array.isArray(window.allAnomaliesCombat)) {
+                                        an = window.allAnomaliesCombat.find(a => a.name === eqName);
+                                    }
+                                    
+                                    icon.textContent = 'crown';
+                                    icon.className = 'material-symbols-outlined mb-4 text-[5rem] text-gold';
+                                    title.textContent = 'Trésor';
 
-                                        const spColor = getSpiritualiteColor(an.spiritualite);
-                                        const catIcon = an.category ? getCategoryIcon(an.category) : 'star';
-                                        let tooltipDataHtml = '';
+                                    let spColor = '#d946ef';
+                                    let catIcon = 'star';
+                                    let tooltipDataHtml = '';
+
+                                    if (an) {
+                                        spColor = getSpiritualiteColor(an.spiritualite);
+                                        catIcon = an.category ? getCategoryIcon(an.category) : 'star';
                                         if (typeof getAnomalyTooltipHTML === 'function') {
                                             tooltipDataHtml = getAnomalyTooltipHTML(an, eqName);
                                         }
-                                        const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
-
-                                        anomalyHtml += `
-                                            <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${spColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${spColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; transform: scale(0.8);">
-                                                ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
-                                                <span class="material-symbols-outlined" style="color: ${spColor};">${catIcon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${spColor};` : ''}">${eqName}</span>
-                                            </div>
-                                        `;
                                     }
+
+                                    const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
+
+                                    anomalyHtml += `
+                                        <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${spColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${spColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; transform: scale(0.8);">
+                                            ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
+                                            <span class="material-symbols-outlined" style="color: ${spColor};">${catIcon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${spColor};` : ''}">${eqName}</span>
+                                        </div>
+                                    `;
                                 }
                             }
                         }
