@@ -78,10 +78,25 @@ public class AlchemyService {
         }
 
         java.util.Set<String> discovered = new java.util.HashSet<>(user.getDiscoveredItems());
+        boolean hasNewDiscoveredItems = false;
         
         // Ensure all currently owned items are considered discovered (fixes items obtained via combat/quests)
-        anomalieRepository.findByOwnerUsername(user.getUsername()).forEach(a -> discovered.add(a.getName()));
-        equipmentRepository.findByOwnerUsername(user.getUsername()).forEach(e -> discovered.add(e.getName()));
+        for (Anomalie a : anomalieRepository.findByOwnerUsername(user.getUsername())) {
+            if (discovered.add(a.getName())) {
+                user.getDiscoveredItems().add(a.getName());
+                hasNewDiscoveredItems = true;
+            }
+        }
+        for (Equipment e : equipmentRepository.findByOwnerUsername(user.getUsername())) {
+            if (discovered.add(e.getName())) {
+                user.getDiscoveredItems().add(e.getName());
+                hasNewDiscoveredItems = true;
+            }
+        }
+
+        if (hasNewDiscoveredItems) {
+            userRepository.save(user);
+        }
 
         return filteredBySecret.stream().filter(recipe -> {
 
