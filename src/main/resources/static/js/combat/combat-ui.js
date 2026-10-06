@@ -1427,12 +1427,24 @@ export function updateUI(data) {
                                                 const extraClass = '';
                                                 const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
 
-                                                logHtml = `
-                                                    <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                                        ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
-                                                        <span class="material-symbols-outlined${extraClass}" style="color: ${slotColor};">${slotIcon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor};` : ''}">${eqName}</span>
-                                                    </div>
-                                                `;
+                                                if (user === pageState.currentUsername) {
+                                                    logHtml = `
+                                                        <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                            ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
+                                                            <span class="material-symbols-outlined${extraClass}" style="color: ${slotColor};">${slotIcon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor};` : ''}">${eqName}</span>
+                                                        </div>
+                                                    `;
+                                                } else {
+                                                    logHtml = `
+                                                        <div class="flex items-center gap-2 mb-2 p-2 rounded relative" style="background: rgba(0,0,0,0.3); border: 1px solid ${rarityColor}50; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.9);">
+                                                            <span class="material-symbols-outlined text-sm${extraClass}" style="color: ${slotColor};">${slotIcon}</span>
+                                                            <span class="text-sm font-semibold relative" style="color: ${rarityColor}; ${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor}; cursor: help;` : ''}" ${tooltipAttrs}>
+                                                                ${eqName}
+                                                                ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
+                                                            </span>
+                                                        </div>
+                                                    `;
+                                                }
                                             }
                                         } else if (log.includes("sacrifi")) {
                                             const sacMatch = log.match(/sacrifi. l'item : (.*) !/) || log.match(/sacrifi. l'anomalie : (.*)\./);
@@ -2088,8 +2100,12 @@ export function updateUI(data) {
 
     // Check finish
     if (data.finished) {
+        window.isAutoTurnInProgress = false;
         showResult(data);
     } else if (isActiveEnemy) {
+        if (window.isAutoTurnInProgress) return;
+        window.isAutoTurnInProgress = true;
+
         // Disable UI
         document.getElementById('btnAttack').disabled = true;
         const btnEnd = document.getElementById('btnEndTurn');
@@ -2119,6 +2135,7 @@ export function updateUI(data) {
                 try {
                     const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/auto-turn`, { method: 'POST' });
                     const newData = await res.json();
+                    window.isAutoTurnInProgress = false;
                     updateUI(newData);
                 } catch (e) {
                     console.error('Auto-turn error:', e);
@@ -2126,9 +2143,11 @@ export function updateUI(data) {
                     try {
                         const retryRes = await globalFetch(`/api/pve/combat/${pageState.sessionId}/resume`, { method: 'POST' });
                         const retryData = await retryRes.json();
+                        window.isAutoTurnInProgress = false;
                         updateUI(retryData);
                     } catch (e2) {
                         console.error('Auto-turn recovery failed:', e2);
+                        window.isAutoTurnInProgress = false;
                         // Last resort: re-enable buttons so user isn't stuck
                         const btnAttack = document.getElementById('btnAttack');
                         if (btnAttack) { btnAttack.disabled = false; btnAttack.classList.remove('disabled'); }
@@ -2142,6 +2161,7 @@ export function updateUI(data) {
             }, 600); // Fetch next turn
         }, 500); // Pause before attack animation
     } else {
+        window.isAutoTurnInProgress = false;
         // Player turn: enable buttons
         const btnAttack = document.getElementById('btnAttack');
         if (btnAttack) {
