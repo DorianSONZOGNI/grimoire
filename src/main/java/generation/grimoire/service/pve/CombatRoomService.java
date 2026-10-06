@@ -322,6 +322,7 @@ public class CombatRoomService {
                 }
                 if (personnageService.isEligibleForCatchupXp(p, session)) actualExp *= 2;
                 p.setExperience(p.getExperience() + actualExp);
+                p.setEligibleForCatchupXp(personnageService.isEligibleForCatchupXp(p, session));
                 personnageService.save(p);
                 totalActualExp += actualExp;
             }
@@ -448,6 +449,7 @@ public class CombatRoomService {
                         if (p.getExperience() < 0)
                             p.setExperience(0);
 
+                        p.setEligibleForCatchupXp(personnageService.isEligibleForCatchupXp(p, session));
                         personnageService.save(p);
 
                         String rewardType = room.getAlterationRewardType();
