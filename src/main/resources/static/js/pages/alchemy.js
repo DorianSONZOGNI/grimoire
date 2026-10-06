@@ -876,6 +876,8 @@ window.updateCraftQuantity = function (input) {
     const newInput = document.getElementById('craftQuantityInput');
     if (newInput) {
         newInput.focus();
-        newInput.setSelectionRange(newInput.value.length, newInput.value.length);
+        if (newInput.type !== 'number') {
+            newInput.setSelectionRange(newInput.value.length, newInput.value.length);
+        }
     }
 };
