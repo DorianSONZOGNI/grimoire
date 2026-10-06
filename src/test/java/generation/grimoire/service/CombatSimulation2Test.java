@@ -328,13 +328,10 @@ class CombatSimulation2Test {
 
         // Passer un tour (décrémenter la durée)
         target.updateBuffs(); // Appelle updateShields() en interne
-        assertThat(target.getTotalShield()).isEqualTo(60);
+        assertThat(target.getTotalShield()).isEqualTo(60); // 2 -> 1 tour restant
 
         target.updateBuffs();
-        assertThat(target.getTotalShield()).isEqualTo(60); // 1 tour restant
-
-        target.updateBuffs(); // Now expires here (3rd call)
-        assertThat(target.getTotalShield()).isEqualTo(0);
+        assertThat(target.getTotalShield()).isEqualTo(0); // 1 -> 0 expire
         assertThat(target.getActiveShields()).isEmpty();
 
         System.out.println("=== FIN TEST SHIELD SUCCESS ===");
@@ -363,21 +360,19 @@ class CombatSimulation2Test {
         assertThat(target.getTotalShield()).isEqualTo(20);
         assertThat(target.getActiveShields()).hasSize(2);
 
-        // Fin T2: Décompte (Bouclier A passe à 1 tour restant, Bouclier B passe à 2 tours restants)
+        // Fin T2: Décompte (Bouclier A passe à 0 -> expire et retiré, Bouclier B passe à 1 tour restant)
         target.updateBuffs();
         
-        // T3: Les deux sont encore là, total 20
-        assertThat(target.getTotalShield()).isEqualTo(20);
-        assertThat(target.getActiveShields()).hasSize(2);
-
-        // Fin T3: Décompte (Bouclier A passe à 0 -> expire et retiré, Bouclier B passe à 1 tour restant)
-        target.updateBuffs();
-
-        // T4: Plus qu'un seul bouclier
+        // T3: A expire, B est encore là, total 10
         assertThat(target.getTotalShield()).isEqualTo(10);
+        assertThat(target.getActiveShields()).hasSize(1);
 
-        // Fin T4: Décompte (Bouclier B passe à 0 -> expire)
+        // Fin T3: Décompte (Bouclier B passe à 0 -> expire)
         target.updateBuffs();
+
+        // T4: Plus aucun bouclier
+        assertThat(target.getTotalShield()).isEqualTo(0);
+        assertThat(target.getActiveShields()).isEmpty();
         
         assertThat(target.getTotalShield()).isEqualTo(0);
         assertThat(target.getActiveShields()).isEmpty();
@@ -581,7 +576,6 @@ class CombatSimulation2Test {
         heatOt.setSource(generation.grimoire.enumeration.Source.TARGET_HEALTH_MAX);
 
         heatOt.apply(caster, target);
-        target.updateHeatOverTimeEffects(); // Skip newlyApplied
 
         // Turn 1 tick
         target.updateHeatOverTimeEffects();

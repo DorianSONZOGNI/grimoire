@@ -181,7 +181,7 @@ class CombatSimulationTest {
         // Le sceau dure 3 tours : appliqué T1. Réduit à la fin T1 (reste 2), réduit à la fin T2 (reste 1), réduit à la fin T3 (expire).
         
         triggerTurnEndForAll();
-        assertThat(boss.hasDebuff()).isTrue(); // Le débuff expire à la fin de T4 maintenant avec isNewlyApplied
+        assertThat(boss.hasDebuff()).isFalse(); // Expire à la fin de T3 correctement
         // ==========================================
         // TOUR 4
         // ==========================================

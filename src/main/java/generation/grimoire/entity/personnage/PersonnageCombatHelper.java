@@ -460,11 +460,7 @@ public class PersonnageCombatHelper {
             Iterator<BuffDebuffEffect> iterator = p.getActiveBuffs().iterator();
             while (iterator.hasNext()) {
                 BuffDebuffEffect effect = iterator.next();
-                if (effect.isNewlyApplied()) {
-                    effect.setNewlyApplied(false);
-                } else {
-                    effect.setDuration(effect.getDuration() - 1);
-                }
+                effect.setDuration(effect.getDuration() - 1);
                 if (effect.getDuration() <= 0) {
                     iterator.remove();
                     System.out.println(p.getName() + " perd l'effet sur " + effect.getStatAffected());
@@ -485,11 +481,7 @@ public class PersonnageCombatHelper {
         Iterator<ActiveShield> iterator = p.getActiveShields().iterator();
         while (iterator.hasNext()) {
             ActiveShield shield = iterator.next();
-            if (shield.isNewlyApplied()) {
-                shield.setNewlyApplied(false);
-            } else {
-                shield.setDuration(shield.getDuration() - 1);
-            }
+            shield.setDuration(shield.getDuration() - 1);
             if (shield.getDuration() <= 0 || shield.getAmount() <= 0) {
                 iterator.remove();
                 System.out.println(p.getName() + " perd l'effet de bouclier (" + shield.getSourceName() + ").");
