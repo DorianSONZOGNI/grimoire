@@ -824,8 +824,7 @@ public class CombatRoomService {
                     effect.setModifier(toConsume.getConsumableBonusMagicalDamagePercent() / 100.0);
                     effect.setDuration(toConsume.getConsumableDurationTurns());
                     effect.setSourceName("Consommable");
-                    effect.setNewlyApplied(true);
-                    target.getActiveBuffs().add(effect);
+target.getActiveBuffs().add(effect);
                     buffApplied = true;
                 }
                 
@@ -840,8 +839,7 @@ public class CombatRoomService {
                     effect.setModifier(toConsume.getConsumableBonusPhysicalDamagePercent() / 100.0);
                     effect.setDuration(toConsume.getConsumableDurationTurns());
                     effect.setSourceName("Consommable");
-                    effect.setNewlyApplied(true);
-                    target.getActiveBuffs().add(effect);
+target.getActiveBuffs().add(effect);
                     buffApplied = true;
                 }
                 
@@ -856,8 +854,7 @@ public class CombatRoomService {
                     effect.setFlatValue(toConsume.getConsumableBonusArmorFlat());
                     effect.setDuration(toConsume.getConsumableDurationTurns());
                     effect.setSourceName("Consommable");
-                    effect.setNewlyApplied(true);
-                    target.getActiveBuffs().add(effect);
+target.getActiveBuffs().add(effect);
                     buffApplied = true;
                 }
                 
@@ -872,8 +869,7 @@ public class CombatRoomService {
                     effect.setFlatValue(toConsume.getConsumableBonusResistanceFlat());
                     effect.setDuration(toConsume.getConsumableDurationTurns());
                     effect.setSourceName("Consommable");
-                    effect.setNewlyApplied(true);
-                    target.getActiveBuffs().add(effect);
+target.getActiveBuffs().add(effect);
                     buffApplied = true;
                 }
                 

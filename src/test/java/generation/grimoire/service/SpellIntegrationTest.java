@@ -513,8 +513,8 @@ class SpellIntegrationTest {
         enemy.startTurn();
         hero.updateHeatOverTimeEffects();
         enemy.updateHeatOverTimeEffects();
-        // Le tick ne s'applique pas ce tour-ci car isNewlyApplied = true (il s'appliquera au tour 3)
-        assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(0);
+        // Le tick s'applique correctement à la fin du tour
+        assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(15);
 
         // Tour 2: Cast Spell B (normal or generates heat, e.g. flat value heat)
         Spell spellB = new Spell();
@@ -528,7 +528,7 @@ class SpellIntegrationTest {
         spellB.addEffect(heatFixed);
 
         spellService.castSpell(spellB, hero, enemy, null);
-        assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(15); // 0 (from HoT) + 15 (flat)
+        assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(30); // 15 (from HoT) + 15 (flat)
 
     }
 
@@ -783,7 +783,6 @@ class SpellIntegrationTest {
 
         // Initial cast on Turn 1 (no damage since dmgChanneled ticks on turn 2)
         spellService.castSpell(channeledSpell, hero, enemy, null);
-        spellService.tickChanneling(hero, enemy, null);
         assertThat(enemy.getHealthCurrent()).isEqualTo(200);
         assertThat(hero.getPassiveState("trahison_used_this_turn", 0)).isEqualTo(0);
 

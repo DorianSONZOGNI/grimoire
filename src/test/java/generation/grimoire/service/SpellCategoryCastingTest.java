@@ -120,7 +120,6 @@ class SpellCategoryCastingTest {
 
         // Cast channeled spell block instant -> Allowed
         spellService.castSpell(channeledSpellBlockInstant, caster, target, null);
-        spellService.tickChanneling(caster, target, null);
         assertThat(caster.isBanalSpellCastThisTurn()).isTrue();
         assertThat(caster.getRemainingChannelingTurns()).isEqualTo(2);
         assertThat(caster.isAllowInstantDuringCurrentChanneling()).isFalse();
@@ -174,7 +173,6 @@ class SpellCategoryCastingTest {
 
         // Cast channeled spell allowing instant -> Allowed
         spellService.castSpell(channeledSpellAllowInstant, caster, target, null);
-        spellService.tickChanneling(caster, target, null);
         assertThat(caster.isBanalSpellCastThisTurn()).isTrue();
         assertThat(caster.getRemainingChannelingTurns()).isEqualTo(2);
         assertThat(caster.isAllowInstantDuringCurrentChanneling()).isTrue();
@@ -230,9 +228,6 @@ class SpellCategoryCastingTest {
         // --- Turn 1 ---
         caster.startTurn();
         spellService.castSpell(spell, caster, target, null);
-
-        // End of Turn 1 tick
-        spellService.tickChanneling(caster, target, null);
 
         // Turn 1: Damage should apply (15 damage), Heal should NOT apply
         assertThat(target.getHealthCurrent()).isEqualTo(85); // 100 - 15

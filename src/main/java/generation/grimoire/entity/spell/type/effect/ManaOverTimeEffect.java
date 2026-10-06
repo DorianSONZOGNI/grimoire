@@ -28,11 +28,7 @@ public class ManaOverTimeEffect extends ManaEffect {
      * Durée en nombre de tours pendant lesquels cet effet est actif.
      */
     private int duration;
-    @jakarta.persistence.Transient
-    @com.fasterxml.jackson.annotation.JsonIgnore
-    private boolean newlyApplied = true;
-
-    @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
+@jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
     private generation.grimoire.enumeration.Source manaSource = generation.grimoire.enumeration.Source.TARGET_MANA_MAX;
 
     @EqualsAndHashCode.Exclude
@@ -42,11 +38,7 @@ public class ManaOverTimeEffect extends ManaEffect {
     private Personnage caster;
 
     public void tick(Personnage target) {
-        if (newlyApplied) {
-            newlyApplied = false;
-            return;
-        }
-        if (duration > 0) {
+if (duration > 0) {
             target.restoreMana(fixedManaPerTick);
             duration--;
         }
@@ -90,7 +82,7 @@ public class ManaOverTimeEffect extends ManaEffect {
         clone.setFixedManaPerTick(totalMana);
         clone.setAmplificationMultiplier(1.0);
 
-        target.addManaOverTimeEffect(clone);
+target.addManaOverTimeEffect(clone);
         System.out.println("Régénération de mana sur la durée appliquée sur " + target.getName() + " pour " + duration + " tours.");
     }
 }
