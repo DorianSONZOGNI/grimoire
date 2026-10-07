@@ -41,4 +41,6 @@ public class EquipmentRequestDTO {
     private Long personnageId;
     private Map<String, Integer> priceAnomalies = new HashMap<>();
     private Boolean availableInShop;
+    private String requiredSecret;
+    private int requiredSecretLevel = 0;
 }

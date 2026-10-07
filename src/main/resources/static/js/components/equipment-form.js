@@ -11,6 +11,15 @@ function resetEqForm() {
     if (document.getElementById('eqAvailableInShop')) {
         document.getElementById('eqAvailableInShop').checked = true;
     }
+    if (document.getElementById('eqRequiredSecret')) {
+        document.getElementById('eqRequiredSecret').value = '';
+        if (document.getElementById('eqRequiredSecretLabel')) {
+            document.getElementById('eqRequiredSecretLabel').innerHTML = '<span class="material-symbols-outlined cs-icon text-muted">close</span> Aucun';
+        }
+    }
+    if (document.getElementById('eqRequiredSecretLevel')) {
+        document.getElementById('eqRequiredSecretLevel').value = 1;
+    }
     document.getElementById('eqRegenHp').value = 0;
     document.getElementById('eqRegenMana').value = 0;
     if (document.getElementById('eqConsumableHpPercent')) document.getElementById('eqConsumableHpPercent').value = 0;
@@ -85,6 +94,8 @@ function getFormEquipmentData() {
         bonusResistance: document.getElementById('eqRes') ? parseInt(document.getElementById('eqRes').value) || 0 : 0,
         bonusSpeed: document.getElementById('eqSpeed') ? parseInt(document.getElementById('eqSpeed').value) || 0 : 0,
         bonusCrit: document.getElementById('eqCrit') ? parseInt(document.getElementById('eqCrit').value) || 0 : 0,
+        requiredSecret: document.getElementById('eqRequiredSecret') ? (document.getElementById('eqRequiredSecret').value || null) : null,
+        requiredSecretLevel: document.getElementById('eqRequiredSecretLevel') ? (parseInt(document.getElementById('eqRequiredSecretLevel').value) || 1) : 1,
         regenHealthPerTurn: document.getElementById('eqRegenHp') ? parseInt(document.getElementById('eqRegenHp').value) || 0 : 0,
         regenManaPerTurn: document.getElementById('eqRegenMana') ? parseInt(document.getElementById('eqRegenMana').value) || 0 : 0,
         consumableHpPercent: document.getElementById('eqConsumableHpPercent') ? (parseInt(document.getElementById('eqConsumableHpPercent').value) || 0) : 0,

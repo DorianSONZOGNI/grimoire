@@ -156,7 +156,17 @@ public class ShopController {
             }
         }
 
-        List<Equipment> templates = equipmentRepository.findByIsTemplateTrueAndAvailableInShopTrue();
+        List<Equipment> allTemplates = equipmentRepository.findByIsTemplateTrueAndAvailableInShopTrue();
+        
+        final AppUser finalUser = user;
+        List<Equipment> templates = allTemplates.stream().filter(e -> {
+            if (e.getRequiredSecret() != null && !e.getRequiredSecret().trim().isEmpty()) {
+                if (finalUser == null) return false;
+                Integer userLvl = finalUser.getUnlockedSecrets().get(e.getRequiredSecret());
+                return userLvl != null && userLvl >= e.getRequiredSecretLevel();
+            }
+            return true;
+        }).toList();
 
         List<Equipment> equipmentTemplates = templates.stream()
                 .filter(e -> e.getSlot() != EquipmentSlot.CONSOMMABLE)

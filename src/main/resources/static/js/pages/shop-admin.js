@@ -449,6 +449,24 @@ window.editEquipment = function (id) {
     document.getElementById('eqCrit').value = eq.bonusCrit || 0;
     document.getElementById('eqRegenHp').value = eq.regenHealthPerTurn || 0;
     document.getElementById('eqRegenMana').value = eq.regenManaPerTurn || 0;
+
+    if (document.getElementById('eqRequiredSecret')) {
+        document.getElementById('eqRequiredSecret').value = eq.requiredSecret || '';
+        if (eq.requiredSecret) {
+            const meta = window.DEFAULT_SECRETS_META ? window.DEFAULT_SECRETS_META.find(s => s.name === eq.requiredSecret) : null;
+            if (meta) {
+                document.getElementById('eqRequiredSecretLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${meta.color}">${meta.icon}</span> ${eq.requiredSecret}`;
+            } else {
+                document.getElementById('eqRequiredSecretLabel').innerHTML = `<span class="material-symbols-outlined cs-icon text-muted">key</span> ${eq.requiredSecret}`;
+            }
+        } else {
+            document.getElementById('eqRequiredSecretLabel').innerHTML = '<span class="material-symbols-outlined cs-icon text-muted">close</span> Aucun';
+        }
+    }
+    if (document.getElementById('eqRequiredSecretLevel')) {
+        document.getElementById('eqRequiredSecretLevel').value = eq.requiredSecretLevel || 1;
+    }
+
     if (document.getElementById('eqConsumableHpPercent')) document.getElementById('eqConsumableHpPercent').value = eq.consumableHpPercent || 0;
     if (document.getElementById('eqConsumableManaPercent')) document.getElementById('eqConsumableManaPercent').value = eq.consumableManaPercent || 0;
     if (document.getElementById('eqConsumableMissingHpPercent')) document.getElementById('eqConsumableMissingHpPercent').value = eq.consumableMissingHpPercent || 0;
