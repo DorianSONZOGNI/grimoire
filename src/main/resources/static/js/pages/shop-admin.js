@@ -276,9 +276,20 @@ function renderGrid(equipments) {
                         ${window.isAdmin && eq.ownerUsername ? `<span class="text-xxs whitespace-nowrap" style="padding: 0.15rem 0.4rem; background: ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${eq.ownerUsername === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'};"><span class="material-symbols-outlined align-middle text-xxs mr-1">account_circle</span>${eq.ownerUsername}</span>` : ''}
                     </div>
                     
-                    <div class="shop-admin-row-stats">
-                        ${statsHtml || '<span class="text-muted font-italic">Aucune stat</span>'}
-                        ${effectHtml}
+                    <div class="shop-admin-row-stats flex flex-col gap-1 items-start">
+                        <div class="flex flex-wrap gap-1">
+                            ${statsHtml || '<span class="text-muted font-italic">Aucune stat</span>'}
+                            ${effectHtml}
+                        </div>
+                        ${eq.requiredSecret ? (() => {
+                            const meta = window.DEFAULT_SECRETS_META ? window.DEFAULT_SECRETS_META.find(s => s.name === eq.requiredSecret) : null;
+                            const icon = meta ? meta.icon : 'key';
+                            const color = meta ? meta.color : '#94a3b8';
+                            return `<div class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border" style="border-color: ${color}40; background-color: ${color}10; color: ${color};" title="Requis pour apparaître en boutique">
+                                <span class="material-symbols-outlined" style="font-size: 14px;">${icon}</span>
+                                <span>${eq.requiredSecret} (Lvl ${eq.requiredSecretLevel || 1})</span>
+                            </div>`;
+                        })() : ''}
                     </div>
 
                     <div class="shop-admin-row-price">
@@ -449,6 +460,24 @@ window.editEquipment = function (id) {
     document.getElementById('eqCrit').value = eq.bonusCrit || 0;
     document.getElementById('eqRegenHp').value = eq.regenHealthPerTurn || 0;
     document.getElementById('eqRegenMana').value = eq.regenManaPerTurn || 0;
+
+    if (document.getElementById('eqRequiredSecret')) {
+        document.getElementById('eqRequiredSecret').value = eq.requiredSecret || '';
+        if (eq.requiredSecret) {
+            const meta = window.DEFAULT_SECRETS_META ? window.DEFAULT_SECRETS_META.find(s => s.name === eq.requiredSecret) : null;
+            if (meta) {
+                document.getElementById('eqRequiredSecretLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${meta.color}">${meta.icon}</span> ${eq.requiredSecret}`;
+            } else {
+                document.getElementById('eqRequiredSecretLabel').innerHTML = `<span class="material-symbols-outlined cs-icon text-muted">key</span> ${eq.requiredSecret}`;
+            }
+        } else {
+            document.getElementById('eqRequiredSecretLabel').innerHTML = '<span class="material-symbols-outlined cs-icon text-muted">close</span> Aucun';
+        }
+    }
+    if (document.getElementById('eqRequiredSecretLevel')) {
+        document.getElementById('eqRequiredSecretLevel').value = eq.requiredSecretLevel || 1;
+    }
+
     if (document.getElementById('eqConsumableHpPercent')) document.getElementById('eqConsumableHpPercent').value = eq.consumableHpPercent || 0;
     if (document.getElementById('eqConsumableManaPercent')) document.getElementById('eqConsumableManaPercent').value = eq.consumableManaPercent || 0;
     if (document.getElementById('eqConsumableMissingHpPercent')) document.getElementById('eqConsumableMissingHpPercent').value = eq.consumableMissingHpPercent || 0;

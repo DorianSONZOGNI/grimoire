@@ -42,6 +42,8 @@ public class EquipmentShopDTO {
     private String consumableCategory;
     private boolean isConsumable;
     private boolean availableInShop;
+    private String requiredSecret;
+    private int requiredSecretLevel;
     private boolean isDiscount;
     private double originalPrice;
 }

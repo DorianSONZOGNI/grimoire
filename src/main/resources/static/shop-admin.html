@@ -177,6 +177,77 @@
                         </div>
                     </div>
 
+                    <div class="eq-create-row mb-4">
+                        <div class="form-group col-span-2 m-0">
+                            <label>Secret requis pour apparaître en boutique (Optionnel)</label>
+                            <div class="flex items-start gap-4">
+                                <div class="custom-select-wrapper z-90 flex-2" id="eqRequiredSecretWrapper">
+                                    <div class="custom-select-trigger">
+                                        <span class="cs-label" id="eqRequiredSecretLabel">
+                                            <span class="material-symbols-outlined cs-icon text-muted">close</span>
+                                            Aucun
+                                        </span>
+                                        <span class="material-symbols-outlined text-slate-500 text-xl">expand_more</span>
+                                    </div>
+                                    <div class="custom-select-options custom-options">
+                                        <div class="custom-option" data-value="" onclick="document.getElementById('eqRequiredSecret').value=''; document.getElementById('eqRequiredSecretLabel').innerHTML='<span class=\'material-symbols-outlined cs-icon text-muted\'>close</span> Aucun';">
+                                            <span class="material-symbols-outlined cs-icon text-muted">close</span>
+                                            Aucun
+                                        </div>
+                                        <div class="custom-option" data-value="Secret du Chaos" onclick="document.getElementById('eqRequiredSecret').value='Secret du Chaos'; document.getElementById('eqRequiredSecretLabel').innerHTML='<span class=\'material-symbols-outlined cs-icon text-danger\'>local_fire_department</span> Secret du Chaos';">
+                                            <span class="material-symbols-outlined cs-icon text-danger">local_fire_department</span>
+                                            Secret du Chaos
+                                        </div>
+                                        <div class="custom-option" data-value="Secret de l'Abondance" onclick="document.getElementById('eqRequiredSecret').value='Secret de l\'Abondance'; document.getElementById('eqRequiredSecretLabel').innerHTML='<span class=\'material-symbols-outlined cs-icon text-success\'>eco</span> Secret de l\'Abondance';">
+                                            <span class="material-symbols-outlined cs-icon text-success">eco</span>
+                                            Secret de l'Abondance
+                                        </div>
+                                        <div class="custom-option" data-value="Secret de la Préservation" onclick="document.getElementById('eqRequiredSecret').value='Secret de la Préservation'; document.getElementById('eqRequiredSecretLabel').innerHTML='<span class=\'material-symbols-outlined cs-icon text-brown\'>foundation</span> Secret de la Préservation';">
+                                            <span class="material-symbols-outlined cs-icon text-brown">foundation</span>
+                                            Secret de la Préservation
+                                        </div>
+                                        <div class="custom-option" data-value="Secret de la Sérénité" onclick="document.getElementById('eqRequiredSecret').value='Secret de la Sérénité'; document.getElementById('eqRequiredSecretLabel').innerHTML='<span class=\'material-symbols-outlined cs-icon text-teal\'>water_drop</span> Secret de la Sérénité';">
+                                            <span class="material-symbols-outlined cs-icon text-teal">water_drop</span>
+                                            Secret de la Sérénité
+                                        </div>
+                                        <div class="custom-option" data-value="Secret de la Chasse" onclick="document.getElementById('eqRequiredSecret').value='Secret de la Chasse'; document.getElementById('eqRequiredSecretLabel').innerHTML='<span class=\'material-symbols-outlined cs-icon text-pink\'>visibility_off</span> Secret de la Chasse';">
+                                            <span class="material-symbols-outlined cs-icon text-pink">visibility_off</span>
+                                            Secret de la Chasse
+                                        </div>
+                                        <div class="custom-option" data-value="Secret du Carnage" onclick="document.getElementById('eqRequiredSecret').value='Secret du Carnage'; document.getElementById('eqRequiredSecretLabel').innerHTML='<span class=\'material-symbols-outlined cs-icon text-crimson\'>explosion</span> Secret du Carnage';">
+                                            <span class="material-symbols-outlined cs-icon text-crimson">explosion</span>
+                                            Secret du Carnage
+                                        </div>
+                                        <div class="custom-option" data-value="Secret de la Joie" onclick="document.getElementById('eqRequiredSecret').value='Secret de la Joie'; document.getElementById('eqRequiredSecretLabel').innerHTML='<span class=\'material-symbols-outlined cs-icon text-amber\'>volcano</span> Secret de la Joie';">
+                                            <span class="material-symbols-outlined cs-icon text-amber">volcano</span>
+                                            Secret de la Joie
+                                        </div>
+                                        <div class="custom-option" data-value="Secret du Savoir" onclick="document.getElementById('eqRequiredSecret').value='Secret du Savoir'; document.getElementById('eqRequiredSecretLabel').innerHTML='<span class=\'material-symbols-outlined cs-icon text-info\'>psychology</span> Secret du Savoir';">
+                                            <span class="material-symbols-outlined cs-icon text-info">psychology</span>
+                                            Secret du Savoir
+                                        </div>
+                                        <div class="custom-option" data-value="Secret du Destin" onclick="document.getElementById('eqRequiredSecret').value='Secret du Destin'; document.getElementById('eqRequiredSecretLabel').innerHTML='<span class=\'material-symbols-outlined cs-icon text-gold\'>all_inclusive</span> Secret du Destin';">
+                                            <span class="material-symbols-outlined cs-icon text-gold">all_inclusive</span>
+                                            Secret du Destin
+                                        </div>
+                                        <div class="custom-option" data-value="Secret de l'Éther" onclick="document.getElementById('eqRequiredSecret').value='Secret de l\'Éther'; document.getElementById('eqRequiredSecretLabel').innerHTML='<span class=\'material-symbols-outlined cs-icon text-info\'>blur_on</span> Secret de l\'Éther';">
+                                            <span class="material-symbols-outlined cs-icon text-info">blur_on</span>
+                                            Secret de l'Éther
+                                        </div>
+                                        <div class="custom-option" data-value="Secret des Abysses" onclick="document.getElementById('eqRequiredSecret').value='Secret des Abysses'; document.getElementById('eqRequiredSecretLabel').innerHTML='<span class=\'material-symbols-outlined cs-icon text-purple-400\'>dark_mode</span> Secret des Abysses';">
+                                            <span class="material-symbols-outlined cs-icon text-purple-400">dark_mode</span>
+                                            Secret des Abysses
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="eqRequiredSecret" value="">
+                                </div>
+                                <div class="flex-1">
+                                    <input class="form-control" type="number" id="eqRequiredSecretLevel" value="1" min="1" placeholder="Niveau" title="Niveau du secret" style="min-height: 42px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="eq-create-row mb-4 p-3 rounded-lg hidden bg-purple-500/5 border border-dashed border-purple-500/30"
                         id="eqSpecialEffectRow">
                         <div class="eq-create-field">

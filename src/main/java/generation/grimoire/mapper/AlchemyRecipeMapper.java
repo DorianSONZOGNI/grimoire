@@ -10,6 +10,7 @@ public class AlchemyRecipeMapper {
     public AlchemyRecipe toEntity(AlchemyRecipeRequestDTO dto) {
         if (dto == null) return null;
         AlchemyRecipe entity = new AlchemyRecipe();
+        entity.setId(dto.getId());
         updateEntity(dto, entity);
         return entity;
     }

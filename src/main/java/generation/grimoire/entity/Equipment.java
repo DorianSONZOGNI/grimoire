@@ -93,6 +93,10 @@ public class Equipment {
     @Column(name = "available_in_shop", nullable = false)
     private boolean availableInShop = false;
 
+    private String requiredSecret;
+
+    private int requiredSecretLevel = 0;
+
     @ElementCollection(fetch = jakarta.persistence.FetchType.EAGER)
     @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
     @CollectionTable(name = "equipment_anomaly_prices", joinColumns = @JoinColumn(name = "equipment_id"))
@@ -130,6 +134,8 @@ public class Equipment {
         this.setConsumableBonusResistanceFlat(template.getConsumableBonusResistanceFlat());
         this.setConsumableDurationTurns(template.getConsumableDurationTurns());
         this.setConsumableCategory(template.getConsumableCategory());
+        this.setRequiredSecret(template.getRequiredSecret());
+        this.setRequiredSecretLevel(template.getRequiredSecretLevel());
     }
 
     public double calculateWeight() {
