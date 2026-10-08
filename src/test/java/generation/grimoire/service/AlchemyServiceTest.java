@@ -1,4 +1,4 @@
-﻿package generation.grimoire.service;
+package generation.grimoire.service;
 
 import generation.grimoire.entity.AlchemyRecipe;
 import generation.grimoire.entity.Anomalie;
