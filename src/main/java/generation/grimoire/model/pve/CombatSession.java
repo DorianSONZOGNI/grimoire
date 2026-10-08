@@ -47,7 +47,7 @@ public class CombatSession {
 
     private List<Spell> availableSpells = new ArrayList<>();
 
-    /** Disponibilité de chaque sort (grisage côté frontend) */
+    /** DisponibilitÃ© de chaque sort (grisage cÃ´tÃ© frontend) */
     private List<SpellAvailability> spellAvailability = new ArrayList<>();
 
     // Valid only if currentRoom is COMBAT
@@ -92,7 +92,7 @@ public class CombatSession {
     private Set<Integer> purchasedMerchantItems = new HashSet<>();
     private Set<Integer> availableMerchantItems = new HashSet<>();
 
-    // Track players who fled the dungeon in multi — they get no further rewards
+    // Track players who fled the dungeon in multi â€” they get no further rewards
     private Set<String> fledUsernames = new HashSet<>();
 
     public boolean hasFled(Personnage p) {
@@ -112,7 +112,7 @@ public class CombatSession {
     private int roomGoldAccumulated = 0;
     private int firstClearBonusXp = 0; // Bonus XP for first completion
     private boolean firstClear = false; // Is this the first time completing this dungeon?
-    private int bossBonusSpiritualXp = 0; // XP Spiritualité bonus boss (total distribué)
+    private int bossBonusSpiritualXp = 0; // XP SpiritualitÃ© bonus boss (total distribuÃ©)
     private int bossBonusGold = 0; // Or bonus boss
     private double challengeExtraLootPercent = 0.0; // Bonus % loot from EXTRA_LOOT challenges (persistent)
 
@@ -231,9 +231,11 @@ public class CombatSession {
         if (this.turnCastSpellIds != null) this.turnCastSpellIds.clear();
         if (this.playerRoomChoices != null) this.playerRoomChoices.clear();
         if (this.interactionResults != null) this.interactionResults.clear();
+        this.turnNumber = 0;
+        this.currentTurnIndex = 0;
         if (donjon.getSalles() != null && index < donjon.getSalles().size()) {
             this.currentRoom = donjon.getSalles().get(index);
-            // On laisse handleRoomStart gérer les ennemis et la re-fetch de la salle
+            // On laisse handleRoomStart gÃ©rer les ennemis et la re-fetch de la salle
         } else {
             // End of dungeon
             this.isFinished = true;

@@ -1,4 +1,4 @@
-package generation.grimoire.service;
+﻿package generation.grimoire.service;
 
 import generation.grimoire.entity.AlchemyRecipe;
 import generation.grimoire.entity.Anomalie;
@@ -138,7 +138,7 @@ class AlchemyServiceTest {
             alchemyService.craftRecipe("testuser", 1L, 1L, new ArrayList<>(), new ArrayList<>());
         });
 
-        assertEquals("Expérience de spiritualité insuffisante pour ce personnage.", exception.getMessage());
+        assertEquals("ExpÃ©rience de spiritualitÃ© insuffisante pour ce personnage.", exception.getMessage());
     }
 
     @Test
@@ -175,7 +175,7 @@ class AlchemyServiceTest {
             alchemyService.craftRecipe("testuser", 1L, 1L, List.of(1L), new ArrayList<>());
         });
 
-        assertTrue(exception.getMessage().contains("Veuillez sélectionner"));
+        assertTrue(exception.getMessage().contains("Veuillez sÃ©lectionner"));
     }
 
     @Test
@@ -192,7 +192,7 @@ class AlchemyServiceTest {
 
         assertEquals(1, user.getUnlockedSecrets().get("Secret_A"));
         verify(userRepository, atLeastOnce()).save(Objects.requireNonNull(user));
-        assertTrue(result.contains("Vous avez débloqué le secret"));
+        assertTrue(result.contains("Vous avez dÃ©bloquÃ© le secret"));
     }
 
     @Test
@@ -209,7 +209,7 @@ class AlchemyServiceTest {
             alchemyService.craftRecipe("testuser", 1L, 1L, new ArrayList<>(), new ArrayList<>());
         });
 
-        assertEquals("Vous possédez déjà ce niveau de secret.", exception.getMessage());
+        assertEquals("Vous possÃ©dez dÃ©jÃ  ce niveau de secret.", exception.getMessage());
     }
 
     @Test
@@ -226,7 +226,7 @@ class AlchemyServiceTest {
             alchemyService.craftRecipe("testuser", 1L, 1L, new ArrayList<>(), new ArrayList<>());
         });
 
-        assertEquals("Vous devez d'abord débloquer le niveau précédent de ce secret.", exception.getMessage());
+        assertEquals("Vous devez d'abord dÃ©bloquer le niveau prÃ©cÃ©dent de ce secret.", exception.getMessage());
     }
 
     @Test
@@ -243,7 +243,7 @@ class AlchemyServiceTest {
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
         when(recipeRepository.findById(1L)).thenReturn(Optional.of(recipe));
         when(personnageRepository.findById(1L)).thenReturn(Optional.of(personnage));
-        when(equipmentRepository.findByOwnerUsername("testuser")).thenReturn(List.of(consumable));
+        when(equipmentRepository.findByUser_Username("testuser")).thenReturn(List.of(consumable));
         when(lootEntryRepository.findByEquipmentId(10L)).thenReturn(new ArrayList<>());
 
         String result = alchemyService.craftRecipe("testuser", 1L, 1L, new ArrayList<>(), List.of(10L));
@@ -259,13 +259,13 @@ class AlchemyServiceTest {
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
         when(recipeRepository.findById(1L)).thenReturn(Optional.of(recipe));
         when(personnageRepository.findById(1L)).thenReturn(Optional.of(personnage));
-        when(equipmentRepository.findByOwnerUsername("testuser")).thenReturn(new ArrayList<>());
+        when(equipmentRepository.findByUser_Username("testuser")).thenReturn(new ArrayList<>());
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             alchemyService.craftRecipe("testuser", 1L, 1L, new ArrayList<>(), List.of(10L));
         });
 
-        assertTrue(exception.getMessage().contains("Veuillez sélectionner"));
+        assertTrue(exception.getMessage().contains("Veuillez sÃ©lectionner"));
     }
 
     @Test
@@ -311,18 +311,18 @@ class AlchemyServiceTest {
     @SuppressWarnings({ "null" })
     void giveReward_giveEquipment() {
         recipe.setRewardType(RecipeRewardType.GIVE_EQUIPMENT);
-        recipe.setRewardName("Epée");
+        recipe.setRewardName("EpÃ©e");
         recipe.setRewardQuantity(1);
 
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
         when(recipeRepository.findById(1L)).thenReturn(Optional.of(recipe));
         when(personnageRepository.findById(1L)).thenReturn(Optional.of(personnage));
-        when(equipmentRepository.findFirstByNameAndIsTemplateTrueOrderByIdAsc("Epée")).thenReturn(null);
+        when(equipmentRepository.findFirstByNameAndIsTemplateTrueOrderByIdAsc("EpÃ©e")).thenReturn(null);
 
         String result = alchemyService.craftRecipe("testuser", 1L, 1L, new ArrayList<>(), new ArrayList<>());
 
         verify(equipmentRepository, times(1)).save(any(generation.grimoire.entity.Equipment.class));
-        assertTrue(result.contains("Vous avez obtenu 1x Équipement : Epée"));
+        assertTrue(result.contains("Vous avez obtenu 1x Ã‰quipement : EpÃ©e"));
     }
 
     @Test
@@ -340,7 +340,7 @@ class AlchemyServiceTest {
         String result = alchemyService.craftRecipe("testuser", 1L, 1L, new ArrayList<>(), new ArrayList<>());
 
         verify(anomalieRepository, times(1)).save(any(Anomalie.class));
-        assertTrue(result.contains("Vous avez amélioré une anomalie en : Anomalie Magique (Niv. 2)"));
+        assertTrue(result.contains("Vous avez amÃ©liorÃ© une anomalie en : Anomalie Magique (Niv. 2)"));
     }
 
     @Test
@@ -357,7 +357,7 @@ class AlchemyServiceTest {
 
         assertEquals(145, personnage.getSpiritualiteExperience()); // 50 (initial) - 5 (cost) + 100
         verify(personnageRepository, times(2)).save(any(Personnage.class));
-        assertTrue(result.contains("a gagné 100 XP de Spiritualité"));
+        assertTrue(result.contains("a gagnÃ© 100 XP de SpiritualitÃ©"));
     }
 
     @Test
@@ -377,7 +377,7 @@ class AlchemyServiceTest {
 
         when(recipeRepository.findAll()).thenReturn(List.of(r));
         when(anomalieRepository.findByOwnerUsername("testuser")).thenReturn(new ArrayList<>());
-        when(equipmentRepository.findByOwnerUsername("testuser")).thenReturn(new ArrayList<>());
+        when(equipmentRepository.findByUser_Username("testuser")).thenReturn(new ArrayList<>());
 
         List<AlchemyRecipe> result = alchemyService.getDiscoveredRecipes(testUser);
 
@@ -400,7 +400,7 @@ class AlchemyServiceTest {
 
         when(recipeRepository.findAll()).thenReturn(List.of(r));
         when(anomalieRepository.findByOwnerUsername("testuser")).thenReturn(new ArrayList<>());
-        when(equipmentRepository.findByOwnerUsername("testuser")).thenReturn(new ArrayList<>());
+        when(equipmentRepository.findByUser_Username("testuser")).thenReturn(new ArrayList<>());
 
         List<AlchemyRecipe> result = alchemyService.getDiscoveredRecipes(testUser);
 

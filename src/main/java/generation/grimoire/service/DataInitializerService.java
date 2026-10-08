@@ -217,7 +217,7 @@ public class DataInitializerService {
 
                         // Consommables possédés
                         List<generation.grimoire.entity.Equipment> equipments = equipmentRepository
-                                        .findByOwnerUsername(user.getUsername());
+                                        .findByUser_Username(user.getUsername());
                         for (generation.grimoire.entity.Equipment eq : equipments) {
                                 if (!eq.isTemplate() && eq.getName() != null) {
                                         items.add(eq.getName());
