@@ -749,7 +749,7 @@ public class CombatRoomService {
             }
         }
         if (toConsume == null) {
-            List<Equipment> userEquipments = equipmentRepository.findByOwnerUsername(username);
+            List<Equipment> userEquipments = equipmentRepository.findByUser_Username(username);
             for (Equipment eq : userEquipments) {
                 if (eq.getSlot() == generation.grimoire.enumeration.EquipmentSlot.CONSOMMABLE
                         && eq.getName().equals(clickedConsumable.getName())) {
@@ -1386,7 +1386,7 @@ target.getActiveBuffs().add(effect);
 
     @Transactional
     CombatSession addConsumableByName(CombatSession session, String itemName, String username) {
-        List<Equipment> userEquipments = equipmentRepository.findByOwnerUsername(username);
+        List<Equipment> userEquipments = equipmentRepository.findByUser_Username(username);
         Equipment targetEquipment = null;
         for (Equipment eq : userEquipments) {
             if (eq.getSlot() == generation.grimoire.enumeration.EquipmentSlot.CONSOMMABLE

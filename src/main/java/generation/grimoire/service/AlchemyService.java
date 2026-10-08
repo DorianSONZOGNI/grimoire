@@ -87,7 +87,7 @@ public class AlchemyService {
                 hasNewDiscoveredItems = true;
             }
         }
-        for (Equipment e : equipmentRepository.findByOwnerUsername(user.getUsername())) {
+        for (Equipment e : equipmentRepository.findByUser_Username(user.getUsername())) {
             if (discovered.add(e.getName())) {
                 user.getDiscoveredItems().add(e.getName());
                 hasNewDiscoveredItems = true;
@@ -220,7 +220,7 @@ public class AlchemyService {
 
         // Vérification et consommation des Consommables
         if (recipe.getRequiredConsumables() != null && !recipe.getRequiredConsumables().isEmpty()) {
-            List<Equipment> userEquipments = equipmentRepository.findByOwnerUsername(username);
+            List<Equipment> userEquipments = equipmentRepository.findByUser_Username(username);
             List<Equipment> toDeleteConsumables = new ArrayList<>();
 
             for (Map.Entry<String, Integer> entry : recipe.getRequiredConsumables().entrySet()) {
@@ -262,13 +262,9 @@ public class AlchemyService {
                     // Détacher l'équipement de son personnage
                     if (e.getPersonnage() != null) {
                         e.getPersonnage().getEquipments().remove(e);
-                        // Ne pas setPersonnage(null) ni ajouter à toDeleteConsumables
-                        // car orphanRemoval=true s'occupera de la suppression au flush.
-                    } else {
-                        // Pas de personnage = pas d'orphanRemoval automatique,
-                        // on doit le supprimer explicitement.
-                        toDeleteConsumables.add(e);
+                        e.setPersonnage(null);
                     }
+                    toDeleteConsumables.add(e);
                     // Pas besoin de remove() sur la liste en entrée
                 }
             }

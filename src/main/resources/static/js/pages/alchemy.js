@@ -683,29 +683,44 @@ async function craftSelected() {
     let usedAnomalyIds = new Set();
     let usedConsumableIds = new Set();
 
+    let allAnomalies = [];
     document.querySelectorAll('.anomaly-select').forEach(sel => {
         const val = sel.value;
         if (!val) isValid = false;
         else {
             if (usedAnomalyIds.has(val)) isValid = false;
             usedAnomalyIds.add(val);
-            anomalieIds.push(parseInt(val));
+            allAnomalies.push(parseInt(val));
         }
     });
 
-    let reqAnoCount = 0;
-    if (pageState.selectedRecipe.requiredAnomalies) {
-        for (const qty of Object.values(pageState.selectedRecipe.requiredAnomalies)) reqAnoCount += qty;
-    }
-
-    let reqConsCount = 0;
-    if (pageState.selectedRecipe.requiredConsumables) {
-        for (const qty of Object.values(pageState.selectedRecipe.requiredConsumables)) reqConsCount += qty;
-    }
+    let allConsumables = [];
+    document.querySelectorAll('.consumable-select').forEach(sel => {
+        const val = sel.value;
+        if (!val) isValid = false;
+        else {
+            if (usedConsumableIds.has(val)) isValid = false;
+            usedConsumableIds.add(val);
+            allConsumables.push(parseInt(val));
+        }
+    });
 
     const craftQty = (pageState.selectedRecipe.rewardType === 'UNLOCK_FEATURE' || pageState.selectedRecipe.rewardType === 'SECRET' || (pageState.selectedRecipe.rewardName && pageState.selectedRecipe.rewardName.toLowerCase().includes('secret'))) ? 1 : (pageState.craftQuantity || 1);
 
-    if (anomalieIds.length < reqAnoCount * craftQty) {
+    let anomalieGroups = [];
+    let currentAnoIndex = 0;
+    if (pageState.selectedRecipe.requiredAnomalies) {
+        for (const qty of Object.values(pageState.selectedRecipe.requiredAnomalies)) {
+            const totalForThisIngredient = qty * craftQty;
+            anomalieGroups.push({
+                qtyPerCraft: qty,
+                ids: allAnomalies.slice(currentAnoIndex, currentAnoIndex + totalForThisIngredient)
+            });
+            currentAnoIndex += totalForThisIngredient;
+        }
+    }
+
+    if (allAnomalies.length < currentAnoIndex) {
         if (msg) { msg.innerText = "Vous n'avez pas assez d'anomalies pour cette recette."; msg.style.color = "#ef4444"; }
         pageState.isCrafting = false;
         if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
@@ -713,31 +728,27 @@ async function craftSelected() {
     }
 
     if (!isValid) {
-        if (msg) { msg.innerText = "Veuillez sélectionner correctement toutes les anomalies (sans doublons)."; msg.style.color = "#ef4444"; }
+        if (msg) { msg.innerText = "Veuillez sélectionner correctement toutes les anomalies et consommables (sans doublons)."; msg.style.color = "#ef4444"; }
         pageState.isCrafting = false;
         if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
         return;
     }
 
-    document.querySelectorAll('.consumable-select').forEach(sel => {
-        const val = sel.value;
-        if (!val) isValid = false;
-        else {
-            if (usedConsumableIds.has(val)) isValid = false;
-            usedConsumableIds.add(val);
-            consumableIds.push(parseInt(val));
+    let consumableGroups = [];
+    let currentConsIndex = 0;
+    if (pageState.selectedRecipe.requiredConsumables) {
+        for (const qty of Object.values(pageState.selectedRecipe.requiredConsumables)) {
+            const totalForThisIngredient = qty * craftQty;
+            consumableGroups.push({
+                qtyPerCraft: qty,
+                ids: allConsumables.slice(currentConsIndex, currentConsIndex + totalForThisIngredient)
+            });
+            currentConsIndex += totalForThisIngredient;
         }
-    });
-
-    if (consumableIds.length < reqConsCount * craftQty) {
-        if (msg) { msg.innerText = "Vous n'avez pas assez de consommables pour cette recette."; msg.style.color = "#ef4444"; }
-        pageState.isCrafting = false;
-        if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
-        return;
     }
 
-    if (!isValid) {
-        if (msg) { msg.innerText = "Veuillez sélectionner tous les consommables requis (sans doublons)."; msg.style.color = "#ef4444"; }
+    if (allConsumables.length < currentConsIndex) {
+        if (msg) { msg.innerText = "Vous n'avez pas assez de consommables pour cette recette."; msg.style.color = "#ef4444"; }
         pageState.isCrafting = false;
         if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
         return;
@@ -759,10 +770,20 @@ async function craftSelected() {
     let lastMessage = "";
 
     for (let i = 0; i < craftQty; i++) {
+        let currentCraftAnoIds = [];
+        anomalieGroups.forEach(group => {
+            currentCraftAnoIds.push(...group.ids.slice(i * group.qtyPerCraft, (i + 1) * group.qtyPerCraft));
+        });
+
+        let currentCraftConsIds = [];
+        consumableGroups.forEach(group => {
+            currentCraftConsIds.push(...group.ids.slice(i * group.qtyPerCraft, (i + 1) * group.qtyPerCraft));
+        });
+
         const body = {
             personnageId: personnageId,
-            anomalieIds: anomalieIds.slice(i * reqAnoCount, (i + 1) * reqAnoCount),
-            consumableIds: consumableIds.slice(i * reqConsCount, (i + 1) * reqConsCount)
+            anomalieIds: currentCraftAnoIds,
+            consumableIds: currentCraftConsIds
         };
 
         try {
