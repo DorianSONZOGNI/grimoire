@@ -87,6 +87,12 @@ function getSlotInfo(eq) {
             info.color = catInfo.color;
         }
     }
+    if (eq.name && eq.name.toLowerCase().includes('clé')) {
+        info.icon = 'key';
+        if (info.color === '#94a3b8' || !info.color) {
+            info.color = '#fbbf24';
+        }
+    }
     return info;
 }
 
@@ -376,7 +382,7 @@ function getEquipmentTooltipHTML(eq) {
         }
     }
 
-    if (!statsHtml && !effectHtml && !cleHtml && !consumableExtraHtml) return `<div class="font-italic text-muted text-center" style="min-width: 150px; padding: 0.5rem;">Aucun attribut</div>`;
+    if (!statsHtml && !effectHtml && !cleHtml && !consumableExtraHtml) return `<div style="min-width: 150px; padding: 0.5rem;">${headerHtml}<div class="font-italic text-muted text-center">Aucun attribut</div></div>`;
 
     return `<div style="min-width: 150px; padding: 0.5rem;">
         ${statsHtml}

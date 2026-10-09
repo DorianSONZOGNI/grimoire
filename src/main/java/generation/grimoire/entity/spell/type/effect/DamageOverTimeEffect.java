@@ -65,14 +65,9 @@ public DamageOverTimeEffect() {
      */
     public void tick(Personnage target) {
         if (duration > 0) {
-            target.takeDamage(fixedDamagePerTick, damageType, caster, burn != null && burn);
+            String effectName = (poison != null && poison) ? "Poison" : ((burn != null && burn) ? "Brûlure" : "DoT");
+            target.takeDamage(fixedDamagePerTick, damageType, caster, burn != null && burn, effectName);
             duration--;
-
-            String effectName = (poison != null && poison) ? "poison" : ((burn != null && burn) ? "brûlure" : "damage over time (DoT)");
-            String icon = (poison != null && poison) ? "🧪" : ((burn != null && burn) ? "🔥" : "🩸");
-
-            System.out.println(icon + " " + target.getName() + " subit " + fixedDamagePerTick
-                    + " dégâts (" + damageType + ") de " + effectName + ".");
         }
     }
 

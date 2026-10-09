@@ -47,9 +47,8 @@ public class HealOverTimeEffect extends HealEffect {
      */
     public void tick(Personnage target) {
         if (duration > 0) {
-            target.heal(fixedHealPerTick);
+            target.heal(fixedHealPerTick, "un soin sur la durée (HoT)");
             duration--;
-            System.out.println("💚 " + target.getName() + " récupère " + fixedHealPerTick + " PV grâce à un soin sur la durée (HoT).");
         }
     }
 

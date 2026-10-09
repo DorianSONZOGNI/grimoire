@@ -151,15 +151,14 @@ body {
 .combat-log-container {
     position: absolute;
     top: 1rem;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 1rem;
     z-index: 50;
     width: 600px;
     height: 60vh;
     max-height: 60vh;
     background: rgba(15, 23, 42, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 1rem;
     display: flex;
     flex-direction: column;
@@ -172,7 +171,7 @@ body {
 .combat-log-container.retracted {
     height: auto;
     max-height: none;
-    width: 200px;
+    width: 250px;
     padding: 0;
     background: transparent;
     border-color: transparent;
