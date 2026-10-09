@@ -149,16 +149,35 @@ body {
 }
 
 .combat-log-container {
-    width: 400px;
+    position: absolute;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    width: 600px;
     height: 60vh;
     max-height: 60vh;
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 1rem;
     display: flex;
     flex-direction: column;
     min-height: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+}
+
+.combat-log-container.retracted {
+    height: auto;
+    max-height: none;
+    width: 200px;
+    padding: 0;
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
 }
 
 .combat-log {
@@ -185,13 +204,6 @@ body {
 
 .combat-log::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.3);
-}
-
-.log-entry {
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    line-height: 1.4;
 }
 
 /* ===== New Combat Spells Panel ===== */
@@ -1045,6 +1057,11 @@ body {
     font-weight: 600;
 }
 
+.log-enemy-name {
+    color: #f87171;
+    font-weight: 600;
+}
+
 .log-val-dmg {
     color: #fbbf24;
     font-weight: bold;
@@ -1123,6 +1140,11 @@ body {
     border-left-color: #790000;
 }
 
+.log-damage-incompressible {
+    border-left-color: #4c0519;
+    background: rgba(76, 5, 25, 0.2);
+}
+
 .log-damage-burn {
     border-left-color: #f97316;
     background: rgba(249, 115, 22, 0.05);
@@ -1147,6 +1169,12 @@ body {
 .log-val-brut {
     color: #790000;
     font-weight: 900;
+}
+
+.log-val-incompressible {
+    color: #be123c;
+    font-weight: 900;
+    text-shadow: 0 0 4px rgba(190, 18, 60, 0.5);
 }
 
 .log-val-burn {
