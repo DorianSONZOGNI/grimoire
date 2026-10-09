@@ -1117,8 +1117,9 @@ window.inspectCharacter = async function(id) {
             const slotInfo = Object.assign({}, window.SLOT_LABELS && window.SLOT_LABELS[slotName] ? window.SLOT_LABELS[slotName] : { label: slotName, icon: 'help', color: '#94a3b8', extraClass: '' });
             const rarityName = eq.rarity?.name || eq.rarity;
             const rarityColor = colorMap[rarityName] || '#f8fafc';
+            const tooltipData = window.getEquipmentTooltipHTML ? window.getEquipmentTooltipHTML(eq) : eq.name;
             equipList.innerHTML += `
-                <div class="equip-slot" style="border-left: 3px solid ${rarityColor};">
+                <div class="equip-slot tooltip-trigger" style="border-left: 3px solid ${rarityColor}; cursor: help;" onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
                     <div class="equip-slot-icon"><span class="material-symbols-outlined ${slotInfo.extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span></div>
                     <div class="equip-slot-content">
                         <div class="text-sm" style="color: ${rarityColor}; font-weight: 600;">${eq.name} ${window.getEffectInfoIconHtml ? window.getEffectInfoIconHtml(eq.specialEffect) : ''}</div>
