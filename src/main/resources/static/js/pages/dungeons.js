@@ -2319,15 +2319,27 @@ document.addEventListener('DOMContentLoaded', () => {
                         _joinLobbyHostConsumableWeight = 0;
                         window.maxSelectableJoinChars = 4;
                         window.updateJoinCharAvailability(null);
+                        const msgContainer = document.getElementById('joinLobbyErrorMsg');
+                        if (msgContainer) {
+                            msgContainer.textContent = "Lobby introuvable.";
+                            msgContainer.style.display = 'block';
+                        }
                     }
                 } catch (err) {
                     console.error("Erreur lors de la récupération des infos du lobby", err);
                     infoContainer.style.display = 'none';
                     _joinLobbyMultiId = null;
+                    _setJoinCharSelectEnabled(false);
+                    _clearJoinSelections();
                     _joinLobbyHostHeroCount = 0;
                     _joinLobbyHostConsumableWeight = 0;
                     window.maxSelectableJoinChars = 4;
-                    window.updateJoinCharAvailability(1);
+                    window.updateJoinCharAvailability(null);
+                    const msgContainer = document.getElementById('joinLobbyErrorMsg');
+                    if (msgContainer) {
+                        msgContainer.textContent = "Lobby introuvable.";
+                        msgContainer.style.display = 'block';
+                    }
                 }
             } else {
                 infoContainer.style.display = 'none';
@@ -2337,7 +2349,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 _joinLobbyHostHeroCount = 0;
                 _joinLobbyHostConsumableWeight = 0;
                 window.maxSelectableJoinChars = 4;
-                window.updateJoinCharAvailability(1);
+                window.updateJoinCharAvailability(null);
             }
         });
     }
