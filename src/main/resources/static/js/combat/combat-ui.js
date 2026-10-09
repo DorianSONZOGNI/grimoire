@@ -1390,20 +1390,10 @@ export function updateUI(data) {
                                                     `;
                                                 }
                                             }
-                                        } else if (log.includes("a offert l'équipement") || log.includes("a offert l'\u00e9quipement")) {
-                                            const equipMatch = log.match(/a offert l'.quipement : (.*) !/) || log.match(/a offert l'.quipement : (.*) \(ajout. au groupe\)\./) || log.match(/a offert l'.quipement : (.*) \(envoy. au coffre\)\./);
-                                            if (equipMatch) {
-                                                const eqName = equipMatch[1].trim();
-                                                logHtml = `
-                                                    <div class="flex-center relative" style="background: rgba(0, 0, 0, 0.4); border: 1px solid #10b98180; padding: 0.8rem 1rem; border-radius: 8px; color: #10b981; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                                        <span class="material-symbols-outlined" style="color: #10b981;">shield</span> <span style="border-bottom: 1px dashed #10b981;">${eqName}</span>
-                                                    </div>
-                                                `;
-                                            }
-                                        } else if (log.includes("a offert l'anomalie") || log.includes("Objet trouv")) {
-                                            const itemNameMatch = log.match(/Objet trouv. : (.*?) \(/) || log.match(/a offert l'anomalie : (.*)\./);
+                                        } else if (log.includes("a offert l'équipement") || log.includes("a offert l'\u00e9quipement") || log.includes("a offert l'anomalie") || log.includes("Objet trouv")) {
+                                            const itemNameMatch = log.match(/Objet trouv. : (.*?) \(/) || log.match(/a offert l'anomalie : (.*)\./) || log.match(/a offert l'.quipement : (.*?) !/) || log.match(/a offert l'.quipement : (.*?) \(ajout. au groupe\)\./) || log.match(/a offert l'.quipement : (.*?) \(envoy. au coffre\)\./);
                                             if (itemNameMatch) {
-                                                const eqName = itemNameMatch[1].trim();
+                                                const eqName = itemNameMatch[1] ? itemNameMatch[1].trim() : '';
                                                 let eq = null;
                                                 let an = null;
 
