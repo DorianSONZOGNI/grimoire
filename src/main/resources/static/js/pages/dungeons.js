@@ -758,13 +758,16 @@ async function loadCharacters() {
                 }
 
                 list.innerHTML += `
-                    <div class="char-card" id="charCard_${c.id}" onclick="selectCharacter(${c.id})">
+                    <div class="char-card" id="charCard_${c.id}" onclick="selectCharacter(${c.id})" style="position: relative;">
                         <div class="char-avatar" style="${avatarStyle}">${avatarHtml}</div>
-                        <div>
+                        <div style="flex: 1;">
                             <div class="flex-center text-slate-50 font-semibold font-outfit text-lg">
                                 ${c.name} ${iconsHtml}
                             </div>
                             <div class="text-muted text-sm">Niv. ${c.voieLevel || 1} &bull; ${c.totalHealthMax !== undefined ? c.totalHealthMax : c.healthMax} PV max</div>
+                        </div>
+                        <div onclick="event.stopPropagation(); window.inspectCharacter(${c.id})" style="padding: 0.5rem; border-radius: 0.5rem; background: rgba(255,255,255,0.05); color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; margin-left: 0.5rem;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='#fff';" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.color='#94a3b8';" title="Voir l'équipement">
+                            <span class="material-symbols-outlined" style="font-size: 1.2rem;">visibility</span>
                         </div>
                     </div>
                 `;
@@ -1041,6 +1044,10 @@ window.selectCharacter = async function (id) {
         }
     }
 
+    await window.inspectCharacter(id);
+};
+
+window.inspectCharacter = async function(id) {
     let equipments = [];
     try {
         const res = await globalFetch(`/api/equipments/personnage/${id}`);
@@ -1121,6 +1128,7 @@ window.selectCharacter = async function (id) {
         });
     }
 };
+
 
 window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost, reqLevel, isDailyQuest, isWeeklyQuest, dailyChallengeDuo) {
     pageState.currentDungeonId = id;
