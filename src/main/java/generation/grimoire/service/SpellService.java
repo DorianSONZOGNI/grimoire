@@ -669,6 +669,9 @@ public class SpellService {
         }
 
         for (Personnage recipient : finalRecipients) {
+            if (recipient != caster && recipient.getHealthCurrent() <= 0) {
+                continue; // Ne pas appliquer l'effet sur une cible morte (sauf si c'est le lanceur lui-même qui meurt d'un DoT mais qui doit quand même recevoir l'effet ?)
+            }
             if (finalRecipients.size() > 1) {
                 log.debug("  ↳ Application sur : {}", recipient.getName());
             }

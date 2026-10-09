@@ -288,6 +288,31 @@ class CombatTurnService {
                                                 .get(new java.util.Random().nextInt(validAllies.size()));
                                     }
 
+                                    boolean hasValidTarget = false;
+                                    for (generation.grimoire.entity.SpellEffect eff : mutSpell.getEffects()) {
+                                        java.util.List<Personnage> recips = SpellService.resolveRecipientsGroup(
+                                                eff.getEffectTarget(), m.getAsPersonnage(), mutTarget, mutAlly, allAlliesMut, allEnemiesMut
+                                        );
+                                        
+                                        if (eff.getEffectTarget() == generation.grimoire.enumeration.EffectTarget.ALLY || 
+                                            eff.getEffectTarget() == generation.grimoire.enumeration.EffectTarget.ALL_ALLIES) {
+                                            // Pour un sort de groupe ou d'allié, on vérifie qu'il y a au moins un AUTRE allié en vie
+                                            if (recips.stream().anyMatch(r -> r != m.getAsPersonnage() && r.getHealthCurrent() > 0)) {
+                                                hasValidTarget = true;
+                                                break;
+                                            }
+                                        } else {
+                                            if (recips.stream().anyMatch(r -> r.getHealthCurrent() > 0)) {
+                                                hasValidTarget = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+
+                                    if (!hasValidTarget) {
+                                        continue;
+                                    }
+
                                     session.addLog(
                                             "🧬 " + m.getBase().getName() + " lance " + mutSpell.getNom() + " !");
                                     final Personnage finalMutAlly = mutAlly;
