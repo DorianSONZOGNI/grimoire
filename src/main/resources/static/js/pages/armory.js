@@ -140,10 +140,12 @@ window.buyRosterSlot = function (cost) {
                     const data = await res.json();
                     showNotif(data.message);
                     // Update auth state so UI syncs
-                    await globalFetch('/api/auth/me').then(r => r.json()).then(u => {
-                        if (window.updateGoldDisplay) window.updateGoldDisplay(u.monnaie);
+                    if (window.checkAuthStatus) {
+                        await window.checkAuthStatus();
+                    } else {
+                        const u = await globalFetch('/api/auth/me').then(r => r.json());
                         window.currentUser = u;
-                    });
+                    }
                     await updateCharLimitUI();
 
                     const eqCreateSection = document.querySelector('.equip-create-section');

@@ -1329,8 +1329,12 @@ window.unlockDungeon = async function (id, cost, event) {
                 await new Promise(r => setTimeout(r, 800));
             }
             window.showNotif("Donjon d\u00e9bloqu\u00e9 !");
-            const authRes = await globalFetch('/api/auth/me', { credentials: 'same-origin' });
-            if (authRes.ok) window.currentUser = await authRes.json();
+            if (window.checkAuthStatus) {
+                await window.checkAuthStatus();
+            } else {
+                const authRes = await globalFetch('/api/auth/me', { credentials: 'same-origin' });
+                if (authRes.ok) window.currentUser = await authRes.json();
+            }
             loadDungeons();
         } else {
             const err = await res.text();
