@@ -434,7 +434,8 @@ async function loadDungeons() {
 
                 cat.dungeons.forEach(d => {
                     let totalSalles = d.salles ? d.salles.length : 0;
-                    let combats = 0, bosses = 0, treasures = 0, events = 0, totalMobs = 0, totalBossMobs = 0;
+                    let combats = 0, bosses = 0, treasures = 0, totalMobs = 0, totalBossMobs = 0;
+                    let alterations = 0, rencontres = 0, pieges = 0, portes = 0, events = 0;
                     if (d.salles) {
                         d.salles.forEach(s => {
                             if (s.type === 'COMBAT') {
@@ -445,7 +446,13 @@ async function loadDungeons() {
                                 totalBossMobs += (s.monsters ? s.monsters.length : 0);
                             }
                             else if (s.type === 'TREASURE') { treasures++; }
-                            else if (s.type === 'EVENT') { events++; }
+                            else if (s.type === 'EVENT') { 
+                                if (s.eventSubType === 'ALTERATION') alterations++;
+                                else if (s.eventSubType === 'RENCONTRE') rencontres++;
+                                else if (s.eventSubType === 'PIEGE') pieges++;
+                                else if (s.eventSubType === 'PORTE_ETRANGE') portes++;
+                                else events++;
+                            }
                         });
                     }
 
@@ -565,9 +572,21 @@ async function loadDungeons() {
                                 ${treasures > 0 ? `<div class="flex-center text-warning ml-2 gap-[0.3rem]">
                                     <span class="material-symbols-outlined icon-sm">shopping_bag</span> Trésors : ${treasures}
                                 </div>` : ''}
-                                <div class="flex-center text-purple ml-2 gap-[0.3rem]">
+                                ${alterations > 0 ? `<div class="flex-center text-violet-500 ml-2 gap-[0.3rem]">
+                                    <span class="material-symbols-outlined icon-sm">blur_on</span> Altérations : ${alterations}
+                                </div>` : ''}
+                                ${rencontres > 0 ? `<div class="flex-center text-emerald ml-2 gap-[0.3rem]">
+                                    <span class="material-symbols-outlined icon-sm">storefront</span> Rencontres : ${rencontres}
+                                </div>` : ''}
+                                ${pieges > 0 ? `<div class="flex-center text-red-400 ml-2 gap-[0.3rem]">
+                                    <span class="material-symbols-outlined icon-sm">warning</span> Pièges : ${pieges}
+                                </div>` : ''}
+                                ${portes > 0 ? `<div class="flex-center text-amber-400 ml-2 gap-[0.3rem]">
+                                    <span class="material-symbols-outlined icon-sm">door_front</span> Portes étranges : ${portes}
+                                </div>` : ''}
+                                ${events > 0 ? `<div class="flex-center text-purple ml-2 gap-[0.3rem]">
                                     <span class="material-symbols-outlined icon-sm">auto_awesome</span> Événements : ${events}
-                                </div>
+                                </div>` : ''}
                             </div>
                         </div>
                     `;
@@ -1194,7 +1213,17 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
             } else if (s.type === 'TREASURE') {
                 html += `<div class="flex-center text-warning mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">shopping_bag</span> Étape ${index + 1} : Trésor</div>`;
             } else if (s.type === 'EVENT') {
-                html += `<div class="flex-center text-purple mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">auto_awesome</span> Étape ${index + 1} : Événement</div>`;
+                if (s.eventSubType === 'ALTERATION') {
+                    html += `<div class="flex-center text-violet-500 mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">blur_on</span> Étape ${index + 1} : Altération</div>`;
+                } else if (s.eventSubType === 'RENCONTRE') {
+                    html += `<div class="flex-center text-emerald mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">storefront</span> Étape ${index + 1} : Rencontre</div>`;
+                } else if (s.eventSubType === 'PIEGE') {
+                    html += `<div class="flex-center text-red-400 mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">warning</span> Étape ${index + 1} : Piège</div>`;
+                } else if (s.eventSubType === 'PORTE_ETRANGE') {
+                    html += `<div class="flex-center text-amber-400 mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">door_front</span> Étape ${index + 1} : Porte étrange</div>`;
+                } else {
+                    html += `<div class="flex-center text-purple mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">auto_awesome</span> Étape ${index + 1} : Événement</div>`;
+                }
             }
         });
         list.innerHTML = html;
