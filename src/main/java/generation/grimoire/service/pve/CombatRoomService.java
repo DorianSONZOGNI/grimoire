@@ -70,8 +70,6 @@ public class CombatRoomService {
         if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.COMBAT
                 || session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.BOSS) {
             session.getEnemies().clear();
-            session.getTurnOrder().clear();
-            session.setCurrentTurnIndex(0);
 
             if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.BOSS) {
                 loadChallenges(session, session.getCurrentRoom().getChallenges());
@@ -106,13 +104,9 @@ public class CombatRoomService {
             combatTurnService.rollInitiative(session);
         } else if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.TREASURE) {
             session.getEnemies().clear();
-            session.getTurnOrder().clear();
-            session.setCurrentTurnIndex(0);
             session.addLog("Vous trouvez un trésor !");
         } else if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.EVENT) {
             session.getEnemies().clear();
-            session.getTurnOrder().clear();
-            session.setCurrentTurnIndex(0);
             session.addLog("Événement : " + session.getCurrentRoom().getEventText());
 
             if (session.getCurrentRoom().getEventSubType() == generation.grimoire.enumeration.EventSubType.RENCONTRE) {
@@ -1241,8 +1235,6 @@ target.getActiveBuffs().add(effect);
                 }
 
                 session.getEnemies().clear();
-                session.getTurnOrder().clear();
-                session.setCurrentTurnIndex(0);
                 for (generation.grimoire.entity.pve.Monstre m : room.getMonsters()) {
                     ActiveMonster am = new ActiveMonster(m);
                     session.getEnemies().add(am);

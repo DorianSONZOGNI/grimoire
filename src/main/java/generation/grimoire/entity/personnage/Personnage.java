@@ -472,10 +472,6 @@ public class Personnage {
         PersonnageCombatHelper.takeDamage(this, damage, damageType, caster, isBurn);
     }
 
-    public void takeDamage(int damage, DamageType damageType, Personnage caster, boolean isBurn, String sourceName) {
-        PersonnageCombatHelper.takeDamage(this, damage, damageType, caster, isBurn, sourceName);
-    }
-
     public int getTotalHealthMax() {
         return this.healthMax + getStatFlatBonus(StatType.HEALTH);
     }
@@ -491,10 +487,6 @@ public class Personnage {
      */
     public void heal(int healAmount) {
         PersonnageCombatHelper.heal(this, healAmount, false);
-    }
-
-    public void heal(int healAmount, String sourceName) {
-        PersonnageCombatHelper.heal(this, healAmount, false, sourceName);
     }
 
     /**

@@ -44,8 +44,8 @@ public class PersonnageCombatHelper {
             if (totalHpRegen > 0) {
                 p.healRegen(totalHpRegen);
             } else if (totalHpRegen < 0) {
-                // Log délégué à takeDamage
-                p.takeDamage(-totalHpRegen, DamageType.INCOMPRESSIBLE, null, false, "Régénération native");
+                System.out.println("💔 " + p.getName() + " perd " + (-totalHpRegen) + " PV à cause de sa régénération de PV par tour (négative).");
+                p.takeDamage(-totalHpRegen, DamageType.INCOMPRESSIBLE);
             }
 
             int cursedManaDrain = p.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CURSED_MANA_DRAIN);
@@ -66,10 +66,6 @@ public class PersonnageCombatHelper {
     }
 
     public static void takeDamage(Personnage p, int damage, DamageType damageType, Personnage caster, boolean isBurn) {
-        takeDamage(p, damage, damageType, caster, isBurn, null);
-    }
-
-    public static void takeDamage(Personnage p, int damage, DamageType damageType, Personnage caster, boolean isBurn, String sourceName) {
         if (damageType == DamageType.INCOMPRESSIBLE) {
             p.setHealthCurrent(Math.max(0, p.getHealthCurrent() - damage));
             return;
@@ -410,10 +406,6 @@ public class PersonnageCombatHelper {
     }
 
     public static void heal(Personnage p, int healAmount, boolean isNativeRegen) {
-        heal(p, healAmount, isNativeRegen, null);
-    }
-
-    public static void heal(Personnage p, int healAmount, boolean isNativeRegen, String sourceName) {
         double multiplier = p.getStatBuffMultiplier(StatType.HEAL_RECEIVED);
 
         int cursedHeal = p.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CURSED_HEALING_REDUCTION);
@@ -443,11 +435,7 @@ public class PersonnageCombatHelper {
         if (p.getHealthCurrent() < 0) {
             p.setHealthCurrent(0);
         }
-        if (sourceName != null && !sourceName.isEmpty()) {
-            System.out.println("💖 " + p.getName() + " est soigné de " + finalHeal + " points de " + sourceName + ". Vie actuelle : " + p.getHealthCurrent());
-        } else {
-            System.out.println("💖 " + p.getName() + " est soigné de " + finalHeal + " points. Vie actuelle : " + p.getHealthCurrent());
-        }
+        System.out.println(p.getName() + " est soigné de " + finalHeal + " points. Vie actuelle : " + p.getHealthCurrent());
 
         if (!isNativeRegen) {
             boolean removedPoison = p.getActiveBuffs().removeIf(b -> b.getStatAffected() == StatType.POISON && (b.getFlatValue() > 0 || b.getModifier() > 0));
@@ -465,7 +453,7 @@ public class PersonnageCombatHelper {
             int effectiveBurn = (int) Math.round(totalBurnFlat * totalBurnMult);
             if (effectiveBurn > 0) {
                 System.out.println("🔥 " + p.getName() + " subit " + effectiveBurn + " dégâts de Brûlure !");
-                p.takeDamage(effectiveBurn, DamageType.MAGIC, null, true, "Brûlure");
+                p.takeDamage(effectiveBurn, DamageType.MAGIC, null, true);
             }
         }
 
@@ -475,7 +463,7 @@ public class PersonnageCombatHelper {
             int effectivePoison = (int) Math.round(totalPoisonFlat * totalPoisonMult);
             if (effectivePoison > 0) {
                 System.out.println("☠️ " + p.getName() + " subit " + effectivePoison + " dégâts de Poison !");
-                p.takeDamage(effectivePoison, DamageType.BRUT, null, false, "Poison");
+                p.takeDamage(effectivePoison, DamageType.BRUT);
             }
         }
 

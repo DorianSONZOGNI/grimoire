@@ -118,12 +118,9 @@
 
         <!-- Log -->
         <div class="combat-log-container retracted" id="combatLogContainerWrapper">
-            <button class="w-full flex justify-between items-center px-4 py-2 bg-slate-800/90 hover:bg-slate-700/90 border border-white/10 rounded-xl shadow-lg backdrop-blur-md transition-all text-slate-200 group" id="combatLogToggleBtn" onclick="toggleCombatLog()">
-                <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-[1.2rem] text-emerald-400">history</span>
-                    <span class="font-outfit font-medium text-sm">Journal de combat</span>
-                </div>
-                <span class="material-symbols-outlined text-slate-400 group-hover:text-white transition-colors" id="combatLogToggleIcon">expand_more</span>
+            <button class="w-full flex justify-center items-center gap-2 px-4 py-2 bg-slate-900/90 hover:bg-slate-800 border border-white/20 rounded-full shadow-lg backdrop-blur-sm transition-all text-slate-200" id="combatLogToggleBtn" onclick="toggleCombatLog()">
+                <span class="material-symbols-outlined text-[1.2rem]">history</span>
+                <span class="font-outfit font-medium text-sm">Journal de combat</span>
             </button>
             <div class="combat-log mt-3" id="combatLog" style="display: none;">
                 <div class="log-entry">Chargement du combat...</div>

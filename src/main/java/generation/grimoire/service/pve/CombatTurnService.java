@@ -1003,7 +1003,7 @@ class CombatTurnService {
                 // Target with highest mana
                 Personnage target = alivePlayers.stream()
                         .max(java.util.Comparator.comparingInt(p -> p != null ? p.getManaCurrent() : 0))
-                        .orElse(null);
+                        .orElse(alivePlayers.get(0));
                 session.addLog("\uD83D\uDC1B " + m.getBase().getName() + " cible " + target.getName()
                         + " (le plus de Mana - Corrupteur).");
                 return target;
@@ -1025,7 +1025,7 @@ class CombatTurnService {
                 Personnage target = alivePlayers.stream()
                         .min(java.util.Comparator.comparingInt(
                                 p -> p.getEffectiveStat(generation.grimoire.enumeration.StatType.RESISTANCE)))
-                        .orElse(null);
+                        .orElse(alivePlayers.get(0));
                 session.addLog("\uD83D\uDDE1\uFE0F " + m.getBase().getName() + " vise " + target.getName()
                         + " (la plus faible Résistance - Assassin).");
                 return target;
@@ -1033,7 +1033,7 @@ class CombatTurnService {
             case BRUTAL -> {
                 Personnage target = alivePlayers.stream()
                         .min(java.util.Comparator.comparingInt(p -> p.getHealthMax()))
-                        .orElse(null);
+                        .orElse(alivePlayers.get(0));
                 session.addLog("\uD83E\uDDA0 " + m.getBase().getName() + " frappe " + target.getName()
                         + " (le moins de PV max - Brutal).");
                 return target;
@@ -1041,7 +1041,7 @@ class CombatTurnService {
             case SADIQUE -> {
                 Personnage target = alivePlayers.stream()
                         .min(java.util.Comparator.comparingInt(p -> p.getHealthCurrent()))
-                        .orElse(null);
+                        .orElse(alivePlayers.get(0));
                 session.addLog("\uD83D\uDE08 " + m.getBase().getName() + " s'acharne sur " + target.getName()
                         + " (le moins de PV actuel - Sadique).");
                 return target;

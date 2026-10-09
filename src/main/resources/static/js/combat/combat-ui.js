@@ -11,16 +11,16 @@ window.toggleCombatLog = function() {
     const log = document.getElementById('combatLog');
     const btn = document.getElementById('combatLogToggleBtn');
     const wrapper = document.getElementById('combatLogContainerWrapper');
-    const icon = document.getElementById('combatLogToggleIcon');
     if (log.style.display === 'none') {
         log.style.display = 'block';
+        btn.classList.remove('rounded-full');
+        btn.classList.add('rounded-t-lg', 'border-b-0');
         wrapper.classList.remove('retracted');
-        if (icon) icon.textContent = 'expand_less';
-        log.scrollTop = log.scrollHeight;
     } else {
         log.style.display = 'none';
+        btn.classList.remove('rounded-t-lg', 'border-b-0');
+        btn.classList.add('rounded-full');
         wrapper.classList.add('retracted');
-        if (icon) icon.textContent = 'expand_more';
     }
 };
 
@@ -1394,12 +1394,9 @@ export function updateUI(data) {
                                             const equipMatch = log.match(/a offert l'.quipement : (.*) !/) || log.match(/a offert l'.quipement : (.*) \(ajout. au groupe\)\./) || log.match(/a offert l'.quipement : (.*) \(envoy. au coffre\)\./);
                                             if (equipMatch) {
                                                 const eqName = equipMatch[1].trim();
-                                                const slotInfo = typeof getSlotInfo === 'function' ? getSlotInfo({name: eqName, slot: '?'}) : { icon: 'shield', color: '#10b981' };
-                                                const iconName = slotInfo.icon && slotInfo.icon !== 'help' ? slotInfo.icon : 'shield';
-                                                const iconColor = slotInfo.color && slotInfo.color !== '#94a3b8' ? slotInfo.color : '#10b981';
                                                 logHtml = `
-                                                    <div class="flex-center relative" style="background: rgba(0, 0, 0, 0.4); border: 1px solid ${iconColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${iconColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                                        <span class="material-symbols-outlined" style="color: ${iconColor};">${iconName}</span> <span style="border-bottom: 1px dashed ${iconColor};">${eqName}</span>
+                                                    <div class="flex-center relative" style="background: rgba(0, 0, 0, 0.4); border: 1px solid #10b98180; padding: 0.8rem 1rem; border-radius: 8px; color: #10b981; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                        <span class="material-symbols-outlined" style="color: #10b981;">shield</span> <span style="border-bottom: 1px dashed #10b981;">${eqName}</span>
                                                     </div>
                                                 `;
                                             }
@@ -2136,7 +2133,11 @@ export function updateUI(data) {
         }
     });
 
-    logContainer.scrollTop = oldScrollTop;
+    if (isAtBottom) {
+        logContainer.scrollTop = logContainer.scrollHeight;
+    } else {
+        logContainer.scrollTop = oldScrollTop;
+    }
 
     // Check finish
     if (data.finished) {
