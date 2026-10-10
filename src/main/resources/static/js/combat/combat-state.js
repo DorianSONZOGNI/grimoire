@@ -935,9 +935,27 @@ window.renderOverlayMap = function (containerId) {
             color = '#f59e0b'; // amber
             label += ' : Trésor';
         } else if (s.type === 'EVENT') {
-            icon = 'auto_awesome';
-            color = '#a855f7'; // purple
-            label += ' : Événement';
+            if (s.eventSubType === 'ALTERATION') {
+                icon = 'blur_on';
+                color = '#8b5cf6'; // violet-500
+                label += ' : Altération';
+            } else if (s.eventSubType === 'RENCONTRE') {
+                icon = 'storefront';
+                color = '#10b981'; // emerald-500
+                label += ' : Rencontre';
+            } else if (s.eventSubType === 'PIEGE') {
+                icon = 'warning';
+                color = '#f87171'; // red-400
+                label += ' : Piège';
+            } else if (s.eventSubType === 'PORTE_ETRANGE') {
+                icon = 'door_front';
+                color = '#fbbf24'; // amber-400
+                label += ' : Porte étrange';
+            } else {
+                icon = 'auto_awesome';
+                color = '#a855f7'; // purple
+                label += ' : Événement';
+            }
         }
 
         let dotColor = isCurrent ? '#38bdf8' : (isPast ? '#10b981' : '#475569');

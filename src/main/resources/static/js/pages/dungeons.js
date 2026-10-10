@@ -434,7 +434,8 @@ async function loadDungeons() {
 
                 cat.dungeons.forEach(d => {
                     let totalSalles = d.salles ? d.salles.length : 0;
-                    let combats = 0, bosses = 0, treasures = 0, events = 0, totalMobs = 0, totalBossMobs = 0;
+                    let combats = 0, bosses = 0, treasures = 0, totalMobs = 0, totalBossMobs = 0;
+                    let alterations = 0, rencontres = 0, pieges = 0, portes = 0, events = 0;
                     if (d.salles) {
                         d.salles.forEach(s => {
                             if (s.type === 'COMBAT') {
@@ -445,7 +446,13 @@ async function loadDungeons() {
                                 totalBossMobs += (s.monsters ? s.monsters.length : 0);
                             }
                             else if (s.type === 'TREASURE') { treasures++; }
-                            else if (s.type === 'EVENT') { events++; }
+                            else if (s.type === 'EVENT') { 
+                                if (s.eventSubType === 'ALTERATION') alterations++;
+                                else if (s.eventSubType === 'RENCONTRE') rencontres++;
+                                else if (s.eventSubType === 'PIEGE') pieges++;
+                                else if (s.eventSubType === 'PORTE_ETRANGE') portes++;
+                                else events++;
+                            }
                         });
                     }
 
@@ -565,9 +572,21 @@ async function loadDungeons() {
                                 ${treasures > 0 ? `<div class="flex-center text-warning ml-2 gap-[0.3rem]">
                                     <span class="material-symbols-outlined icon-sm">shopping_bag</span> Trésors : ${treasures}
                                 </div>` : ''}
-                                <div class="flex-center text-purple ml-2 gap-[0.3rem]">
+                                ${alterations > 0 ? `<div class="flex-center text-violet-500 ml-2 gap-[0.3rem]">
+                                    <span class="material-symbols-outlined icon-sm">blur_on</span> Altérations : ${alterations}
+                                </div>` : ''}
+                                ${rencontres > 0 ? `<div class="flex-center text-emerald ml-2 gap-[0.3rem]">
+                                    <span class="material-symbols-outlined icon-sm">storefront</span> Rencontres : ${rencontres}
+                                </div>` : ''}
+                                ${pieges > 0 ? `<div class="flex-center text-red-400 ml-2 gap-[0.3rem]">
+                                    <span class="material-symbols-outlined icon-sm">warning</span> Pièges : ${pieges}
+                                </div>` : ''}
+                                ${portes > 0 ? `<div class="flex-center text-amber-400 ml-2 gap-[0.3rem]">
+                                    <span class="material-symbols-outlined icon-sm">door_front</span> Portes étranges : ${portes}
+                                </div>` : ''}
+                                ${events > 0 ? `<div class="flex-center text-purple ml-2 gap-[0.3rem]">
                                     <span class="material-symbols-outlined icon-sm">auto_awesome</span> Événements : ${events}
-                                </div>
+                                </div>` : ''}
                             </div>
                         </div>
                     `;
@@ -739,13 +758,16 @@ async function loadCharacters() {
                 }
 
                 list.innerHTML += `
-                    <div class="char-card" id="charCard_${c.id}" onclick="selectCharacter(${c.id})">
+                    <div class="char-card" id="charCard_${c.id}" onclick="selectCharacter(${c.id})" style="position: relative;">
                         <div class="char-avatar" style="${avatarStyle}">${avatarHtml}</div>
-                        <div>
+                        <div style="flex: 1;">
                             <div class="flex-center text-slate-50 font-semibold font-outfit text-lg">
                                 ${c.name} ${iconsHtml}
                             </div>
                             <div class="text-muted text-sm">Niv. ${c.voieLevel || 1} &bull; ${c.totalHealthMax !== undefined ? c.totalHealthMax : c.healthMax} PV max</div>
+                        </div>
+                        <div onclick="event.stopPropagation(); window.inspectCharacter(${c.id})" style="padding: 0.5rem; border-radius: 0.5rem; background: rgba(255,255,255,0.05); color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; margin-left: 0.5rem;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='#fff';" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.color='#94a3b8';" title="Voir l'équipement">
+                            <span class="material-symbols-outlined" style="font-size: 1.2rem;">visibility</span>
                         </div>
                     </div>
                 `;
@@ -1022,6 +1044,10 @@ window.selectCharacter = async function (id) {
         }
     }
 
+    await window.inspectCharacter(id);
+};
+
+window.inspectCharacter = async function(id) {
     let equipments = [];
     try {
         const res = await globalFetch(`/api/equipments/personnage/${id}`);
@@ -1091,8 +1117,9 @@ window.selectCharacter = async function (id) {
             const slotInfo = Object.assign({}, window.SLOT_LABELS && window.SLOT_LABELS[slotName] ? window.SLOT_LABELS[slotName] : { label: slotName, icon: 'help', color: '#94a3b8', extraClass: '' });
             const rarityName = eq.rarity?.name || eq.rarity;
             const rarityColor = colorMap[rarityName] || '#f8fafc';
+            const tooltipData = window.getEquipmentTooltipHTML ? window.getEquipmentTooltipHTML(eq) : eq.name;
             equipList.innerHTML += `
-                <div class="equip-slot" style="border-left: 3px solid ${rarityColor};">
+                <div class="equip-slot tooltip-trigger" style="border-left: 3px solid ${rarityColor}; cursor: help;" onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
                     <div class="equip-slot-icon"><span class="material-symbols-outlined ${slotInfo.extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span></div>
                     <div class="equip-slot-content">
                         <div class="text-sm" style="color: ${rarityColor}; font-weight: 600;">${eq.name} ${window.getEffectInfoIconHtml ? window.getEffectInfoIconHtml(eq.specialEffect) : ''}</div>
@@ -1102,6 +1129,7 @@ window.selectCharacter = async function (id) {
         });
     }
 };
+
 
 window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost, reqLevel, isDailyQuest, isWeeklyQuest, dailyChallengeDuo) {
     pageState.currentDungeonId = id;
@@ -1194,7 +1222,17 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
             } else if (s.type === 'TREASURE') {
                 html += `<div class="flex-center text-warning mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">shopping_bag</span> Étape ${index + 1} : Trésor</div>`;
             } else if (s.type === 'EVENT') {
-                html += `<div class="flex-center text-purple mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">auto_awesome</span> Étape ${index + 1} : Événement</div>`;
+                if (s.eventSubType === 'ALTERATION') {
+                    html += `<div class="flex-center text-violet-500 mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">blur_on</span> Étape ${index + 1} : Altération</div>`;
+                } else if (s.eventSubType === 'RENCONTRE') {
+                    html += `<div class="flex-center text-emerald mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">storefront</span> Étape ${index + 1} : Rencontre</div>`;
+                } else if (s.eventSubType === 'PIEGE') {
+                    html += `<div class="flex-center text-red-400 mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">warning</span> Étape ${index + 1} : Piège</div>`;
+                } else if (s.eventSubType === 'PORTE_ETRANGE') {
+                    html += `<div class="flex-center text-amber-400 mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">door_front</span> Étape ${index + 1} : Porte étrange</div>`;
+                } else {
+                    html += `<div class="flex-center text-purple mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">auto_awesome</span> Étape ${index + 1} : Événement</div>`;
+                }
             }
         });
         list.innerHTML = html;
@@ -1329,8 +1367,12 @@ window.unlockDungeon = async function (id, cost, event) {
                 await new Promise(r => setTimeout(r, 800));
             }
             window.showNotif("Donjon d\u00e9bloqu\u00e9 !");
-            const authRes = await globalFetch('/api/auth/me', { credentials: 'same-origin' });
-            if (authRes.ok) window.currentUser = await authRes.json();
+            if (window.checkAuthStatus) {
+                await window.checkAuthStatus();
+            } else {
+                const authRes = await globalFetch('/api/auth/me', { credentials: 'same-origin' });
+                if (authRes.ok) window.currentUser = await authRes.json();
+            }
             loadDungeons();
         } else {
             const err = await res.text();
@@ -2286,15 +2328,27 @@ document.addEventListener('DOMContentLoaded', () => {
                         _joinLobbyHostConsumableWeight = 0;
                         window.maxSelectableJoinChars = 4;
                         window.updateJoinCharAvailability(null);
+                        const msgContainer = document.getElementById('joinLobbyErrorMsg');
+                        if (msgContainer) {
+                            msgContainer.textContent = "Lobby introuvable.";
+                            msgContainer.style.display = 'block';
+                        }
                     }
                 } catch (err) {
                     console.error("Erreur lors de la récupération des infos du lobby", err);
                     infoContainer.style.display = 'none';
                     _joinLobbyMultiId = null;
+                    _setJoinCharSelectEnabled(false);
+                    _clearJoinSelections();
                     _joinLobbyHostHeroCount = 0;
                     _joinLobbyHostConsumableWeight = 0;
                     window.maxSelectableJoinChars = 4;
-                    window.updateJoinCharAvailability(1);
+                    window.updateJoinCharAvailability(null);
+                    const msgContainer = document.getElementById('joinLobbyErrorMsg');
+                    if (msgContainer) {
+                        msgContainer.textContent = "Lobby introuvable.";
+                        msgContainer.style.display = 'block';
+                    }
                 }
             } else {
                 infoContainer.style.display = 'none';
@@ -2304,7 +2358,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 _joinLobbyHostHeroCount = 0;
                 _joinLobbyHostConsumableWeight = 0;
                 window.maxSelectableJoinChars = 4;
-                window.updateJoinCharAvailability(1);
+                window.updateJoinCharAvailability(null);
             }
         });
     }

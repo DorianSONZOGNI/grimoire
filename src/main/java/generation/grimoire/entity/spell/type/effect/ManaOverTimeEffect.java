@@ -38,9 +38,14 @@ public class ManaOverTimeEffect extends ManaEffect {
     private Personnage caster;
 
     public void tick(Personnage target) {
-if (duration > 0) {
+        if (duration > 0) {
             target.restoreMana(fixedManaPerTick);
             duration--;
+            if (fixedManaPerTick >= 0) {
+                System.out.println("✨ " + target.getName() + " récupère " + fixedManaPerTick + " Mana grâce à une régénération sur la durée (MoT).");
+            } else {
+                System.out.println("🌀 " + target.getName() + " perd " + (-fixedManaPerTick) + " Mana à cause d'un effet sur la durée (MoT).");
+            }
         }
     }
 

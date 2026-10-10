@@ -289,6 +289,26 @@ window.removeMonsterFromRoom = function (roomIndex, monsterIndex) {
     renderRooms();
 };
 
+
+window.toggleGenericSelect = function (id) {
+    const wrapper = document.getElementById(id + '_wrapper');
+    if (wrapper) {
+        document.querySelectorAll('.custom-select-wrapper').forEach(w => {
+            if (w !== wrapper) w.classList.remove('open');
+        });
+        wrapper.classList.toggle('open');
+    }
+};
+
+window.selectGenericOption = function (id, value, labelHtml) {
+    const select = document.getElementById(id);
+    if (select) select.value = value;
+    const label = document.getElementById(id + '_label');
+    if (label) label.innerHTML = labelHtml;
+    const wrapper = document.getElementById(id + '_wrapper');
+    if (wrapper) wrapper.classList.remove('open');
+};
+
 window.toggleMonsterSelect = function (rIndex) {
     const wrapper = document.getElementById(`room_select_wrapper_${rIndex}`);
     if (wrapper) {
@@ -681,12 +701,19 @@ function renderRooms() {
                 <div class="flex gap-2">
                     <div class="flex-1">
                         <label class="text-muted text-xxs m-0 pl-1" >Condition</label>
-                        <select class="form-control text-xs w-full" id="room_boss_chall_type_${rIndex}">
-                            <option value="MAX_HEROES">Max Héros</option>
-                            <option value="MAX_HP_LOSS_PCT">Max PV perdus (%)</option>
-                            <option value="MIN_HP_LOSS_PCT">Min PV perdus (%)</option>
-                              <option value="MAX_TURNS">Max Tours</option>
-                        </select>
+                        <div class="custom-select-wrapper" id="room_boss_chall_type_${rIndex}_wrapper" style="margin: 0;">
+                            <div class="custom-select-trigger custom-select-larger h-[32px] px-2 py-0" onclick="toggleGenericSelect('room_boss_chall_type_${rIndex}')">
+                                <span class="cs-label text-xs" id="room_boss_chall_type_${rIndex}_label">Max Héros</span>
+                                <span class="material-symbols-outlined icon-sm">expand_more</span>
+                            </div>
+                            <div class="custom-select-options">
+                                <div class="custom-option text-xs p-2" onclick="selectGenericOption('room_boss_chall_type_${rIndex}', 'MAX_HEROES', 'Max Héros')">Max Héros</div>
+                                <div class="custom-option text-xs p-2" onclick="selectGenericOption('room_boss_chall_type_${rIndex}', 'MAX_HP_LOSS_PCT', 'Max PV perdus (%)')">Max PV perdus (%)</div>
+                                <div class="custom-option text-xs p-2" onclick="selectGenericOption('room_boss_chall_type_${rIndex}', 'MIN_HP_LOSS_PCT', 'Min PV perdus (%)')">Min PV perdus (%)</div>
+                                <div class="custom-option text-xs p-2" onclick="selectGenericOption('room_boss_chall_type_${rIndex}', 'MAX_TURNS', 'Max Tours')">Max Tours</div>
+                            </div>
+                            <input type="hidden" id="room_boss_chall_type_${rIndex}" value="MAX_HEROES">
+                        </div>
                     </div>
                     <div class="w-20">
                         <label class="text-muted text-xxs m-0 pl-1" >Valeur</label>
@@ -696,12 +723,19 @@ function renderRooms() {
                 <div class="flex gap-2 items-end">
                     <div class="flex-1">
                         <label class="text-muted text-xxs m-0 pl-1" >Récompense</label>
-                        <select class="form-control text-xs w-full" id="room_boss_chall_rew_type_${rIndex}">
-                            <option value="EXTRA_LOOT">Roll de Loot Sup.</option>
-                            <option value="BONUS_SPIRIT_XP">XP Spirituelle Bonus</option>
-                            <option value="BONUS_GOLD">Or Bonus</option>
-                            <option value="REGEN_HP_MANA">Régénération (PV/Mana %)</option>
-                        </select>
+                        <div class="custom-select-wrapper" id="room_boss_chall_rew_type_${rIndex}_wrapper" style="margin: 0;">
+                            <div class="custom-select-trigger custom-select-larger h-[32px] px-2 py-0" onclick="toggleGenericSelect('room_boss_chall_rew_type_${rIndex}')">
+                                <span class="cs-label text-xs" id="room_boss_chall_rew_type_${rIndex}_label">Roll de Loot Sup.</span>
+                                <span class="material-symbols-outlined icon-sm">expand_more</span>
+                            </div>
+                            <div class="custom-select-options">
+                                <div class="custom-option text-xs p-2" onclick="selectGenericOption('room_boss_chall_rew_type_${rIndex}', 'EXTRA_LOOT', 'Roll de Loot Sup.')">Roll de Loot Sup.</div>
+                                <div class="custom-option text-xs p-2" onclick="selectGenericOption('room_boss_chall_rew_type_${rIndex}', 'BONUS_SPIRIT_XP', 'XP Spirituelle Bonus')">XP Spirituelle Bonus</div>
+                                <div class="custom-option text-xs p-2" onclick="selectGenericOption('room_boss_chall_rew_type_${rIndex}', 'BONUS_GOLD', 'Or Bonus')">Or Bonus</div>
+                                <div class="custom-option text-xs p-2" onclick="selectGenericOption('room_boss_chall_rew_type_${rIndex}', 'REGEN_HP_MANA', 'Régénération (PV/Mana %)')">Régénération (PV/Mana %)</div>
+                            </div>
+                            <input type="hidden" id="room_boss_chall_rew_type_${rIndex}" value="EXTRA_LOOT">
+                        </div>
                     </div>
                     <div class="w-20">
                         <label class="text-muted text-xxs m-0 pl-1" >Valeur</label>
@@ -1289,22 +1323,71 @@ function renderRooms() {
                             <div class="room-select-row-wrap" >
                                 <div class="room-buff-col-lg" >
                                     <label class="text-muted text-xxs m-0 pl-1" >Type de buff</label>
-                                    <select class="form-control text-xs w-full" id="room_door_boss_buff_type_${rIndex}_${oIndex}" >
-                                        <option value="HP_PCT">+ PV Max (%)</option>
-                                        <option value="SHIELD_PCT">Bouclier (% PV)</option>
-                                        <option value="ARMOR_FLAT">+ Armure</option>
-                                        <option value="RESIST_FLAT">+ Résistance</option>
-                                        <option value="BURN_ON_HIT">Brûlure au touché</option>
-                                        <option value="POISON_ON_HIT">Poison au touché</option>
-                                        <option value="DAMAGE_REFLECTION">Miroir Épineux</option>
-                                        <option value="PHYSICAL_SHROUD">Voile Éthéré</option>
-                                        <option value="MAGIC_SHROUD">Silencieux</option>
-                                        <option value="FRENZY">Rage Sanguinaire</option>
-                                        <option value="LIFESTEAL_AURA">Aura Vampirique</option>
-                                        <option value="REGENERATION">Régénération</option>
-                                        <option value="MANA_OPPRESSION">Oppression Magique</option>
-                                        <option value="FREEZE_ON_HIT">Gel au touché</option>
-                                    </select>
+                                    <div class="custom-combobox relative w-full" >
+                                        <input type="hidden" id="room_door_boss_buff_type_${rIndex}_${oIndex}" value="HP_PCT">
+                                        <button class="buff-combobox-btn form-control text-xs" type="button" onclick="toggleDoorBossBuffCombobox(${rIndex}, ${oIndex})" id="room_door_boss_buff_btn_${rIndex}_${oIndex}">
+                                            <span class="flex items-center gap-2" id="room_door_boss_buff_label_${rIndex}_${oIndex}" ><span class="material-symbols-outlined text-green-400 text-lg" >favorite</span> <span>+ PV Max (%)</span></span>
+                                            <span class="material-symbols-outlined text-lg text-muted" >expand_more</span>
+                                        </button>
+                                        <div class="buff-combobox-menu custom-combobox-menu hidden" id="room_door_boss_buff_menu_${rIndex}_${oIndex}" >
+                                            <div class="combobox-item buff-combobox-item" onclick="selectDoorBossBuffType(${rIndex}, ${oIndex}, 'HP_PCT', '+ PV Max (%)', 'favorite', 'text-green-400')">
+                                                <span class="material-symbols-outlined text-green-400 text-lg" >favorite</span>
+                                                <span>+ PV Max (%)</span>
+                                            </div>
+                                            <div class="combobox-item buff-combobox-item" onclick="selectDoorBossBuffType(${rIndex}, ${oIndex}, 'SHIELD_PCT', 'Bouclier (% PV)', 'shield', 'text-blue-400')">
+                                                <span class="material-symbols-outlined text-blue-400 text-lg" >shield</span>
+                                                <span>Bouclier (% PV)</span>
+                                            </div>
+                                            <div class="combobox-item buff-combobox-item" onclick="selectDoorBossBuffType(${rIndex}, ${oIndex}, 'ARMOR_FLAT', '+ Armure', 'security', 'text-gray-300')">
+                                                <span class="material-symbols-outlined text-gray-300 text-lg" >security</span>
+                                                <span>+ Armure</span>
+                                            </div>
+                                            <div class="combobox-item buff-combobox-item" onclick="selectDoorBossBuffType(${rIndex}, ${oIndex}, 'RESIST_FLAT', '+ Résistance', 'gpp_maybe', 'text-purple-400')">
+                                                <span class="material-symbols-outlined text-purple-400 text-lg" >gpp_maybe</span>
+                                                <span>+ Résistance</span>
+                                            </div>
+                                            <div class="combobox-item buff-combobox-item" onclick="selectDoorBossBuffType(${rIndex}, ${oIndex}, 'BURN_ON_HIT', 'Brûlure au touché', 'local_fire_department', 'text-orange-500')">
+                                                <span class="material-symbols-outlined text-orange-500 text-lg" >local_fire_department</span>
+                                                <span>Brûlure au touché</span>
+                                            </div>
+                                            <div class="combobox-item buff-combobox-item" onclick="selectDoorBossBuffType(${rIndex}, ${oIndex}, 'POISON_ON_HIT', 'Poison au touché', 'coronavirus', 'text-green-500')">
+                                                <span class="material-symbols-outlined text-green-500 text-lg" >coronavirus</span>
+                                                <span>Poison au touché</span>
+                                            </div>
+                                            <div class="combobox-item buff-combobox-item" onclick="selectDoorBossBuffType(${rIndex}, ${oIndex}, 'DAMAGE_REFLECTION', 'Miroir Épineux', 'all_out', 'text-rose-500')">
+                                                <span class="material-symbols-outlined text-rose-500 text-lg" >all_out</span>
+                                                <span>Miroir Épineux</span>
+                                            </div>
+                                            <div class="combobox-item buff-combobox-item" onclick="selectDoorBossBuffType(${rIndex}, ${oIndex}, 'PHYSICAL_SHROUD', 'Voile Éthéré', 'blur_on', 'text-slate-300')">
+                                                <span class="material-symbols-outlined text-slate-300 text-lg" >blur_on</span>
+                                                <span>Voile Éthéré</span>
+                                            </div>
+                                            <div class="combobox-item buff-combobox-item" onclick="selectDoorBossBuffType(${rIndex}, ${oIndex}, 'MAGIC_SHROUD', 'Silencieux', 'blur_off', 'text-indigo-400')">
+                                                <span class="material-symbols-outlined text-indigo-400 text-lg" >blur_off</span>
+                                                <span>Silencieux</span>
+                                            </div>
+                                            <div class="combobox-item buff-combobox-item" onclick="selectDoorBossBuffType(${rIndex}, ${oIndex}, 'FRENZY', 'Rage Sanguinaire', 'swords', 'text-red-500')">
+                                                <span class="material-symbols-outlined text-red-500 text-lg" >swords</span>
+                                                <span>Rage Sanguinaire</span>
+                                            </div>
+                                            <div class="combobox-item buff-combobox-item" onclick="selectDoorBossBuffType(${rIndex}, ${oIndex}, 'LIFESTEAL_AURA', 'Aura Vampirique', 'water_drop', 'text-red-600')">
+                                                <span class="material-symbols-outlined text-red-600 text-lg" >water_drop</span>
+                                                <span>Aura Vampirique</span>
+                                            </div>
+                                            <div class="combobox-item buff-combobox-item" onclick="selectDoorBossBuffType(${rIndex}, ${oIndex}, 'REGENERATION', 'Régénération', 'healing', 'text-emerald-400')">
+                                                <span class="material-symbols-outlined text-emerald-400 text-lg" >healing</span>
+                                                <span>Régénération</span>
+                                            </div>
+                                            <div class="combobox-item buff-combobox-item" onclick="selectDoorBossBuffType(${rIndex}, ${oIndex}, 'MANA_OPPRESSION', 'Oppression Magique', 'do_not_disturb', 'text-purple-500')">
+                                                <span class="material-symbols-outlined text-purple-500 text-lg" >do_not_disturb</span>
+                                                <span>Oppression Magique</span>
+                                            </div>
+                                            <div class="combobox-item buff-combobox-item" onclick="selectDoorBossBuffType(${rIndex}, ${oIndex}, 'FREEZE_ON_HIT', 'Gel au touché', 'ac_unit', 'text-cyan-400')">
+                                                <span class="material-symbols-outlined text-cyan-400 text-lg" >ac_unit</span>
+                                                <span>Gel au touché</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="room-buff-col-sm" >
                                     <label class="text-muted text-xxs m-0 pl-1" >Stat (Valeur)</label>
@@ -1353,12 +1436,19 @@ function renderRooms() {
                                 <div class="flex gap-2">
                                     <div class="flex-1">
                                         <label class="text-muted text-xxs m-0 pl-1" >Condition</label>
-                                        <select class="form-control text-xs w-full" id="room_door_boss_chall_type_${rIndex}_${oIndex}">
-                                            <option value="MAX_HEROES">Max Héros</option>
-                                            <option value="MAX_HP_LOSS_PCT">Max PV perdus (%)</option>
-                                            <option value="MIN_HP_LOSS_PCT">Min PV perdus (%)</option>
-                              <option value="MAX_TURNS">Max Tours</option>
-                                        </select>
+                                        <div class="custom-select-wrapper" id="room_door_boss_chall_type_${rIndex}_${oIndex}_wrapper" style="margin: 0;">
+                                            <div class="custom-select-trigger custom-select-larger h-[32px] px-2 py-0" onclick="toggleGenericSelect('room_door_boss_chall_type_${rIndex}_${oIndex}')">
+                                                <span class="cs-label text-xs" id="room_door_boss_chall_type_${rIndex}_${oIndex}_label">Max Héros</span>
+                                                <span class="material-symbols-outlined icon-sm">expand_more</span>
+                                            </div>
+                                            <div class="custom-select-options">
+                                                <div class="custom-option text-xs p-2" onclick="selectGenericOption('room_door_boss_chall_type_${rIndex}_${oIndex}', 'MAX_HEROES', 'Max Héros')">Max Héros</div>
+                                                <div class="custom-option text-xs p-2" onclick="selectGenericOption('room_door_boss_chall_type_${rIndex}_${oIndex}', 'MAX_HP_LOSS_PCT', 'Max PV perdus (%)')">Max PV perdus (%)</div>
+                                                <div class="custom-option text-xs p-2" onclick="selectGenericOption('room_door_boss_chall_type_${rIndex}_${oIndex}', 'MIN_HP_LOSS_PCT', 'Min PV perdus (%)')">Min PV perdus (%)</div>
+                                                <div class="custom-option text-xs p-2" onclick="selectGenericOption('room_door_boss_chall_type_${rIndex}_${oIndex}', 'MAX_TURNS', 'Max Tours')">Max Tours</div>
+                                            </div>
+                                            <input type="hidden" id="room_door_boss_chall_type_${rIndex}_${oIndex}" value="MAX_HEROES">
+                                        </div>
                                     </div>
                                     <div class="w-20">
                                         <label class="text-muted text-xxs m-0 pl-1" >Valeur</label>
@@ -1368,12 +1458,19 @@ function renderRooms() {
                                 <div class="flex gap-2 items-end">
                                     <div class="flex-1">
                                         <label class="text-muted text-xxs m-0 pl-1" >Récompense</label>
-                                        <select class="form-control text-xs w-full" id="room_door_boss_chall_rew_type_${rIndex}_${oIndex}">
-                                            <option value="EXTRA_LOOT">Roll de Loot Sup.</option>
-                                            <option value="BONUS_SPIRIT_XP">XP Spirituelle Bonus</option>
-                                            <option value="BONUS_GOLD">Or Bonus</option>
-                                            <option value="REGEN_HP_MANA">Régénération (PV/Mana %)</option>
-                                        </select>
+                                        <div class="custom-select-wrapper" id="room_door_boss_chall_rew_type_${rIndex}_${oIndex}_wrapper" style="margin: 0;">
+                                            <div class="custom-select-trigger custom-select-larger h-[32px] px-2 py-0" onclick="toggleGenericSelect('room_door_boss_chall_rew_type_${rIndex}_${oIndex}')">
+                                                <span class="cs-label text-xs" id="room_door_boss_chall_rew_type_${rIndex}_${oIndex}_label">Roll de Loot Sup.</span>
+                                                <span class="material-symbols-outlined icon-sm">expand_more</span>
+                                            </div>
+                                            <div class="custom-select-options">
+                                                <div class="custom-option text-xs p-2" onclick="selectGenericOption('room_door_boss_chall_rew_type_${rIndex}_${oIndex}', 'EXTRA_LOOT', 'Roll de Loot Sup.')">Roll de Loot Sup.</div>
+                                                <div class="custom-option text-xs p-2" onclick="selectGenericOption('room_door_boss_chall_rew_type_${rIndex}_${oIndex}', 'BONUS_SPIRIT_XP', 'XP Spirituelle Bonus')">XP Spirituelle Bonus</div>
+                                                <div class="custom-option text-xs p-2" onclick="selectGenericOption('room_door_boss_chall_rew_type_${rIndex}_${oIndex}', 'BONUS_GOLD', 'Or Bonus')">Or Bonus</div>
+                                                <div class="custom-option text-xs p-2" onclick="selectGenericOption('room_door_boss_chall_rew_type_${rIndex}_${oIndex}', 'REGEN_HP_MANA', 'Régénération (PV/Mana %)')">Régénération (PV/Mana %)</div>
+                                            </div>
+                                            <input type="hidden" id="room_door_boss_chall_rew_type_${rIndex}_${oIndex}" value="EXTRA_LOOT">
+                                        </div>
                                     </div>
                                     <div class="w-20">
                                         <label class="text-muted text-xxs m-0 pl-1" >Valeur</label>
@@ -2958,6 +3055,23 @@ window.toggleMutationSelection = (id) => {
         pageState.selectedMutationIds.push(id);
     }
     renderMutationsSelector();
+};
+
+
+window.toggleDoorBossBuffCombobox = function (rIndex, oIndex) {
+    const menu = document.getElementById(`room_door_boss_buff_menu_${rIndex}_${oIndex}`);
+    if (menu.classList.contains('hidden')) {
+        document.querySelectorAll('.custom-combobox-menu').forEach(el => el.classList.add('hidden'));
+        menu.classList.remove('hidden');
+    } else {
+        menu.classList.add('hidden');
+    }
+};
+
+window.selectDoorBossBuffType = function (rIndex, oIndex, value, label, icon, iconColorClass) {
+    document.getElementById(`room_door_boss_buff_type_${rIndex}_${oIndex}`).value = value;
+    document.getElementById(`room_door_boss_buff_label_${rIndex}_${oIndex}`).innerHTML = `<span class="material-symbols-outlined ${iconColorClass} text-lg" >${icon}</span> <span>${label}</span>`;
+    document.getElementById(`room_door_boss_buff_menu_${rIndex}_${oIndex}`).classList.add('hidden');
 };
 
 window.toggleBuffCombobox = function (rIndex) {

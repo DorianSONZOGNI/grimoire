@@ -104,9 +104,13 @@ public class CombatRoomService {
             combatTurnService.rollInitiative(session);
         } else if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.TREASURE) {
             session.getEnemies().clear();
+            if (session.getTurnOrder() != null) session.getTurnOrder().clear();
+            session.setCurrentTurnIndex(0);
             session.addLog("Vous trouvez un trésor !");
         } else if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.EVENT) {
             session.getEnemies().clear();
+            if (session.getTurnOrder() != null) session.getTurnOrder().clear();
+            session.setCurrentTurnIndex(0);
             session.addLog("Événement : " + session.getCurrentRoom().getEventText());
 
             if (session.getCurrentRoom().getEventSubType() == generation.grimoire.enumeration.EventSubType.RENCONTRE) {

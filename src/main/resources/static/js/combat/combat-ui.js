@@ -7,6 +7,22 @@ import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
 
+window.toggleCombatLog = function() {
+    const log = document.getElementById('combatLog');
+    const btn = document.getElementById('combatLogToggleBtn');
+    const wrapper = document.getElementById('combatLogContainerWrapper');
+    if (log.style.display === 'none') {
+        log.style.display = 'block';
+        btn.classList.remove('rounded-full');
+        btn.classList.add('rounded-t-lg', 'border-b-0');
+        wrapper.classList.remove('retracted');
+    } else {
+        log.style.display = 'none';
+        btn.classList.remove('rounded-t-lg', 'border-b-0');
+        btn.classList.add('rounded-full');
+        wrapper.classList.add('retracted');
+    }
+};
 
 export function renderAndAnimateXPCards(containerId, players, prefix, isFirstClear = false) {
     const container = document.getElementById(containerId);
@@ -1374,20 +1390,10 @@ export function updateUI(data) {
                                                     `;
                                                 }
                                             }
-                                        } else if (log.includes("a offert l'équipement") || log.includes("a offert l'\u00e9quipement")) {
-                                            const equipMatch = log.match(/a offert l'.quipement : (.*) !/) || log.match(/a offert l'.quipement : (.*) \(ajout. au groupe\)\./) || log.match(/a offert l'.quipement : (.*) \(envoy. au coffre\)\./);
-                                            if (equipMatch) {
-                                                const eqName = equipMatch[1].trim();
-                                                logHtml = `
-                                                    <div class="flex-center relative" style="background: rgba(0, 0, 0, 0.4); border: 1px solid #10b98180; padding: 0.8rem 1rem; border-radius: 8px; color: #10b981; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                                        <span class="material-symbols-outlined" style="color: #10b981;">shield</span> <span style="border-bottom: 1px dashed #10b981;">${eqName}</span>
-                                                    </div>
-                                                `;
-                                            }
-                                        } else if (log.includes("a offert l'anomalie") || log.includes("Objet trouv")) {
-                                            const itemNameMatch = log.match(/Objet trouv. : (.*?) \(/) || log.match(/a offert l'anomalie : (.*)\./);
+                                        } else if (log.includes("a offert l'équipement") || log.includes("a offert l'\u00e9quipement") || log.includes("a offert l'anomalie") || log.includes("Objet trouv")) {
+                                            const itemNameMatch = log.match(/Objet trouv. : (.*?) \(/) || log.match(/a offert l'anomalie : (.*)\./) || log.match(/a offert l'.quipement : (.*?) !/) || log.match(/a offert l'.quipement : (.*?) \(ajout. au groupe\)\./) || log.match(/a offert l'.quipement : (.*?) \(envoy. au coffre\)\./);
                                             if (itemNameMatch) {
-                                                const eqName = itemNameMatch[1].trim();
+                                                const eqName = itemNameMatch[1] ? itemNameMatch[1].trim() : '';
                                                 let eq = null;
                                                 let an = null;
 
@@ -1913,7 +1919,10 @@ export function updateUI(data) {
 
     // Logs
     const logContainer = document.getElementById('combatLog');
+    const isAtBottom = logContainer.scrollHeight - logContainer.clientHeight <= logContainer.scrollTop + 50;
+    const oldScrollTop = logContainer.scrollTop;
     logContainer.innerHTML = '';
+
     data.combatLog.forEach(log => {
         const div = document.createElement('div');
         let text = log;
@@ -1923,6 +1932,12 @@ export function updateUI(data) {
             // Un peu de regex pour ne pas remplacer dans les attributs HTML si p.name correspond
             text = text.replace(new RegExp(`\\b${p.name}\\b`, 'g'), `<span class="log-player-name">${p.name}</span>`);
         });
+
+        if (data.enemies) {
+            data.enemies.forEach(e => {
+                text = text.replace(new RegExp(`\\b${e.name}\\b`, 'g'), `<span class="log-enemy-name">${e.name}</span>`);
+            });
+        }
 
         // 1. Turn Separator
         if (text.startsWith("--- Tour de ")) {
@@ -1952,25 +1967,36 @@ export function updateUI(data) {
         }
         // 3. Subit des dégâts (Dot, pièges...)
         else if (text.includes("subit") && text.includes("dégâts")) {
-            if (text.includes("magiques")) {
+            if (text.includes("magiques") || text.includes("MAGIC")) {
                 div.className = 'log-entry log-damage-magic';
-                text = text.replace(/subit (\d+) dégâts magiques/g, 'subit <span class="log-val-magic">$1</span> dégâts <span class="log-val-magic">magiques</span>');
-            } else if (text.includes("physiques")) {
+                text = text.replace(/subit (\d+) dégâts( magiques| \(MAGIC\))/g, 'subit <span class="log-val-magic">$1</span> dégâts$2');
+            } else if (text.includes("physiques") || text.includes("PHYSIC")) {
                 div.className = 'log-entry log-damage-physic';
-                text = text.replace(/subit (\d+) dégâts physiques/g, 'subit <span class="log-val-physic">$1</span> dégâts <span class="log-val-physic">physiques</span>');
-            } else if (text.includes("bruts")) {
+                text = text.replace(/subit (\d+) dégâts( physiques| \(PHYSIC\))/g, 'subit <span class="log-val-physic">$1</span> dégâts$2');
+            } else if (text.includes("bruts") || text.includes("BRUT")) {
                 div.className = 'log-entry log-damage-brut';
-                text = text.replace(/subit (\d+) dégâts bruts/g, 'subit <span class="log-val-brut">$1</span> dégâts <span class="log-val-brut">bruts</span>');
-            } else if (text.includes("Brûlure")) {
+                text = text.replace(/subit (\d+) dégâts( bruts| \(BRUT\))/g, 'subit <span class="log-val-brut">$1</span> dégâts$2');
+            } else if (text.includes("INCOMPRESSIBLE")) {
+                div.className = 'log-entry log-damage-incompressible';
+                text = text.replace(/subit (\d+) dégâts \(INCOMPRESSIBLE\)/g, 'subit <span class="log-val-incompressible">$1</span> dégâts (<span class="log-val-incompressible">INCOMPRESSIBLE</span>)');
+            } else if (text.includes("Brûlure") || text.includes("brûlure")) {
                 div.className = 'log-entry log-damage-burn';
-                text = text.replace(/subit (\d+) dégâts de Brûlure/g, 'subit <span class="log-val-burn">$1</span> dégâts de <span class="log-val-burn">Brûlure</span>');
-            } else if (text.includes("Poison")) {
+                text = text.replace(/subit (\d+) dégâts de [Bb]rûlure/g, 'subit <span class="log-val-burn">$1</span> dégâts de <span class="log-val-burn">Brûlure</span>');
+            } else if (text.includes("Poison") || text.includes("poison")) {
                 div.className = 'log-entry log-damage-poison';
-                text = text.replace(/subit (\d+) dégâts de Poison/g, 'subit <span class="log-val-poison">$1</span> dégâts de <span class="log-val-poison">Poison</span>');
+                text = text.replace(/subit (\d+) dégâts de [Pp]oison/g, 'subit <span class="log-val-poison">$1</span> dégâts de <span class="log-val-poison">Poison</span>');
             } else {
                 div.className = 'log-entry log-damage-normal';
                 text = text.replace(/subit (\d+) dégâts/g, 'subit <span class="log-val-dmg">$1</span> dégâts');
             }
+        }
+        else if (text.includes("perd") && text.includes("PV")) {
+            div.className = 'log-entry log-damage-incompressible';
+            text = text.replace(/perd (\d+) PV/g, 'perd <span class="log-val-incompressible">$1</span> <span class="log-val-incompressible">PV</span>');
+        }
+        else if (text.includes("perd") && text.includes("Mana")) {
+            div.className = 'log-entry log-damage-magic';
+            text = text.replace(/perd (\d+) Mana/g, 'perd <span class="log-val-mana">$1</span> <span class="log-val-mana">Mana</span>');
         }
         // 4. Healing (HP)
         else if (text.includes("soigné") || (text.includes("récupère") && text.includes("PV"))) {
@@ -2020,6 +2046,7 @@ export function updateUI(data) {
             else if (lower.includes("magique") || lower.includes("puissance")) cssClass = 'log-val-magic';
             else if (lower.includes("physique") || lower.includes("force")) cssClass = 'log-val-physic';
             else if (lower.includes("brut")) cssClass = 'log-val-brut';
+            else if (lower.includes("incompressible")) cssClass = 'log-val-incompressible';
             return cssClass;
         };
 
@@ -2096,7 +2123,11 @@ export function updateUI(data) {
         }
     });
 
-    logContainer.scrollTop = logContainer.scrollHeight;
+    if (isAtBottom) {
+        logContainer.scrollTop = logContainer.scrollHeight;
+    } else {
+        logContainer.scrollTop = oldScrollTop;
+    }
 
     // Check finish
     if (data.finished) {

@@ -44,7 +44,8 @@ public class PersonnageCombatHelper {
             if (totalHpRegen > 0) {
                 p.healRegen(totalHpRegen);
             } else if (totalHpRegen < 0) {
-                p.takeDamage(-totalHpRegen, DamageType.BRUT);
+                System.out.println("💔 " + p.getName() + " perd " + (-totalHpRegen) + " PV à cause de sa régénération de PV par tour (négative).");
+                p.takeDamage(-totalHpRegen, DamageType.INCOMPRESSIBLE);
             }
 
             int cursedManaDrain = p.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CURSED_MANA_DRAIN);
@@ -54,13 +55,22 @@ public class PersonnageCombatHelper {
                 totalManaRegen -= amountToDrain;
             }
 
-            if (totalManaRegen != 0) {
+            if (totalManaRegen > 0) {
+                System.out.println("💧 " + p.getName() + " régénère " + totalManaRegen + " Mana par tour.");
                 p.setManaCurrent(p.getManaCurrent() + totalManaRegen);
+            } else if (totalManaRegen < 0) {
+                System.out.println("🥀 " + p.getName() + " perd " + (-totalManaRegen) + " Mana à cause de sa régénération de Mana par tour (négative).");
+                p.setManaCurrent(Math.max(0, p.getManaCurrent() + totalManaRegen));
             }
         }
     }
 
     public static void takeDamage(Personnage p, int damage, DamageType damageType, Personnage caster, boolean isBurn) {
+        if (damageType == DamageType.INCOMPRESSIBLE) {
+            p.setHealthCurrent(Math.max(0, p.getHealthCurrent() - damage));
+            return;
+        }
+
         if (damageType == DamageType.PHYSIC && caster != null) {
             if (caster.getVoie() != null && caster.getVoie().getPassiveEffects() != null) {
                 for (generation.grimoire.entity.voie.passif.VoiePassiveEffect passif : caster.getVoie().getPassiveEffects()) {
@@ -277,6 +287,7 @@ public class PersonnageCombatHelper {
                 case MAGIC: typeStr = " magiques"; break;
                 case PHYSIC: typeStr = " physiques"; break;
                 case BRUT: typeStr = " bruts"; break;
+                case INCOMPRESSIBLE: typeStr = " incompressibles"; break;
             }
         }
 
