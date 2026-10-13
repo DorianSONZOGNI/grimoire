@@ -57,7 +57,7 @@ try {
 }
 catch {
     $detail = if ($_.ErrorDetails.Message) { $_.ErrorDetails.Message } else { $_.Exception.Message }
-    Write-Warning "Routage échoué, bascule sur Medium. Cause : $detail"
+    Write-Warning "Routing failed, fallback on Medium. Cause : $detail"
     $level = 2
 }
 
