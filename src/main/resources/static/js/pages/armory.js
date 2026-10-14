@@ -29,6 +29,7 @@ const pageState = {
     equipModalPersoId: null,
     allEquipments: []
 };
+window.pageState = pageState;
 
 // Replaced by window.SLOT_LABELS and window.CONSUMABLE_CATEGORIES
 
@@ -582,7 +583,7 @@ function renderPersonnages() {
                         <button class="char-btn-equip" onclick="openEquipModal(${p.id})" title="Gérer l'équipement">
                             <span class="material-symbols-outlined text-md">shield</span> Équiper
                         </button>
-                        <button class="char-btn-spec" onclick="openSpecModal(${p.voie ? p.voie.id : 'null'}, '${p.name.replace(/'/g, "\\'")}', '${p.voie ? p.voie.nom.replace(/'/g, "\\'") : ''}')" title="Profil de voie & spécificités">
+                        <button class="char-btn-spec" onclick="openSpecModal(${p.voie ? p.voie.id : 'null'}, '${p.name.replace(/'/g, "\\'")}', '${p.voie ? p.voie.nom.replace(/'/g, "\\'") : ''}', ${p.spiritualite ? p.spiritualite.id : 'null'})" title="Profil de voie & spécificités">
                             <span class="material-symbols-outlined text-md">hub</span> Profil
                         </button>
                         ${window.isAdmin ? `
@@ -891,7 +892,7 @@ function editPersonnage(id) {
 
     updateSubmitButtonState();
     if (window.updateArmoryVoieSpider) {
-        window.updateArmoryVoieSpider(p.voie ? p.voie.id : null);
+        window.updateArmoryVoieSpider(p.voie ? p.voie.id : null, p.spiritualite ? p.spiritualite.id : null);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -930,8 +931,13 @@ function resetForm() {
     document.getElementById('cancelBtn').classList.remove('inline-flex');
     const cvIcon = document.getElementById('charVoieInfoIcon');
     if (cvIcon) cvIcon.classList.add('hidden');
+    const csIcon = document.getElementById('charSpiritInfoIcon');
+    if (csIcon) csIcon.classList.add('hidden');
     if (window.updateArmoryVoieSpider) {
         window.updateArmoryVoieSpider(null);
+    }
+    if (window.updateArmorySpiritSpider) {
+        window.updateArmorySpiritSpider(null);
     }
     updateSubmitButtonState();
 }
@@ -1094,6 +1100,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
             if (!sId) {
                 if (iconEl) iconEl.classList.add('hidden');
+                if (window.updateArmorySpiritSpider) window.updateArmorySpiritSpider(null);
                 return;
             }
             const s = pageState.spiritualites.find(x => x.id == sId);
@@ -1114,8 +1121,12 @@ window.addEventListener('DOMContentLoaded', async () => {
                     `;
                 }
                 iconEl.classList.remove('hidden');
+                if (window.updateArmorySpiritSpider) window.updateArmorySpiritSpider(s);
             } else if (iconEl) {
                 iconEl.classList.add('hidden');
+                if (window.updateArmorySpiritSpider) window.updateArmorySpiritSpider(null);
+            } else {
+                if (window.updateArmorySpiritSpider) window.updateArmorySpiritSpider(null);
             }
         });
     }

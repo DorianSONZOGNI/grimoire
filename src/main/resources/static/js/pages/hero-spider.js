@@ -32,6 +32,7 @@
     const globalAxisMax = {
         puissance: 1, force: 1, mana: 1, tank: 1, soutien: 1
     };
+    let spiritualitesCache = [];
     let isInitialized = false;
 
     function analyzeEffect(effect, sc) {
@@ -97,9 +98,16 @@
         if (isInitialized) return;
         try {
             const fetcher = window.globalFetch || fetch;
-            const res = await fetcher('/api/spells-editor');
-            if (res.ok) {
-                const spells = await res.json();
+            const [resSpells, resMeta] = await Promise.allSettled([
+                fetcher('/api/spells-editor'),
+                fetcher('/api/spells-editor/meta')
+            ]);
+            if (resMeta.status === 'fulfilled' && resMeta.value && resMeta.value.ok) {
+                const meta = await resMeta.value.json();
+                spiritualitesCache = meta.spiritualites || [];
+            }
+            if (resSpells.status === 'fulfilled' && resSpells.value && resSpells.value.ok) {
+                const spells = await resSpells.value.json();
                 spells.filter(s => s.voie && s.voie.id).forEach(s => {
                     const vId = s.voie.id;
                     if (!voieProfiles[vId]) {
@@ -124,7 +132,7 @@
                 isInitialized = true;
             }
         } catch (e) {
-            console.error('[hero-spider] Erreur chargement sorts:', e);
+            console.error('[hero-spider] Erreur chargement sorts / meta:', e);
         }
     }
 
@@ -344,16 +352,73 @@
         iconEl.classList.remove('hidden');
     }
 
+    function findSpirit(sOrId) {
+        if (!sOrId) return null;
+        if (typeof sOrId === 'object' && sOrId.nom) return sOrId;
+        const id = sOrId;
+        const list = (window.pageState?.spiritualites && window.pageState.spiritualites.length > 0)
+            ? window.pageState.spiritualites
+            : spiritualitesCache;
+        return list.find(x => x.id == id || x.nom === id);
+    }
+
+    function populateSpiritTooltip(iconEl, s) {
+        if (!iconEl) return;
+        if (!s || !s.nom) {
+            iconEl.classList.add('hidden');
+            return;
+        }
+
+        const visual = (typeof getSpiritInfo === 'function' ? getSpiritInfo(s.nom) : null) || { icon: 'psychology', color: '#a78bfa' };
+        const template = iconEl.querySelector('.tooltip-data');
+        if (template) {
+            const richFormatter = window.formatRichText || (t => t);
+            template.innerHTML = `
+                <div class="text-sm font-medium mb-2 flex-center gap-1" style="color: ${visual.color};">
+                    <span class="material-symbols-outlined text-lg">${visual.icon}</span>
+                    ${s.nom}
+                </div>
+                <div class="text-xs text-slate-300 mb-2">${s.description || 'Description générique.'}</div>
+                <div class="flex-start-gap text-xs text-slate-200">
+                    <span class="material-symbols-outlined text-md" style="color: ${visual.color};">bolt</span>
+                    <span class="font-italic whitespace-pre-wrap">${richFormatter(s.passiveDescription) || 'Passif spécifique.'}</span>
+                </div>
+            `;
+        }
+        iconEl.classList.remove('hidden');
+    }
+
+    window.updateArmorySpiritSpider = async function (spiritOrId) {
+        const spiderSpiritIconEl = document.getElementById('spiderSpiritInfoIcon');
+        if (!spiderSpiritIconEl) return;
+        if (!spiritOrId) {
+            spiderSpiritIconEl.classList.add('hidden');
+            return;
+        }
+        let s = findSpirit(spiritOrId);
+        if (!s && spiritualitesCache.length === 0) {
+            await loadAllVoieProfiles();
+            s = findSpirit(spiritOrId);
+        }
+        if (s) {
+            populateSpiritTooltip(spiderSpiritIconEl, s);
+        } else {
+            spiderSpiritIconEl.classList.add('hidden');
+        }
+    };
+
     // Exposer l'API globale pour l'armurerie
-    window.updateArmoryVoieSpider = async function (voieId) {
+    window.updateArmoryVoieSpider = async function (voieId, spiritId) {
         const section = document.getElementById('armorySpiderSection');
         const canvas = document.getElementById('armorySpiderCanvas');
         const badges = document.getElementById('armorySpecBadges');
         const spiderIconEl = document.getElementById('spiderVoieInfoIcon');
+        const spiderSpiritIconEl = document.getElementById('spiderSpiritInfoIcon');
         if (!section || !canvas || !badges) return;
 
         if (!voieId) {
             if (spiderIconEl) spiderIconEl.classList.add('hidden');
+            if (spiderSpiritIconEl) spiderSpiritIconEl.classList.add('hidden');
             section.classList.add('is-hidden');
             section.classList.remove('is-visible');
             return;
@@ -366,16 +431,31 @@
         if (spiderIconEl && profile) {
             populateVoieTooltip(spiderIconEl, profile);
         }
+
+        const effectiveSpirit = spiritId || document.getElementById('charSpirit')?.value;
+        if (effectiveSpirit && spiderSpiritIconEl) {
+            let s = findSpirit(effectiveSpirit);
+            if (!s && spiritualitesCache.length === 0) {
+                await loadAllVoieProfiles();
+                s = findSpirit(effectiveSpirit);
+            }
+            if (s) populateSpiritTooltip(spiderSpiritIconEl, s);
+            else spiderSpiritIconEl.classList.add('hidden');
+        } else if (spiderSpiritIconEl) {
+            spiderSpiritIconEl.classList.add('hidden');
+        }
+
         drawSpiderWeb(canvas, profile);
         renderBadges(badges, profile);
     };
 
-    window.openSpecModal = async function (voieId, heroName, voieNom) {
+    window.openSpecModal = async function (voieId, heroName, voieNom, spiritId) {
         const overlay = document.getElementById('specModalOverlay');
         const titleEl = document.getElementById('specModalTitle');
         const canvas = document.getElementById('specModalCanvas');
         const badges = document.getElementById('specModalBadges');
         const modalIconEl = document.getElementById('specModalVoieInfoIcon');
+        const modalSpiritIconEl = document.getElementById('specModalSpiritInfoIcon');
         if (!overlay || !canvas || !badges) return;
 
         if (titleEl) {
@@ -386,6 +466,7 @@
 
         if (!voieId) {
             if (modalIconEl) modalIconEl.classList.add('hidden');
+            if (modalSpiritIconEl) modalSpiritIconEl.classList.add('hidden');
             drawSpiderWeb(canvas, null);
             badges.innerHTML = '<span class="text-xs text-muted font-italic">Aucune voie affiliée.</span>';
             return;
@@ -395,9 +476,23 @@
         if (modalIconEl && profile) {
             populateVoieTooltip(modalIconEl, profile);
         }
+
+        if (spiritId && modalSpiritIconEl) {
+            let s = findSpirit(spiritId);
+            if (!s && spiritualitesCache.length === 0) {
+                await loadAllVoieProfiles();
+                s = findSpirit(spiritId);
+            }
+            if (s) populateSpiritTooltip(modalSpiritIconEl, s);
+            else modalSpiritIconEl.classList.add('hidden');
+        } else if (modalSpiritIconEl) {
+            modalSpiritIconEl.classList.add('hidden');
+        }
+
         drawSpiderWeb(canvas, profile);
         renderBadges(badges, profile);
     };
+
 
     window.closeSpecModal = function () {
         const overlay = document.getElementById('specModalOverlay');
