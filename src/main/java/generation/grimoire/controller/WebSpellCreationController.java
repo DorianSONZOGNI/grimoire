@@ -80,6 +80,11 @@ public class WebSpellCreationController {
         return ResponseEntity.ok(spellRepository.findAll());
     }
 
+    @GetMapping("/voie/{voieId}")
+    public ResponseEntity<List<Spell>> getSpellsByVoie(@PathVariable Long voieId) {
+        return ResponseEntity.ok(spellRepository.findByVoieId(voieId));
+    }
+
     @org.springframework.cache.annotation.Caching(evict = {
             @org.springframework.cache.annotation.CacheEvict(value = "allSpells", allEntries = true),
             @org.springframework.cache.annotation.CacheEvict(value = "spells", allEntries = true),

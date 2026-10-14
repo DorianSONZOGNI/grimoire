@@ -582,6 +582,9 @@ function renderPersonnages() {
                         <button class="char-btn-equip" onclick="openEquipModal(${p.id})" title="Gérer l'équipement">
                             <span class="material-symbols-outlined text-md">shield</span> Équiper
                         </button>
+                        <button class="char-btn-spec" onclick="openSpecModal(${p.voie ? p.voie.id : 'null'}, '${p.name.replace(/'/g, "\\'")}', '${p.voie ? p.voie.nom.replace(/'/g, "\\'") : ''}')" title="Profil de voie & spécificités">
+                            <span class="material-symbols-outlined text-md">hub</span> Profil
+                        </button>
                         ${window.isAdmin ? `
                         <button class="char-btn-edit" onclick="editPersonnage(${p.id})" title="Éditer">
                             <span class="material-symbols-outlined text-md">edit</span> Éditer
@@ -887,6 +890,9 @@ function editPersonnage(id) {
     document.getElementById('cancelBtn').classList.add('inline-flex');
 
     updateSubmitButtonState();
+    if (window.updateArmoryVoieSpider) {
+        window.updateArmoryVoieSpider(p.voie ? p.voie.id : null);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -922,6 +928,9 @@ function resetForm() {
         Forger le Personnage`;
     document.getElementById('cancelBtn').classList.add('hidden');
     document.getElementById('cancelBtn').classList.remove('inline-flex');
+    if (window.updateArmoryVoieSpider) {
+        window.updateArmoryVoieSpider(null);
+    }
     updateSubmitButtonState();
 }
 
@@ -1041,6 +1050,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             if (!vId) {
                 if (iconEl) iconEl.classList.add('hidden');
                 applyVoieBaseStats(null);
+                if (window.updateArmoryVoieSpider) window.updateArmoryVoieSpider(null);
                 return;
             }
             const v = pageState.voies.find(x => x.id == vId);
@@ -1062,11 +1072,14 @@ window.addEventListener('DOMContentLoaded', async () => {
                 }
                 iconEl.classList.remove('hidden');
                 applyVoieBaseStats(v.nom);
+                if (window.updateArmoryVoieSpider) window.updateArmoryVoieSpider(vId);
             } else if (iconEl) {
                 iconEl.classList.add('hidden');
                 applyVoieBaseStats(null);
+                if (window.updateArmoryVoieSpider) window.updateArmoryVoieSpider(null);
             } else {
                 applyVoieBaseStats(null);
+                if (window.updateArmoryVoieSpider) window.updateArmoryVoieSpider(null);
             }
         });
     }
