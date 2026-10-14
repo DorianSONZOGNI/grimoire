@@ -20,7 +20,6 @@
         { key: 'brulant',    label: 'Brûlant',    icon: 'local_fire_department', cssClass: 'badge-brulant',    desc: 'Inflige des brûlures',              score: s => s._burnCount * 2 },
         { key: 'toxique',    label: 'Toxique',    icon: 'skull',                 cssClass: 'badge-toxique',    desc: 'Inflige du poison',                 score: s => s._poisonCount * 2 },
         { key: 'tactique',   label: 'Tactique',   icon: 'gps_fixed',             cssClass: 'badge-tactique',   desc: 'Exploite ou augmente le Critique',  score: s => s._critScore },
-        { key: 'tranchant',  label: 'Tranchant',  icon: 'swords',                cssClass: 'badge-tranchant',  desc: 'Dégâts directs fixes sans ratio',   score: s => s._fixedDmgScore },
         { key: 'arcane',     label: 'Arcane',     icon: 'auto_awesome',          cssClass: 'badge-arcane',     desc: 'Flux et régénération de Mana',      score: s => s._arcaneScore },
         { key: 'tank',       label: 'Tank',       icon: 'shield',                cssClass: 'badge-tank',       desc: 'Boucliers et armure sur soi',       score: s => s._tankScore },
         { key: 'vif',        label: 'Vif',        icon: 'bolt',                  cssClass: 'badge-vif',        desc: 'Vitesse et vivacité',               score: s => s._speedScore },
@@ -73,15 +72,13 @@
         // Badges scores
         if (src.includes('HEALTH_MISSING')) sc._berserkScore++;
         if (src.includes('CRIT') || (type === 'BUFF_DEBUFF' && effect.statAffected === 'CRIT')) sc._critScore++;
-        if (type === 'FIXED_DAMAGE' && !src) sc._fixedDmgScore++;
-        if (type === 'DOT' && !src && (effect.fixedDamagePerTick || 0) > 0) sc._fixedDmgScore += 0.5;
         if (isMana && (isAlly || isSelf)) sc._arcaneScore++;
         if (isSelf && (isShield || isArmorBD)) sc._tankScore++;
         if (src.includes('SPEED') || (type === 'BUFF_DEBUFF' && effect.statAffected === 'SPEED')) sc._speedScore++;
         if (type === 'BUFF_DEBUFF' && (effect.statAffected || '').includes('SHIELD')) sc._erosionScore++;
         if ((type === 'DOT' || type === 'BUFF_DEBUFF') && (effect.statAffected === 'BURN' || type === 'BURN')) sc._burnCount++;
         if ((type === 'DOT' || type === 'BUFF_DEBUFF') && (effect.statAffected === 'POISON' || type === 'POISON')) sc._poisonCount++;
-        if (isHeal) sc._healScore++;
+        if (isHeal) sc._healScore += (target === 'ALL_ALLIES' ? 2 : 1);
     }
 
     function createEmptyProfile(voieId, voieNom) {
@@ -90,8 +87,7 @@
             nom: voieNom || '',
             puissance: 0, force: 0, mana: 0, tank: 0, soutien: 0,
             _berserkScore: 0, _burnCount: 0, _poisonCount: 0, _critScore: 0,
-            _fixedDmgScore: 0, _arcaneScore: 0, _tankScore: 0,
-            _speedScore: 0, _erosionScore: 0, _healScore: 0
+            _arcaneScore: 0, _tankScore: 0, _speedScore: 0, _erosionScore: 0, _healScore: 0
         };
     }
 
