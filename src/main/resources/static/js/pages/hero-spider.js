@@ -20,11 +20,11 @@
         { key: 'brulant',    label: 'Brûlant',    icon: 'local_fire_department', cssClass: 'badge-brulant',    desc: 'Inflige des brûlures',              score: s => s._burnCount * 2 },
         { key: 'toxique',    label: 'Toxique',    icon: 'skull',                 cssClass: 'badge-toxique',    desc: 'Inflige du poison',                 score: s => s._poisonCount * 2 },
         { key: 'tactique',   label: 'Tactique',   icon: 'gps_fixed',             cssClass: 'badge-tactique',   desc: 'Exploite ou augmente le Critique',  score: s => s._critScore },
-        { key: 'arcane',     label: 'Arcane',     icon: 'auto_awesome',          cssClass: 'badge-arcane',     desc: 'Flux et régénération de Mana',      score: s => s._arcaneScore },
-        { key: 'tank',       label: 'Tank',       icon: 'shield',                cssClass: 'badge-tank',       desc: 'Boucliers et armure sur soi',       score: s => s._tankScore },
+        { key: 'arcane',     label: 'Arcane',     icon: 'auto_awesome',          cssClass: 'badge-arcane',     desc: 'Capacité régénérative ou utilitaire lié au Mana',      score: s => s._arcaneScore },
+        { key: 'tank',       label: 'Tank',       icon: 'shield',                cssClass: 'badge-tank',       desc: 'Boucliers et armure/résistance sur soi',       score: s => s._tankScore },
         { key: 'vif',        label: 'Vif',        icon: 'bolt',                  cssClass: 'badge-vif',        desc: 'Vitesse et vivacité',               score: s => s._speedScore },
         { key: 'erosion',    label: 'Érosion',    icon: 'heart_minus',           cssClass: 'badge-erosion',    desc: 'Pénétration et casse-bouclier',     score: s => s._erosionScore },
-        { key: 'guerisseur', label: 'Guérisseur', icon: 'healing',               cssClass: 'badge-guerisseur', desc: 'Spécialiste du soin et HoT',        score: s => s._healScore }
+        { key: 'guerisseur', label: 'Guérisseur', icon: 'healing',               cssClass: 'badge-guerisseur', desc: 'Spécialiste du soin',        score: s => s._healScore }
     ];
 
     // Cache des analyses par voieId
