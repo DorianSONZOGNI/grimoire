@@ -156,14 +156,13 @@ public class PvEAdminService {
 
     @Transactional
     public void updateDungeonsOrder(List<Long> orderedIds) {
+        if (orderedIds == null || orderedIds.isEmpty()) {
+            return;
+        }
         for (int i = 0; i < orderedIds.size(); i++) {
             Long id = orderedIds.get(i);
             if (id != null) {
-                Donjon d = donjonRepository.findById(id).orElse(null);
-                if (d != null) {
-                    d.setDisplayOrder(i);
-                    donjonRepository.save(d);
-                }
+                donjonRepository.updateDisplayOrder(id, i);
             }
         }
     }

@@ -2268,18 +2268,10 @@ window.renderDungeonsList = function () {
     list.innerHTML = html;
 }
 
-async function moveDungeonOrder(id, direction) {
-    const index = pageState.allDungeons.findIndex(d => d.id === id);
-    if (index === -1) return;
-    if (index + direction < 0 || index + direction >= pageState.allDungeons.length) return;
+let dungeonReorderTimer = null;
 
-    // Swap in array
-    const temp = pageState.allDungeons[index];
-    pageState.allDungeons[index] = pageState.allDungeons[index + direction];
-    pageState.allDungeons[index + direction] = temp;
-
+async function syncDungeonOrderToServer() {
     const orderedIds = pageState.allDungeons.map(d => d.id);
-
     try {
         const res = await globalFetch('/api/admin/pve/dungeons/reorder', {
             method: 'POST',
@@ -2287,15 +2279,65 @@ async function moveDungeonOrder(id, direction) {
             body: JSON.stringify(orderedIds)
         });
 
-        if (res.ok) {
-            renderDungeonsList();
-        } else {
+        if (!res.ok) {
             showNotif("Erreur lors du changement d'ordre.", true);
+            loadDungeons();
         }
     } catch (e) {
         console.error(e);
         showNotif("Erreur réseau.", true);
+        loadDungeons();
     }
+}
+
+function moveDungeonOrder(id, direction) {
+    const query = (document.getElementById('dungeonSearchInput')?.value || '').toLowerCase();
+    const lvlSelect = document.getElementById('dungeonLevelFilter');
+    const lvlVal = lvlSelect ? lvlSelect.value : '';
+
+    if (query || lvlVal) {
+        let filtered = [...pageState.allDungeons];
+        if (query) {
+            filtered = filtered.filter(d => (d.name && d.name.toLowerCase().includes(query)) || (d.description && d.description.toLowerCase().includes(query)));
+        }
+        if (lvlVal) {
+            const lvl = parseInt(lvlVal);
+            filtered = filtered.filter(d => (d.recommendedLevel || 1) === lvl);
+        }
+
+        const filteredIdx = filtered.findIndex(d => d.id === id);
+        if (filteredIdx === -1) return;
+        const targetFilteredIdx = filteredIdx + direction;
+        if (targetFilteredIdx < 0 || targetFilteredIdx >= filtered.length) return;
+
+        const targetDungeon = filtered[targetFilteredIdx];
+        const idxA = pageState.allDungeons.findIndex(d => d.id === id);
+        const idxB = pageState.allDungeons.findIndex(d => d.id === targetDungeon.id);
+        if (idxA === -1 || idxB === -1) return;
+
+        const [removed] = pageState.allDungeons.splice(idxA, 1);
+        pageState.allDungeons.splice(idxB, 0, removed);
+    } else {
+        const index = pageState.allDungeons.findIndex(d => d.id === id);
+        if (index === -1) return;
+        if (index + direction < 0 || index + direction >= pageState.allDungeons.length) return;
+
+        const temp = pageState.allDungeons[index];
+        pageState.allDungeons[index] = pageState.allDungeons[index + direction];
+        pageState.allDungeons[index + direction] = temp;
+    }
+
+    // Optimistic UI: immediate redraw
+    renderDungeonsList();
+
+    // Debounce server call to batch rapid clicks
+    if (dungeonReorderTimer) {
+        clearTimeout(dungeonReorderTimer);
+    }
+    dungeonReorderTimer = setTimeout(() => {
+        dungeonReorderTimer = null;
+        syncDungeonOrderToServer();
+    }, 250);
 }
 
 async function editDungeon(id) {
