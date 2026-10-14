@@ -961,25 +961,49 @@ public class CombatRoomService {
                           .append("% PV/tour) et -").append(armLossPct).append("% d'Armure (").append(duration).append(" tours).");
                 }
                 case CUSTOM -> {
-                    int hpDmg = hpFixed + (int) (p.getHealthMax() * (hpPct / 100.0));
-                    int manaDmg = manaFixed + (int) (p.getManaMax() * (manaPct / 100.0));
-                    if (hpDmg > 0) p.takeDamage(hpDmg, DamageType.BRUT);
-                    if (manaDmg > 0) p.setManaCurrent(Math.max(0, p.getManaCurrent() - manaDmg));
+                    int hpDmg = 0;
+                    if (room.getTrapDebuffValue() != null && room.getTrapDebuffValue() > 0) {
+                        hpDmg = (int) (p.getHealthMax() * (room.getTrapDebuffValue() / 100.0));
+                    } else if (room.getTrapDamageHpFixed() != null && room.getTrapDamageHpFixed() > 0) {
+                        hpDmg = room.getTrapDamageHpFixed();
+                    } else if (room.getTrapAmount() > 0) {
+                        if ("PV".equals(room.getTrapType())) {
+                            hpDmg = (int) (p.getHealthMax() * (room.getTrapAmount() / 100.0));
+                        } else {
+                            hpDmg = room.getTrapAmount();
+                        }
+                    }
 
-                    logMsg.append("Vos héros tombent dans un piège !");
+                    if (hpDmg > 0) {
+                        p.takeDamage(hpDmg, DamageType.BRUT);
+                        personnageService.save(p);
+                    }
+
+                    logMsg.append("Vos héros subissent le piège classique de plein fouet !");
                     if (hpDmg > 0) logMsg.append(" -").append(hpDmg).append(" PV.");
-                    if (manaDmg > 0) logMsg.append(" -").append(manaDmg).append(" Mana.");
                 }
             }
         } else {
-            int hpDmg = hpFixed + (int) (p.getHealthMax() * (hpPct / 100.0));
-            int manaDmg = manaFixed + (int) (p.getManaMax() * (manaPct / 100.0));
-            if (hpDmg > 0) p.takeDamage(hpDmg, DamageType.BRUT);
-            if (manaDmg > 0) p.setManaCurrent(Math.max(0, p.getManaCurrent() - manaDmg));
+            int hpDmg = 0;
+            if (room.getTrapDebuffValue() != null && room.getTrapDebuffValue() > 0) {
+                hpDmg = (int) (p.getHealthMax() * (room.getTrapDebuffValue() / 100.0));
+            } else if (room.getTrapDamageHpFixed() != null && room.getTrapDamageHpFixed() > 0) {
+                hpDmg = room.getTrapDamageHpFixed();
+            } else if (room.getTrapAmount() > 0) {
+                if ("PV".equals(room.getTrapType())) {
+                    hpDmg = (int) (p.getHealthMax() * (room.getTrapAmount() / 100.0));
+                } else {
+                    hpDmg = room.getTrapAmount();
+                }
+            }
 
-            logMsg.append("Vos héros tombent dans un piège !");
+            if (hpDmg > 0) {
+                p.takeDamage(hpDmg, DamageType.BRUT);
+                personnageService.save(p);
+            }
+
+            logMsg.append("Vos héros subissent le piège !");
             if (hpDmg > 0) logMsg.append(" -").append(hpDmg).append(" PV.");
-            if (manaDmg > 0) logMsg.append(" -").append(manaDmg).append(" Mana.");
         }
 
         if (username != null) {
@@ -1311,6 +1335,12 @@ target.getActiveBuffs().add(effect);
                     if (p.getHealthCurrent() > 0) {
                         applyTrapToHero(session, p, room, null);
                     }
+                }
+                if (session.areAllPlayersDead()) {
+                    session.setFinished(true);
+                    session.setPlayerWon(false);
+                    session.addLog("Le groupe a succombé face au piège...");
+                    return session;
                 }
             } else {
                 // Generic fallback

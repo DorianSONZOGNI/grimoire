@@ -189,16 +189,16 @@ const TRAP_EFFECT_META = {
     'CUSTOM': {
         name: 'Classique / Personnalisé',
         icon: 'warning',
-        color: '#94a3b8',
+        color: '#f43f5e',
         badge: 'Dégâts Bruts',
-        description: 'Si déclenché : inflige des dégâts bruts directs configurés.',
-        primaryLabel: 'Dégâts PV (%)',
-        primaryMin: 0,
+        description: 'Si déclenché : inflige directement des dégâts PV à toute l\'équipe.',
+        primaryLabel: 'Dégâts PV infligés si déclenché (% max)',
+        primaryMin: 1,
         primaryMax: 100,
-        primaryDefault: 10,
+        primaryDefault: 15,
         primaryUnit: '% PV',
         hasSecondary: false,
-        durationDefault: 1,
+        durationDefault: 0,
         hasDirectDamage: true
     }
 };
@@ -1353,7 +1353,8 @@ function renderRooms() {
 
                 let previewPrimaryChip = '';
                 if (currentEffectType === 'CUSTOM') {
-                    previewPrimaryChip = `<span class="trap-chip"><span class="material-symbols-outlined text-sm text-slate-400">tune</span> Effet classique</span>`;
+                    const cVal = room.trapDebuffValue !== undefined ? room.trapDebuffValue : meta.primaryDefault;
+                    previewPrimaryChip = `<span class="trap-chip border-rose-500/40 text-rose-300"><span class="material-symbols-outlined text-sm text-rose-400">warning</span> Dégâts subis: <strong class="ml-1">-${cVal}% PV</strong></span>`;
                 } else {
                     const pVal = room.trapDebuffValue !== undefined ? room.trapDebuffValue : meta.primaryDefault;
                     const pDur = room.trapDebuffDuration !== undefined ? room.trapDebuffDuration : meta.durationDefault;
@@ -1424,11 +1425,11 @@ function renderRooms() {
                     <!-- Paramètres Malus de Combat -->
                     <div class="trap-section-title">
                         <span class="material-symbols-outlined text-sm text-warning">tune</span>
-                        Paramètres du Malus de Combat
+                        ${currentEffectType === 'CUSTOM' ? 'Dégâts du Piège (si déclenché)' : 'Paramètres du Malus de Combat'}
                     </div>
                     <div class="trap-panel-card">
                         <div class="grid grid-cols-2 gap-3">
-                            <div>
+                            <div class="${currentEffectType === 'CUSTOM' ? 'col-span-2' : ''}">
                                 <label class="text-muted text-xs block mb-1">${meta.primaryLabel}</label>
                                 <input class="form-control" type="number" 
                                     value="${room.trapDebuffValue !== undefined ? room.trapDebuffValue : meta.primaryDefault}" 
@@ -1436,6 +1437,7 @@ function renderRooms() {
                                     oninput="updateRoomField(${rIndex}, 'trapDebuffValue', parseInt(this.value) || 0)"
                                     onchange="updateRoomField(${rIndex}, 'trapDebuffValue', parseInt(this.value) || 0); renderRooms();">
                             </div>
+                            ${currentEffectType !== 'CUSTOM' ? `
                             <div>
                                 <label class="text-muted text-xs block mb-1">Durée (Tours en combat)</label>
                                 <input class="form-control" type="number" 
@@ -1444,6 +1446,7 @@ function renderRooms() {
                                     oninput="updateRoomField(${rIndex}, 'trapDebuffDuration', parseInt(this.value) || 1)"
                                     onchange="updateRoomField(${rIndex}, 'trapDebuffDuration', parseInt(this.value) || 1); renderRooms();">
                             </div>
+                            ` : ''}
                             ${meta.hasSecondary ? `
                             <div class="col-span-2">
                                 <label class="text-muted text-xs block mb-1">${meta.secondaryLabel}</label>
@@ -3169,10 +3172,6 @@ window.selectTrapEffectType = function (rIndex, type) {
     room.trapDebuffValue = meta.primaryDefault || 0;
     room.trapDebuffDuration = meta.durationDefault || 2;
     room.trapDebuffSecondaryValue = meta.secondaryDefault || 0;
-
-    if (type === 'FOSSE_A_PIEUX') {
-        room.trapDamageHpPct = 15;
-    }
 
     renderRooms();
 };

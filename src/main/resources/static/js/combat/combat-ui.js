@@ -270,7 +270,9 @@ export function getTrapEffectStats(room) {
         }
         case 'CUSTOM':
         default: {
-            const hpPct = room.trapDamageHpPct || room.trapAmount || 15;
+            const hpPct = (room.trapDebuffValue !== undefined && room.trapDebuffValue !== null && room.trapDebuffValue > 0)
+                ? room.trapDebuffValue
+                : (room.trapAmount && room.trapType === 'PV' ? room.trapAmount : 15);
             return {
                 shortSummary: `-${hpPct}% PV immédiats`,
                 detailedHtml: `<span class="text-red-400 font-bold">-${hpPct}% PV immédiats</span> infligés à toute l'équipe.`
