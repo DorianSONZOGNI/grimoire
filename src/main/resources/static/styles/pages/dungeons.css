@@ -317,6 +317,41 @@
     transform: translateX(10px);
 }
 
+.char-inspect-btn {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    color: #94a3b8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    margin-left: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    outline: none;
+}
+
+.char-inspect-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.char-inspect-btn.is-inspecting {
+    background: rgba(14, 165, 233, 0.3) !important;
+    color: #38bdf8 !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.55) !important;
+}
+
+.char-inspect-btn.is-inspecting .material-symbols-outlined {
+    color: #38bdf8 !important;
+    font-variation-settings: 'FILL' 1;
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.9);
+    transform: scale(1.15);
+}
+
 .char-avatar {
     width: 48px;
     height: 48px;
