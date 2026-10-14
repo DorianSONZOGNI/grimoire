@@ -81,10 +81,12 @@
         if (isHeal) sc._healScore += (target === 'ALL_ALLIES' ? 2 : 1);
     }
 
-    function createEmptyProfile(voieId, voieNom) {
+    function createEmptyProfile(voieId, voieNom, description, passiveDescription) {
         return {
             id: voieId,
             nom: voieNom || '',
+            description: description || '',
+            passiveDescription: passiveDescription || '',
             puissance: 0, force: 0, mana: 0, tank: 0, soutien: 0,
             _berserkScore: 0, _burnCount: 0, _poisonCount: 0, _critScore: 0,
             _arcaneScore: 0, _tankScore: 0, _speedScore: 0, _erosionScore: 0, _healScore: 0
@@ -101,7 +103,14 @@
                 spells.filter(s => s.voie && s.voie.id).forEach(s => {
                     const vId = s.voie.id;
                     if (!voieProfiles[vId]) {
-                        voieProfiles[vId] = createEmptyProfile(vId, s.voie.nom);
+                        voieProfiles[vId] = createEmptyProfile(vId, s.voie.nom, s.voie.description, s.voie.passiveDescription);
+                    } else {
+                        if (!voieProfiles[vId].description && s.voie.description) {
+                            voieProfiles[vId].description = s.voie.description;
+                        }
+                        if (!voieProfiles[vId].passiveDescription && s.voie.passiveDescription) {
+                            voieProfiles[vId].passiveDescription = s.voie.passiveDescription;
+                        }
                     }
                     (s.effects || []).forEach(e => analyzeEffect(e, voieProfiles[vId]));
                 });
@@ -133,7 +142,12 @@
             const res = await fetcher(`/api/spells-editor/voie/${voieId}`);
             if (res.ok) {
                 const spells = await res.json();
-                const prof = createEmptyProfile(voieId, spells[0]?.voie?.nom || '');
+                const prof = createEmptyProfile(
+                    voieId,
+                    spells[0]?.voie?.nom || '',
+                    spells[0]?.voie?.description,
+                    spells[0]?.voie?.passiveDescription
+                );
                 spells.forEach(s => {
                     (s.effects || []).forEach(e => analyzeEffect(e, prof));
                 });
@@ -282,14 +296,64 @@
         });
     }
 
+    function getVoieVisual(nom) {
+        if (!nom) return { icon: 'trip_origin', color: '#94a3b8' };
+        const n = nom.toLowerCase();
+        if (n.includes('raison')) return { icon: 'psychology', color: '#3b82f6' };
+        if (n.includes('sûreté') || n.includes('surete')) return { icon: 'water_drop', color: '#00e5cc' };
+        if (n.includes('trahison')) return { icon: 'visibility_off', color: '#ed5677' };
+        if (n.includes('consolidation')) return { icon: 'foundation', color: '#99674c' };
+        if (n.includes('conviction')) return { icon: 'volcano', color: '#b74c0b' };
+        if (n.includes('création') || n.includes('creation')) return { icon: 'eco', color: '#10b981' };
+        if (n.includes('destruction')) return { icon: 'local_fire_department', color: '#ff0000' };
+        if (n.includes('violence')) return { icon: 'explosion', color: '#a70740' };
+        return { icon: 'route', color: '#94a3b8' };
+    }
+
+    function populateVoieTooltip(iconEl, profile) {
+        if (!iconEl) return;
+        if (!profile || !profile.nom) {
+            iconEl.classList.add('hidden');
+            return;
+        }
+
+        if ((!profile.description || !profile.passiveDescription) && window.pageState && window.pageState.voies) {
+            const vState = window.pageState.voies.find(x => x.id == profile.id || x.nom === profile.nom);
+            if (vState) {
+                profile.description = profile.description || vState.description;
+                profile.passiveDescription = profile.passiveDescription || vState.passiveDescription;
+            }
+        }
+
+        const visual = (typeof getVoieInfo === 'function' ? getVoieInfo(profile.nom) : null) || getVoieVisual(profile.nom);
+        const template = iconEl.querySelector('.tooltip-data');
+        if (template) {
+            const richFormatter = window.formatRichText || (t => t);
+            template.innerHTML = `
+                <div class="text-sm font-medium mb-2 flex-center gap-1" style="color: ${visual.color};">
+                    <span class="material-symbols-outlined text-lg">${visual.icon}</span>
+                    ${profile.nom}
+                </div>
+                <div class="text-xs text-slate-300 mb-2">${profile.description || 'Description générique.'}</div>
+                <div class="flex-start-gap text-xs text-slate-200">
+                    <span class="material-symbols-outlined text-md" style="color: ${visual.color};">bolt</span>
+                    <span class="font-italic whitespace-pre-wrap">${richFormatter(profile.passiveDescription) || 'Passif spécifique.'}</span>
+                </div>
+            `;
+        }
+        iconEl.classList.remove('hidden');
+    }
+
     // Exposer l'API globale pour l'armurerie
     window.updateArmoryVoieSpider = async function (voieId) {
         const section = document.getElementById('armorySpiderSection');
         const canvas = document.getElementById('armorySpiderCanvas');
         const badges = document.getElementById('armorySpecBadges');
+        const spiderIconEl = document.getElementById('spiderVoieInfoIcon');
         if (!section || !canvas || !badges) return;
 
         if (!voieId) {
+            if (spiderIconEl) spiderIconEl.classList.add('hidden');
             section.classList.add('is-hidden');
             section.classList.remove('is-visible');
             return;
@@ -299,6 +363,9 @@
         section.classList.add('is-visible');
 
         const profile = await getProfileForVoie(voieId);
+        if (spiderIconEl && profile) {
+            populateVoieTooltip(spiderIconEl, profile);
+        }
         drawSpiderWeb(canvas, profile);
         renderBadges(badges, profile);
     };
@@ -308,6 +375,7 @@
         const titleEl = document.getElementById('specModalTitle');
         const canvas = document.getElementById('specModalCanvas');
         const badges = document.getElementById('specModalBadges');
+        const modalIconEl = document.getElementById('specModalVoieInfoIcon');
         if (!overlay || !canvas || !badges) return;
 
         if (titleEl) {
@@ -317,12 +385,16 @@
         overlay.classList.add('active');
 
         if (!voieId) {
+            if (modalIconEl) modalIconEl.classList.add('hidden');
             drawSpiderWeb(canvas, null);
             badges.innerHTML = '<span class="text-xs text-muted font-italic">Aucune voie affiliée.</span>';
             return;
         }
 
         const profile = await getProfileForVoie(voieId);
+        if (modalIconEl && profile) {
+            populateVoieTooltip(modalIconEl, profile);
+        }
         drawSpiderWeb(canvas, profile);
         renderBadges(badges, profile);
     };

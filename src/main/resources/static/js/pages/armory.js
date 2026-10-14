@@ -928,6 +928,8 @@ function resetForm() {
         Forger le Personnage`;
     document.getElementById('cancelBtn').classList.add('hidden');
     document.getElementById('cancelBtn').classList.remove('inline-flex');
+    const cvIcon = document.getElementById('charVoieInfoIcon');
+    if (cvIcon) cvIcon.classList.add('hidden');
     if (window.updateArmoryVoieSpider) {
         window.updateArmoryVoieSpider(null);
     }

@@ -147,6 +147,12 @@
                     <div class="armory-spider-title-wrap">
                         <span class="material-symbols-outlined text-cyan-400">hub</span>
                         <span class="armory-spider-title">Profil &amp; Spécificités de la Voie</span>
+                        <span class="material-symbols-outlined text-purple text-lg cursor-help hidden"
+                            id="spiderVoieInfoIcon" onmouseenter="showGlobalTooltip(this)"
+                            onmouseleave="hideGlobalTooltip()">
+                            info
+                            <template class="tooltip-data"></template>
+                        </span>
                     </div>
                 </div>
                 <div class="armory-spider-body">
@@ -367,9 +373,15 @@
     <div class="equip-modal-overlay" id="specModalOverlay" onclick="if(event.target===this) closeSpecModal()">
         <div class="equip-modal max-w-[440px]">
             <div class="equip-modal-header">
-                <div class="equip-modal-title">
+                <div class="equip-modal-title flex items-center gap-2">
                     <span class="material-symbols-outlined text-cyan-400">hub</span>
                     <span id="specModalTitle">Spécificités du Héros</span>
+                    <span class="material-symbols-outlined text-purple text-lg cursor-help hidden"
+                        id="specModalVoieInfoIcon" onmouseenter="showGlobalTooltip(this)"
+                        onmouseleave="hideGlobalTooltip()">
+                        info
+                        <template class="tooltip-data"></template>
+                    </span>
                 </div>
                 <button class="equip-modal-close" onclick="closeSpecModal()">
                     <span class="material-symbols-outlined text-2xl">close</span>
@@ -395,7 +407,7 @@
 
     <script defer src="/js/utils/utils.js"></script>
     <script type="module" src="/js/ui.js"></script>
-    <script defer src="/js/pages/hero-spider.js?v=3"></script>
+    <script defer src="/js/pages/hero-spider.js?v=4"></script>
     <script defer src="/js/pages/armory.js?v=100"></script>
     <script type="module" src="/js/services/auth.js?v=15"></script>
     
