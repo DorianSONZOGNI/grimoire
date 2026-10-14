@@ -8,37 +8,31 @@
 
 (function () {
     const SPIDER_AXES = [
-        { key: 'puissance',   label: 'Puissance', color: '#a855f7' },
-        { key: 'force',       label: 'Force',     color: '#ef4444' },
-        { key: 'pv',          label: 'PV',        color: '#ec4899' },
-        { key: 'mana',        label: 'Mana',      color: '#38bdf8' },
-        { key: 'armure',      label: 'Armure',    color: '#60a5fa' },
-        { key: 'soutien',     label: 'Soutien',   color: '#34d399' },
-        { key: 'depouilleur', label: 'Dépouill.', color: '#f97316' },
-        { key: 'independant', label: 'Indépend.', color: '#facc15' },
-        { key: 'support',     label: 'Support',   color: '#a3e635' }
+        { key: 'puissance', label: 'Puissance', color: '#a855f7' },
+        { key: 'force',     label: 'Force',     color: '#ef4444' },
+        { key: 'pv',        label: 'PV',        color: '#ec4899' },
+        { key: 'mana',      label: 'Mana',      color: '#38bdf8' },
+        { key: 'tank',      label: 'Tank',      color: '#60a5fa' },
+        { key: 'soutien',   label: 'Soutien',   color: '#34d399' }
     ];
 
     const SPEC_BADGES = [
-        { key: 'berserk',     label: 'Berserk',     icon: '🩸', cssClass: 'badge-berserk',     desc: 'Sorts basés sur PV/Mana manquants', score: s => s._berserkScore },
-        { key: 'brulant',     label: 'Brûlant',     icon: '🔥', cssClass: 'badge-brulant',     desc: 'Inflige des brûlures',              score: s => s._burnCount * 2 },
-        { key: 'toxique',     label: 'Toxique',     icon: '☠️', cssClass: 'badge-toxique',     desc: 'Inflige du poison',                 score: s => s._poisonCount * 2 },
-        { key: 'tactique',    label: 'Tactique',    icon: '🎯', cssClass: 'badge-tactique',    desc: 'Exploite ou augmente le Critique',  score: s => s._critScore },
-        { key: 'tranchant',   label: 'Tranchant',   icon: '⚔️', cssClass: 'badge-tranchant',   desc: 'Dégâts directs fixes sans ratio',   score: s => s._fixedDmgScore },
-        { key: 'arcane',      label: 'Arcane',      icon: '💠', cssClass: 'badge-arcane',      desc: 'Flux et régénération de Mana',      score: s => s._arcaneScore },
-        { key: 'tank',        label: 'Tank',        icon: '🛡️', cssClass: 'badge-tank',        desc: 'Boucliers et armure sur soi',       score: s => s._tankScore },
-        { key: 'preci',       label: 'Précis',      icon: '🏹', cssClass: 'badge-preci',       desc: 'Spécialiste monocible ciblé',       score: s => s._preciScore },
-        { key: 'devastateur', label: 'Dévastateur', icon: '💥', cssClass: 'badge-devastateur', desc: 'Dégâts multicibles (AoE)',          score: s => s._aoeScore },
-        { key: 'vif',         label: 'Vif',         icon: '⚡', cssClass: 'badge-vif',         desc: 'Vitesse et vivacité',               score: s => s._speedScore },
-        { key: 'erosion',     label: 'Érosion',     icon: '🔱', cssClass: 'badge-erosion',     desc: 'Pénétration et casse-bouclier',     score: s => s._erosionScore },
-        { key: 'guerisseur',  label: 'Guérisseur',  icon: '🌿', cssClass: 'badge-guerisseur',  desc: 'Spécialiste du soin et HoT',        score: s => s._healScore }
+        { key: 'berserk',    label: 'Berserk',    icon: 'bloodtype',             cssClass: 'badge-berserk',    desc: 'Sorts basés sur les PV manquants',   score: s => s._berserkScore },
+        { key: 'brulant',    label: 'Brûlant',    icon: 'local_fire_department', cssClass: 'badge-brulant',    desc: 'Inflige des brûlures',              score: s => s._burnCount * 2 },
+        { key: 'toxique',    label: 'Toxique',    icon: 'skull',                 cssClass: 'badge-toxique',    desc: 'Inflige du poison',                 score: s => s._poisonCount * 2 },
+        { key: 'tactique',   label: 'Tactique',   icon: 'gps_fixed',             cssClass: 'badge-tactique',   desc: 'Exploite ou augmente le Critique',  score: s => s._critScore },
+        { key: 'tranchant',  label: 'Tranchant',  icon: 'swords',                cssClass: 'badge-tranchant',  desc: 'Dégâts directs fixes sans ratio',   score: s => s._fixedDmgScore },
+        { key: 'arcane',     label: 'Arcane',     icon: 'auto_awesome',          cssClass: 'badge-arcane',     desc: 'Flux et régénération de Mana',      score: s => s._arcaneScore },
+        { key: 'tank',       label: 'Tank',       icon: 'shield',                cssClass: 'badge-tank',       desc: 'Boucliers et armure sur soi',       score: s => s._tankScore },
+        { key: 'vif',        label: 'Vif',        icon: 'bolt',                  cssClass: 'badge-vif',        desc: 'Vitesse et vivacité',               score: s => s._speedScore },
+        { key: 'erosion',    label: 'Érosion',    icon: 'heart_minus',           cssClass: 'badge-erosion',    desc: 'Pénétration et casse-bouclier',     score: s => s._erosionScore },
+        { key: 'guerisseur', label: 'Guérisseur', icon: 'healing',               cssClass: 'badge-guerisseur', desc: 'Spécialiste du soin et HoT',        score: s => s._healScore }
     ];
 
     // Cache des analyses par voieId
     const voieProfiles = {};
     const globalAxisMax = {
-        puissance: 1, force: 1, pv: 1, mana: 1, armure: 1,
-        soutien: 1, depouilleur: 1, independant: 1, support: 1
+        puissance: 1, force: 1, pv: 1, mana: 1, tank: 1, soutien: 1
     };
     let isInitialized = false;
 
@@ -48,7 +42,6 @@
         const isAlly = ['CASTER', 'ALLY', 'ALL_ALLIES'].includes(target);
         const isEnemy = ['TARGET', 'ALL_ENEMIES', 'ALL_COMBATANTS'].includes(target);
         const isSelf = target === 'CASTER';
-        const isAoe = ['ALL_ENEMIES', 'ALL_ALLIES', 'ALL_COMBATANTS'].includes(target);
         const src = effect.damageSource || effect.healSource || effect.manaSource || effect.source || effect.modifierSource || '';
 
         // 1. Puissance: ratio puissance ou buff puissance
@@ -71,34 +64,25 @@
         if (isMana || isManaBD) sc.mana += 1;
         if (src.includes('MANA')) sc.mana += (effect.ratio || 1);
 
-        // 5. Armure/Résistance: bouclier, buff armure/résistance
+        // 5. Tank: bouclier, buff armure/résistance
         const isShield = type === 'SHIELD';
         const isArmorBD = type === 'BUFF_DEBUFF' && ['ARMURE', 'RESISTANCE', 'ARMOR', 'RESIST'].some(s => (effect.statAffected || '').includes(s));
-        if (isShield || isArmorBD) sc.armure += 1;
+        if (isShield || isArmorBD) sc.tank += 1;
 
-        // 6. Soutiens: buffs / shields / soins aux alliés (non-soi)
+        // 6. Soutien: buff allié, débuff ennemi, et soins/mana support
         const isBufPos = type === 'BUFF_DEBUFF' && (effect.flatValue > 0 || effect.modifier > 0);
-        if (isAlly && !isSelf && (isBufPos || isShield || isHeal || isMana)) sc.soutien += 1;
-
-        // 7. Dépouilleur: debuffs, dots, poisons, brûlures aux ennemis
         const isDebufNeg = type === 'BUFF_DEBUFF' && (effect.flatValue < 0 || effect.modifier < 0);
-        if (isEnemy && (isDebufNeg || ['DOT', 'BURN', 'POISON'].includes(type))) sc.depouilleur += 1;
-
-        // 8. Indépendant: effets orientés sur soi-même
-        if (isSelf && (isBufPos || isShield || isHeal || isMana || effect.flatValue > 0)) sc.independant += 1;
-
-        // 9. Support: heal ou mana rendu aux alliés ou à soi-même
-        if ((isAlly || isSelf) && (isHeal || isMana)) sc.support += 1;
+        if (isAlly && !isSelf && (isBufPos || isShield || isHeal || isMana)) sc.soutien += 1;
+        if (isEnemy && (isDebufNeg || ['DOT', 'BURN', 'POISON'].includes(type))) sc.soutien += 1;
+        if ((isAlly || isSelf) && (isHeal || isMana)) sc.soutien += 1;
 
         // Badges scores
-        if (src.includes('MISSING')) sc._berserkScore++;
+        if (src.includes('HEALTH_MISSING')) sc._berserkScore++;
         if (src.includes('CRIT') || (type === 'BUFF_DEBUFF' && effect.statAffected === 'CRIT')) sc._critScore++;
         if (type === 'FIXED_DAMAGE' && !src) sc._fixedDmgScore++;
         if (type === 'DOT' && !src && (effect.fixedDamagePerTick || 0) > 0) sc._fixedDmgScore += 0.5;
         if (isMana && (isAlly || isSelf)) sc._arcaneScore++;
         if (isSelf && (isShield || isArmorBD)) sc._tankScore++;
-        if (['FIXED_DAMAGE', 'PERCENTAGE_DAMAGE', 'DOT'].includes(type) && target === 'TARGET') sc._preciScore++;
-        if (['FIXED_DAMAGE', 'PERCENTAGE_DAMAGE', 'DOT'].includes(type) && isAoe) sc._aoeScore++;
         if (src.includes('SPEED') || (type === 'BUFF_DEBUFF' && effect.statAffected === 'SPEED')) sc._speedScore++;
         if (type === 'BUFF_DEBUFF' && (effect.statAffected || '').includes('SHIELD')) sc._erosionScore++;
         if ((type === 'DOT' || type === 'BUFF_DEBUFF') && (effect.statAffected === 'BURN' || type === 'BURN')) sc._burnCount++;
@@ -110,11 +94,10 @@
         return {
             id: voieId,
             nom: voieNom || '',
-            puissance: 0, force: 0, pv: 0, mana: 0, armure: 0,
-            soutien: 0, depouilleur: 0, independant: 0, support: 0,
+            puissance: 0, force: 0, pv: 0, mana: 0, tank: 0, soutien: 0,
             _berserkScore: 0, _burnCount: 0, _poisonCount: 0, _critScore: 0,
             _fixedDmgScore: 0, _arcaneScore: 0, _tankScore: 0,
-            _preciScore: 0, _aoeScore: 0, _speedScore: 0, _erosionScore: 0, _healScore: 0
+            _speedScore: 0, _erosionScore: 0, _healScore: 0
         };
     }
 
@@ -297,6 +280,7 @@
             badgeEl.title = b.desc;
 
             const iconSpan = document.createElement('span');
+            iconSpan.className = 'material-symbols-outlined text-sm';
             iconSpan.textContent = b.icon;
 
             const textSpan = document.createElement('span');
