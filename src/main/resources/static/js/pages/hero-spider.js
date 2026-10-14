@@ -60,10 +60,11 @@
         if (isMana || isManaBD) sc.mana += 1;
         if (src.includes('MANA')) sc.mana += (effect.ratio || 1);
 
-        // 4. Tank: bouclier, buff armure/résistance
+        // 4. Tank: bouclier, buff positif armure/résistance
         const isShield = type === 'SHIELD';
         const isArmorBD = type === 'BUFF_DEBUFF' && ['ARMURE', 'RESISTANCE', 'ARMOR', 'RESIST'].some(s => (effect.statAffected || '').includes(s));
-        if (isShield || isArmorBD) sc.tank += 1;
+        const isArmorPos = isArmorBD && (isSelf || isAlly) && ((effect.modifier || 0) > 0 || (effect.flatValue || 0) > 0);
+        if (isShield || isArmorPos) sc.tank += 1;
 
         // 5. Soutien: buff allié, débuff ennemi, et soins/mana support
         const isHeal = ['FIXED_HEAL', 'PERCENTAGE_HEAL', 'HOT'].includes(type);
@@ -84,10 +85,11 @@
 
         if (isMana && (isAlly || isSelf)) sc._arcaneScore++;
 
-        // Tank badge : bouclier sur soi, armure/résistance sur soi, ou buff de bouclier reçu/donné sur soi
+        // Tank badge : bouclier sur soi, armure/résistance positive sur soi, ou buff de bouclier reçu/donné sur soi
         const isShieldSelf = isShield && isSelf;
-        const isShieldBuffSelf = type === 'BUFF_DEBUFF' && isSelf && (effect.statAffected || '').includes('SHIELD') && ((effect.modifier || 0) > 0 || (effect.flatValue || 0) > 0);
-        if ((isSelf && (isShieldSelf || isArmorBD)) || isShieldBuffSelf) sc._tankScore++;
+        const isArmorBuffSelf = isArmorBD && isSelf && ((effect.modifier || 0) > 0 || (effect.flatValue || 0) > 0);
+        const isShieldBuffSelf = type === 'BUFF_DEBUFF' && isSelf && ['SHIELD_GIVEN', 'SHIELD_RECEIVED', 'SHIELD'].includes(effect.statAffected || '') && ((effect.modifier || 0) > 0 || (effect.flatValue || 0) > 0);
+        if (isShieldSelf || isArmorBuffSelf || isShieldBuffSelf) sc._tankScore++;
 
         // Protecteur : boucliers conférés aux alliés
         const isShieldAlly = isShield && (target === 'ALLY' || target === 'ALL_ALLIES');
