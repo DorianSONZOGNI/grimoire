@@ -944,9 +944,11 @@ window.renderOverlayMap = function (containerId) {
                 color = '#10b981'; // emerald-500
                 label += ' : Rencontre';
             } else if (s.eventSubType === 'PIEGE') {
-                icon = 'warning';
-                color = '#f87171'; // red-400
-                label += ' : Piège';
+                const trapEff = s.trapEffectType;
+                icon = (typeof trapEff === 'object' && trapEff?.icon) ? trapEff.icon : 'warning';
+                color = (typeof trapEff === 'object' && trapEff?.color) ? trapEff.color : '#f87171';
+                const trapName = (typeof trapEff === 'object' && trapEff?.label) ? trapEff.label : 'Piège';
+                label += ` : ${trapName}`;
             } else if (s.eventSubType === 'PORTE_ETRANGE') {
                 icon = 'door_front';
                 color = '#fbbf24'; // amber-400

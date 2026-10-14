@@ -41,6 +41,168 @@ const SECRETS_META = [
     { name: "Secret des Abysses", icon: "dark_mode", color: "#a855f7" }
 ];
 
+const TRAP_EFFECT_META = {
+    'FOSSE_A_PIEUX': {
+        name: 'Fosse à Pieux',
+        icon: 'altitude',
+        color: '#ef4444',
+        badge: 'Physique & Vitesse',
+        description: 'Si déclenché : inflige un lourd malus de Vitesse.',
+        primaryLabel: 'Malus de Vitesse (-X Vitesse)',
+        primaryMin: 1,
+        primaryMax: 100,
+        primaryDefault: 25,
+        primaryUnit: 'Vit',
+        hasSecondary: false,
+        durationDefault: 2,
+        hasDirectDamage: true
+    },
+    'NEUROTOXINE': {
+        name: 'Neurotoxine',
+        icon: 'science',
+        color: '#10b981',
+        badge: 'Poison Brut',
+        description: 'Si déclenché : infecte le groupe d\'un poison virulent (DoT).',
+        primaryLabel: 'Poison (% PV Max / tour)',
+        primaryMin: 1,
+        primaryMax: 50,
+        primaryDefault: 5,
+        primaryUnit: '% PV',
+        hasSecondary: false,
+        durationDefault: 3,
+        hasDirectDamage: true
+    },
+    'PLUIE_ACIDE': {
+        name: 'Pluie d\'acide',
+        icon: 'water_damage',
+        color: '#84cc16',
+        badge: 'Anti-Armure & Résist',
+        description: 'Si déclenché : corrosion diminuant l\'Armure et la Résistance.',
+        primaryLabel: 'Réduction Armure & Résistance (%)',
+        primaryMin: 1,
+        primaryMax: 90,
+        primaryDefault: 30,
+        primaryUnit: '%',
+        hasSecondary: false,
+        durationDefault: 3,
+        hasDirectDamage: true
+    },
+    'RUPTURE_ARCANIQUE': {
+        name: 'Rupture arcanique',
+        icon: 'water_drop',
+        color: '#06b6d4',
+        badge: 'Brûle-Mana & Résist',
+        description: 'Si déclenché : brûle le Mana et réduit la Résistance magique.',
+        primaryLabel: 'Malus de Résistance (%)',
+        primaryMin: 1,
+        primaryMax: 90,
+        primaryDefault: 25,
+        primaryUnit: '% Rés',
+        hasSecondary: true,
+        secondaryLabel: 'Perte de Mana (% max)',
+        secondaryDefault: 30,
+        secondaryUnit: '% Mana',
+        durationDefault: 3,
+        hasDirectDamage: false
+    },
+    'FUMEE_AVEUGLANTE': {
+        name: 'Fumée aveuglante',
+        icon: 'visibility_off',
+        color: '#a855f7',
+        badge: 'Critique & Stats',
+        description: 'Si déclenché : étouffe les héros, réduisant Critique, Force et Puissance.',
+        primaryLabel: 'Malus de Critique (-X% Crit)',
+        primaryMin: 1,
+        primaryMax: 100,
+        primaryDefault: 50,
+        primaryUnit: '% Crit',
+        hasSecondary: true,
+        secondaryLabel: 'Malus Force & Puissance (%)',
+        secondaryDefault: 25,
+        secondaryUnit: '%',
+        durationDefault: 2,
+        hasDirectDamage: true
+    },
+    'MALEDICTION_DESESPERANTE': {
+        name: 'Malédiction désespérante',
+        icon: 'heart_broken',
+        color: '#ec4899',
+        badge: 'Malus Dégâts Donnés',
+        description: 'Si déclenché : malédiction réduisant tous les dégâts infligés.',
+        primaryLabel: 'Réduction Dégâts Infligés (%)',
+        primaryMin: 1,
+        primaryMax: 90,
+        primaryDefault: 30,
+        primaryUnit: '% Dmg',
+        hasSecondary: false,
+        durationDefault: 3,
+        hasDirectDamage: true
+    },
+    'MALEDICTION_MORTELLE': {
+        name: 'Malédiction mortelle',
+        icon: 'skull',
+        color: '#f43f5e',
+        badge: 'Vulnérabilité Reçue',
+        description: 'Si déclenché : fragilise les chairs, amplifiant les dégâts reçus.',
+        primaryLabel: 'Amplification Dégâts Subis (+%)',
+        primaryMin: 1,
+        primaryMax: 100,
+        primaryDefault: 25,
+        primaryUnit: '+% Dmg',
+        hasSecondary: false,
+        durationDefault: 3,
+        hasDirectDamage: true
+    },
+    'MALEDICTION_SOLITUDE': {
+        name: 'Malédiction de solitude',
+        icon: 'person_off',
+        color: '#fb923c',
+        badge: 'Anti-Soin & Anti-Bouclier',
+        description: 'Si déclenché : bloque l\'entraide, malus sur soins et boucliers reçus.',
+        primaryLabel: 'Malus Soins & Boucliers reçus (%)',
+        primaryMin: 1,
+        primaryMax: 90,
+        primaryDefault: 50,
+        primaryUnit: '% Soin/Bouclier',
+        hasSecondary: false,
+        durationDefault: 3,
+        hasDirectDamage: true
+    },
+    'FOURNAISE': {
+        name: 'Fournaise',
+        icon: 'local_fire_department',
+        color: '#f97316',
+        badge: 'Brûlure & Armure',
+        description: 'Si déclenché : vague de chaleur brûlante (DoT) et réduction d\'Armure.',
+        primaryLabel: 'Brûlure (% PV Max / tour)',
+        primaryMin: 1,
+        primaryMax: 50,
+        primaryDefault: 6,
+        primaryUnit: '% PV',
+        hasSecondary: true,
+        secondaryLabel: 'Réduction d\'Armure (%)',
+        secondaryDefault: 25,
+        secondaryUnit: '% Arm',
+        durationDefault: 3,
+        hasDirectDamage: true
+    },
+    'CUSTOM': {
+        name: 'Classique / Personnalisé',
+        icon: 'warning',
+        color: '#f43f5e',
+        badge: 'Dégâts Bruts',
+        description: 'Si déclenché : inflige directement des dégâts PV à toute l\'équipe.',
+        primaryLabel: 'Dégâts PV infligés si déclenché (% max)',
+        primaryMin: 1,
+        primaryMax: 100,
+        primaryDefault: 15,
+        primaryUnit: '% PV',
+        hasSecondary: false,
+        durationDefault: 0,
+        hasDirectDamage: true
+    }
+};
+
 function getSecretIconOnlyHtml(m) {
     if (!m.nativeSecret) return '';
     const sm = SECRETS_META.find(s => s.name === m.nativeSecret) || { icon: "explore", color: "#10b981" };
@@ -210,6 +372,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     s.trapDamageManaPct = r.trapDamageManaPct || 0;
                     s.trapDamageHpFixed = r.trapDamageHpFixed || 0;
                     s.trapDamageManaFixed = r.trapDamageManaFixed || 0;
+                    s.trapEffectType = (r.trapEffectType && typeof r.trapEffectType === 'object' && r.trapEffectType.name)
+                        ? r.trapEffectType.name
+                        : (r.trapEffectType || 'CUSTOM');
+                    s.trapDebuffDuration = r.trapDebuffDuration !== undefined ? r.trapDebuffDuration : 2;
+                    s.trapDebuffValue = r.trapDebuffValue !== undefined ? r.trapDebuffValue : 0;
+                    s.trapDebuffSecondaryValue = r.trapDebuffSecondaryValue !== undefined ? r.trapDebuffSecondaryValue : 0;
                     s.doorOutcomes = r.doorOutcomes ? JSON.stringify(r.doorOutcomes) : null;
                     if (r.lootTable) {
                         s.lootTable = r.lootTable;
@@ -264,7 +432,20 @@ window.addRoom = function (type) {
     } else if (type === 'RENCONTRE') {
         pageState.selectedRooms.push({ type: 'EVENT', eventSubType: 'RENCONTRE', eventText: 'Un marchand ambulant vous interpelle...', lootTable: [] });
     } else if (type === 'PIEGE') {
-        pageState.selectedRooms.push({ type: 'EVENT', eventSubType: 'PIEGE', eventText: 'Un piège se déclenche !', trapType: 'PV', trapAmount: 10, trapHasRopeOption: false });
+        pageState.selectedRooms.push({
+            type: 'EVENT',
+            eventSubType: 'PIEGE',
+            eventText: 'Un piège se déclenche sous vos pas !',
+            trapEffectType: 'FOSSE_A_PIEUX',
+            trapDebuffDuration: 2,
+            trapDebuffValue: 25,
+            trapDebuffSecondaryValue: 0,
+            trapDamageHpPct: 15,
+            trapDamageManaPct: 0,
+            trapDamageHpFixed: 0,
+            trapDamageManaFixed: 0,
+            trapHasRopeOption: true
+        });
     } else if (type === 'PORTE_ETRANGE') {
         pageState.selectedRooms.push({ type: 'EVENT', eventSubType: 'PORTE_ETRANGE', eventText: 'Une porte étrange se dresse devant vous...', doorOutcomes: [] });
     }
@@ -1139,42 +1320,203 @@ function renderRooms() {
                     ${shopHtml}
                 `;
             } else if (subType === 'PIEGE') {
-                headerIcon = 'warning'; headerColor = '#f87171'; headerTitle = 'Piège';
+                let currentEffectType = room.trapEffectType;
+                if (currentEffectType && typeof currentEffectType === 'object' && currentEffectType.name) {
+                    currentEffectType = currentEffectType.name;
+                    room.trapEffectType = currentEffectType;
+                }
+                if (!currentEffectType || !TRAP_EFFECT_META[currentEffectType]) {
+                    currentEffectType = 'FOSSE_A_PIEUX';
+                    room.trapEffectType = currentEffectType;
+                }
+                const meta = TRAP_EFFECT_META[currentEffectType] || TRAP_EFFECT_META['CUSTOM'];
+                headerIcon = meta.icon || 'warning';
+                headerColor = meta.color || '#f87171';
+                headerTitle = `Piège : ${meta.name}`;
+
+                let optionsHtml = '';
+                for (const [key, tMeta] of Object.entries(TRAP_EFFECT_META)) {
+                    const isSelected = (currentEffectType === key) ? 'is-selected' : '';
+                    optionsHtml += `
+                        <div class="trap-option-card ${isSelected}" onclick="selectTrapEffectType(${rIndex}, '${key}')">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined trap-icon-${key} text-lg">${tMeta.icon}</span>
+                                <div>
+                                    <div class="text-sm font-semibold text-slate-100">${tMeta.name}</div>
+                                    <div class="text-xs text-muted">${tMeta.description}</div>
+                                </div>
+                            </div>
+                            <span class="trap-badge trap-badge-${key}">${tMeta.badge}</span>
+                        </div>
+                    `;
+                }
+
+                let previewPrimaryChip = '';
+                if (currentEffectType === 'CUSTOM') {
+                    const cVal = room.trapDebuffValue !== undefined ? room.trapDebuffValue : meta.primaryDefault;
+                    previewPrimaryChip = `<span class="trap-chip border-rose-500/40 text-rose-300"><span class="material-symbols-outlined text-sm text-rose-400">warning</span> Dégâts subis: <strong class="ml-1">-${cVal}% PV</strong></span>`;
+                } else {
+                    const pVal = room.trapDebuffValue !== undefined ? room.trapDebuffValue : meta.primaryDefault;
+                    const pDur = room.trapDebuffDuration !== undefined ? room.trapDebuffDuration : meta.durationDefault;
+                    previewPrimaryChip = `<span class="trap-chip"><span class="material-symbols-outlined text-sm trap-icon-${currentEffectType}">${meta.icon}</span> ${meta.primaryLabel.split('(')[0].trim()}: <strong class="ml-1">${pVal}${meta.primaryUnit || ''}</strong> <span class="text-muted ml-1">(${pDur} tours)</span></span>`;
+                }
+
+                let previewSecondaryChip = '';
+                if (meta.hasSecondary) {
+                    const sVal = room.trapDebuffSecondaryValue !== undefined ? room.trapDebuffSecondaryValue : meta.secondaryDefault;
+                    previewSecondaryChip = `<span class="trap-chip"><span class="material-symbols-outlined text-sm text-info">auto_fix_high</span> ${meta.secondaryLabel.split('(')[0].trim()}: <strong class="ml-1">${sVal}${meta.secondaryUnit || ''}</strong></span>`;
+                }
+
+                let previewDamageChip = '';
+                const parts = [];
+                if (room.trapDamageHpPct > 0) parts.push(`-${room.trapDamageHpPct}% PV`);
+                if (room.trapDamageHpFixed > 0) parts.push(`-${room.trapDamageHpFixed} PV`);
+                if (room.trapDamageManaPct > 0) parts.push(`-${room.trapDamageManaPct}% Mana`);
+                if (room.trapDamageManaFixed > 0) parts.push(`-${room.trapDamageManaFixed} Mana`);
+                if (parts.length > 0) {
+                    previewDamageChip = `<span class="trap-chip border-emerald-500/40 text-emerald-300"><span class="material-symbols-outlined text-sm text-emerald-400">build</span> Désamorçage: <strong class="ml-1">${parts.join(', ')}</strong></span>`;
+                } else {
+                    previewDamageChip = `<span class="trap-chip border-emerald-500/20 text-emerald-400/80"><span class="material-symbols-outlined text-sm">build</span> Désamorçage gratuit</span>`;
+                }
+
+                let previewRopeChip = room.trapHasRopeOption 
+                    ? `<span class="trap-chip border-amber-500/40 text-amber-300"><span class="material-symbols-outlined text-sm text-amber-400">auto_fix</span> Corde autorisée</span>`
+                    : `<span class="trap-chip text-muted"><span class="material-symbols-outlined text-sm">block</span> Inévitable</span>`;
+
                 contentHtml = `
-                    <div class="mt-4" >
-                        <label class="text-xs text-muted" >Texte du piège</label>
-                        <input class="form-control" type="text" value="${room.eventText || ''}" onchange="updateRoomField(${rIndex}, 'eventText', this.value)">
-                    </div>
-                    <div class="grid grid-cols-2 gap-2 mt-3" >
-                        <div>
-                            <label class="text-muted text-xs" >Perte PV (% max)</label>
-                            <input class="form-control" type="number" value="${room.trapDamageHpPct || 0}" onchange="updateRoomField(${rIndex}, 'trapDamageHpPct', parseInt(this.value) || 0)" min="0" max="100">
-                        </div>
-                        <div>
-                            <label class="text-muted text-xs" >Perte Mana (% max)</label>
-                            <input class="form-control" type="number" value="${room.trapDamageManaPct || 0}" onchange="updateRoomField(${rIndex}, 'trapDamageManaPct', parseInt(this.value) || 0)" min="0" max="100">
-                        </div>
-                        <div>
-                            <label class="text-muted text-xs" >Perte PV (Fixe)</label>
-                            <input class="form-control" type="number" value="${room.trapDamageHpFixed || 0}" onchange="updateRoomField(${rIndex}, 'trapDamageHpFixed', parseInt(this.value) || 0)" min="0">
-                        </div>
-                        <div>
-                            <label class="text-muted text-xs" >Perte Mana (Fixe)</label>
-                            <input class="form-control" type="number" value="${room.trapDamageManaFixed || 0}" onchange="updateRoomField(${rIndex}, 'trapDamageManaFixed', parseInt(this.value) || 0)" min="0">
+                    <!-- Choix de l'archétype -->
+                    <div class="mt-2">
+                        <label class="text-xs text-muted block mb-1">Archétype du Piège</label>
+                        <div class="custom-select-wrapper" id="room_trap_type_wrapper_${rIndex}">
+                            <div class="trap-trigger-btn" onclick="toggleTrapTypeSelect(${rIndex})">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined trap-icon-${currentEffectType} text-lg">${meta.icon}</span>
+                                    <span class="text-sm font-semibold text-slate-100">${meta.name}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="trap-badge trap-badge-${currentEffectType}">${meta.badge}</span>
+                                    <span class="material-symbols-outlined text-muted">expand_more</span>
+                                </div>
+                            </div>
+                            <div class="custom-select-options max-h-[320px] overflow-y-auto" id="room_trap_type_options_${rIndex}">
+                                ${optionsHtml}
+                            </div>
                         </div>
                     </div>
-                    <div class="flex-center flex justify-between mt-4 p-3 bg-black/20 border border-amber-500/30 rounded-lg" >
-                        <div class="flex flex-col gap-1" >
-                            <span class="flex-center text-sm font-medium text-slate-50 gap-1" >
-                                <span class="material-symbols-outlined text-amber-500 text-lg" >auto_fix</span> Option Corde d'évitement
-                            </span>
-                            <span class="text-muted text-xs" >Permet aux héros d'utiliser une Corde pour ignorer ce piège.</span>
+
+                    <!-- Carte d'Aperçu Graphique -->
+                    <div class="trap-preview-box trap-theme-${currentEffectType} mt-3">
+                        <div class="trap-preview-header">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined trap-icon-${currentEffectType} text-lg">${meta.icon}</span>
+                                <span class="text-sm font-bold text-slate-100">${meta.name}</span>
+                            </div>
+                            <span class="trap-badge trap-badge-${currentEffectType}">${meta.badge}</span>
                         </div>
-                        <label class="flex-shrink-0 relative block m-0" style="width: 40px; height: 24px;" >
-                            <input class="opacity-0 w-0 h-0" type="checkbox" style="opacity: 0; width: 0; height: 0;" ${room.trapHasRopeOption ? 'checked' : ''} onchange="updateRoomField(${rIndex}, 'trapHasRopeOption', this.checked); this.nextElementSibling.style.backgroundColor = this.checked ? '#f59e0b' : 'rgba(255, 255, 255, 0.1)'; this.nextElementSibling.children[0].style.transform = this.checked ? 'translateX(16px)' : 'translateX(0)';">
-                            <span class="absolute" style="cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: ${room.trapHasRopeOption ? '#f59e0b' : 'rgba(255, 255, 255, 0.1)'}; transition: .3s; border-radius: 24px;">
-                                <span class="absolute" style="content: ''; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; transform: ${room.trapHasRopeOption ? 'translateX(16px)' : 'translateX(0)'}; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></span>
+                        <p class="text-xs text-slate-300 mb-2">${meta.description}</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            ${previewPrimaryChip}
+                            ${previewSecondaryChip}
+                            ${previewDamageChip}
+                            ${previewRopeChip}
+                        </div>
+                    </div>
+
+                    <!-- Paramètres Malus de Combat -->
+                    <div class="trap-section-title">
+                        <span class="material-symbols-outlined text-sm text-warning">tune</span>
+                        ${currentEffectType === 'CUSTOM' ? 'Dégâts du Piège (si déclenché)' : 'Paramètres du Malus de Combat'}
+                    </div>
+                    <div class="trap-panel-card">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="${currentEffectType === 'CUSTOM' ? 'col-span-2' : ''}">
+                                <label class="text-muted text-xs block mb-1">${meta.primaryLabel}</label>
+                                <input class="form-control" type="number" 
+                                    value="${room.trapDebuffValue !== undefined ? room.trapDebuffValue : meta.primaryDefault}" 
+                                    min="${meta.primaryMin !== undefined ? meta.primaryMin : 0}" max="${meta.primaryMax !== undefined ? meta.primaryMax : 9999}" 
+                                    oninput="updateRoomField(${rIndex}, 'trapDebuffValue', parseInt(this.value) || 0)"
+                                    onchange="updateRoomField(${rIndex}, 'trapDebuffValue', parseInt(this.value) || 0); renderRooms();">
+                            </div>
+                            ${currentEffectType !== 'CUSTOM' ? `
+                            <div>
+                                <label class="text-muted text-xs block mb-1">Durée (Tours en combat)</label>
+                                <input class="form-control" type="number" 
+                                    value="${room.trapDebuffDuration !== undefined ? room.trapDebuffDuration : meta.durationDefault}" 
+                                    min="1" max="10" 
+                                    oninput="updateRoomField(${rIndex}, 'trapDebuffDuration', parseInt(this.value) || 1)"
+                                    onchange="updateRoomField(${rIndex}, 'trapDebuffDuration', parseInt(this.value) || 1); renderRooms();">
+                            </div>
+                            ` : ''}
+                            ${meta.hasSecondary ? `
+                            <div class="col-span-2">
+                                <label class="text-muted text-xs block mb-1">${meta.secondaryLabel}</label>
+                                <input class="form-control" type="number" 
+                                    value="${room.trapDebuffSecondaryValue !== undefined ? room.trapDebuffSecondaryValue : meta.secondaryDefault}" 
+                                    min="1" max="100" 
+                                    oninput="updateRoomField(${rIndex}, 'trapDebuffSecondaryValue', parseInt(this.value) || 0)"
+                                    onchange="updateRoomField(${rIndex}, 'trapDebuffSecondaryValue', parseInt(this.value) || 0); renderRooms();">
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <!-- Option & Coût de Désamorçage -->
+                    <div class="trap-section-title">
+                        <span class="material-symbols-outlined text-sm text-emerald-400">build</span>
+                        Option & Coût de Désamorçage (HP / Mana)
+                    </div>
+                    <div class="trap-panel-card">
+                        <p class="text-xs text-muted mb-2">Les héros peuvent choisir de sacrifier ces ressources pour désamorcer le piège et annuler ses malus au combat.</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-muted text-xs">Coût PV (% max)</label>
+                                <input class="form-control" type="number" value="${room.trapDamageHpPct || 0}" min="0" max="100" 
+                                    oninput="updateRoomField(${rIndex}, 'trapDamageHpPct', parseInt(this.value) || 0)"
+                                    onchange="updateRoomField(${rIndex}, 'trapDamageHpPct', parseInt(this.value) || 0); renderRooms();">
+                            </div>
+                            <div>
+                                <label class="text-muted text-xs">Coût Mana (% max)</label>
+                                <input class="form-control" type="number" value="${room.trapDamageManaPct || 0}" min="0" max="100" 
+                                    oninput="updateRoomField(${rIndex}, 'trapDamageManaPct', parseInt(this.value) || 0)"
+                                    onchange="updateRoomField(${rIndex}, 'trapDamageManaPct', parseInt(this.value) || 0); renderRooms();">
+                            </div>
+                            <div>
+                                <label class="text-muted text-xs">Coût PV (Fixe)</label>
+                                <input class="form-control" type="number" value="${room.trapDamageHpFixed || 0}" min="0" 
+                                    oninput="updateRoomField(${rIndex}, 'trapDamageHpFixed', parseInt(this.value) || 0)"
+                                    onchange="updateRoomField(${rIndex}, 'trapDamageHpFixed', parseInt(this.value) || 0); renderRooms();">
+                            </div>
+                            <div>
+                                <label class="text-muted text-xs">Coût Mana (Fixe)</label>
+                                <input class="form-control" type="number" value="${room.trapDamageManaFixed || 0}" min="0" 
+                                    oninput="updateRoomField(${rIndex}, 'trapDamageManaFixed', parseInt(this.value) || 0)"
+                                    onchange="updateRoomField(${rIndex}, 'trapDamageManaFixed', parseInt(this.value) || 0); renderRooms();">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Texte & Évitement -->
+                    <div class="trap-section-title">
+                        <span class="material-symbols-outlined text-sm text-slate-400">description</span>
+                        Texte & Évitement
+                    </div>
+                    <div>
+                        <label class="text-xs text-muted block mb-1">Texte d'ambiance du piège</label>
+                        <input class="form-control" type="text" value="${room.eventText || ''}" placeholder="Ex: Un piège se déclenche sous vos pas !" 
+                            oninput="updateRoomField(${rIndex}, 'eventText', this.value)"
+                            onchange="updateRoomField(${rIndex}, 'eventText', this.value)">
+                    </div>
+                    <div class="trap-switch-container mt-3">
+                        <div class="flex flex-col gap-1">
+                            <span class="flex items-center text-sm font-medium text-slate-50 gap-1">
+                                <span class="material-symbols-outlined text-amber-500 text-lg">auto_fix</span> Option Corde d'évitement
                             </span>
+                            <span class="text-muted text-xs">Permet aux héros d'utiliser une Corde pour ignorer ce piège.</span>
+                        </div>
+                        <label class="relative inline-block m-0">
+                            <input class="trap-switch-input" type="checkbox" ${room.trapHasRopeOption ? 'checked' : ''} 
+                                onchange="updateRoomField(${rIndex}, 'trapHasRopeOption', this.checked); renderRooms();">
+                            <span class="trap-switch-slider"></span>
                         </label>
                     </div>
                 `;
@@ -1635,46 +1977,148 @@ function renderRooms() {
                                 </div>
                             `;
                         } else if (outcome.type === 'PIEGE') {
+                            let curEff = outcome.trapEffectType;
+                            if (curEff && typeof curEff === 'object' && curEff.name) {
+                                curEff = curEff.name;
+                                outcome.trapEffectType = curEff;
+                            }
+                            if (!curEff || !TRAP_EFFECT_META[curEff]) {
+                                curEff = 'FOSSE_A_PIEUX';
+                                outcome.trapEffectType = curEff;
+                            }
+                            const metaEff = TRAP_EFFECT_META[curEff] || TRAP_EFFECT_META['CUSTOM'];
+
+                            let doorOptionsHtml = '';
+                            for (const [key, tMeta] of Object.entries(TRAP_EFFECT_META)) {
+                                const isSelected = (curEff === key) ? 'is-selected' : '';
+                                doorOptionsHtml += `
+                                    <div class="trap-option-card ${isSelected}" onclick="selectDoorTrapEffectType(${rIndex}, ${oIndex}, '${key}')">
+                                        <div class="flex items-center gap-2">
+                                            <span class="material-symbols-outlined trap-icon-${key} text-lg">${tMeta.icon}</span>
+                                            <div>
+                                                <div class="text-sm font-semibold text-slate-100">${tMeta.name}</div>
+                                                <div class="text-xs text-muted">${tMeta.description}</div>
+                                            </div>
+                                        </div>
+                                        <span class="trap-badge trap-badge-${key}">${tMeta.badge}</span>
+                                    </div>
+                                `;
+                            }
+
                             extraHtml = `
-                                <div class="mt-3 p-3 bg-black/20 rounded-lg border border-dashed border-white/15 w-full" >
-                                    <label class="text-xs text-red-400 block mb-2" style="color: #f87171;" >Configuration du Piège</label>
+                                <div class="mt-3 p-3 bg-black/20 rounded-lg border border-dashed border-white/15 w-full">
+                                    <label class="text-xs text-red-400 block mb-2">Configuration du Piège</label>
                                     
-                                    <div class="mt-2" >
-                                        <label class="text-muted text-xs" >Texte du piège</label>
-                                        <input class="form-control" type="text" value="${outcome.trapText || ''}" onchange="updateAltarField(${rIndex}, ${oIndex}, 'trapText', this.value)">
-                                    </div>
-                                    
-                                    <div class="grid grid-cols-2 gap-2 mt-3" >
-                                        <div>
-                                            <label class="text-muted text-xs" >Perte PV (% max)</label>
-                                            <input class="form-control" type="number" value="${outcome.trapDamageHpPct || 0}" onchange="updateAltarField(${rIndex}, ${oIndex}, 'trapDamageHpPct', parseInt(this.value) || 0)" min="0" max="100">
+                                    <!-- Sélecteur Archétype -->
+                                    <div class="custom-select-wrapper" id="room_door_trap_wrapper_${rIndex}_${oIndex}">
+                                        <div class="trap-trigger-btn" onclick="toggleDoorTrapTypeSelect(${rIndex}, ${oIndex})">
+                                            <div class="flex items-center gap-2">
+                                                <span class="material-symbols-outlined trap-icon-${curEff} text-lg">${metaEff.icon}</span>
+                                                <span class="text-sm font-semibold text-slate-100">${metaEff.name}</span>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="trap-badge trap-badge-${curEff}">${metaEff.badge}</span>
+                                                <span class="material-symbols-outlined text-muted">expand_more</span>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <label class="text-muted text-xs" >Perte Mana (% max)</label>
-                                            <input class="form-control" type="number" value="${outcome.trapDamageManaPct || 0}" onchange="updateAltarField(${rIndex}, ${oIndex}, 'trapDamageManaPct', parseInt(this.value) || 0)" min="0" max="100">
-                                        </div>
-                                        <div>
-                                            <label class="text-muted text-xs" >Perte PV (Fixe)</label>
-                                            <input class="form-control" type="number" value="${outcome.trapDamageHpFixed || 0}" onchange="updateAltarField(${rIndex}, ${oIndex}, 'trapDamageHpFixed', parseInt(this.value) || 0)" min="0">
-                                        </div>
-                                        <div>
-                                            <label class="text-muted text-xs" >Perte Mana (Fixe)</label>
-                                            <input class="form-control" type="number" value="${outcome.trapDamageManaFixed || 0}" onchange="updateAltarField(${rIndex}, ${oIndex}, 'trapDamageManaFixed', parseInt(this.value) || 0)" min="0">
+                                        <div class="custom-select-options max-h-[300px] overflow-y-auto" id="room_door_trap_options_${rIndex}_${oIndex}">
+                                            ${doorOptionsHtml}
                                         </div>
                                     </div>
-                                    
-                                    <div class="flex-center flex justify-between mt-4 p-3 bg-black/20 border border-amber-500/30 rounded-lg" >
-                                        <div class="flex flex-col gap-1" >
-                                            <span class="flex-center text-sm font-medium text-slate-50 gap-1" >
-                                                <span class="material-symbols-outlined text-amber-500 text-lg" >auto_fix</span> Option Corde d'évitement
-                                            </span>
-                                            <span class="text-muted text-xs" >Permet aux héros d'utiliser une Corde pour ignorer ce piège.</span>
+
+                                    <!-- Carte Aperçu -->
+                                    <div class="trap-preview-box trap-theme-${curEff} mt-3">
+                                        <div class="trap-preview-header">
+                                            <div class="flex items-center gap-2">
+                                                <span class="material-symbols-outlined trap-icon-${curEff} text-lg">${metaEff.icon}</span>
+                                                <span class="text-sm font-bold text-slate-100">${metaEff.name}</span>
+                                            </div>
+                                            <span class="trap-badge trap-badge-${curEff}">${metaEff.badge}</span>
                                         </div>
-                                        <label class="flex-shrink-0 relative block m-0" style="width: 40px; height: 24px;" >
-                                            <input class="opacity-0 w-0 h-0" type="checkbox" style="opacity: 0; width: 0; height: 0;" ${outcome.trapHasRopeOption ? 'checked' : ''} onchange="updateAltarField(${rIndex}, ${oIndex}, 'trapHasRopeOption', this.checked); this.nextElementSibling.style.backgroundColor = this.checked ? '#f59e0b' : 'rgba(255, 255, 255, 0.1)'; this.nextElementSibling.children[0].style.transform = this.checked ? 'translateX(16px)' : 'translateX(0)';">
-                                            <span class="absolute" style="cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: ${outcome.trapHasRopeOption ? '#f59e0b' : 'rgba(255, 255, 255, 0.1)'}; transition: .3s; border-radius: 24px;">
-                                                <span class="absolute" style="content: ''; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; transform: ${outcome.trapHasRopeOption ? 'translateX(16px)' : 'translateX(0)'}; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></span>
+                                        <p class="text-xs text-slate-300 mb-0">${metaEff.description}</p>
+                                    </div>
+
+                                    <!-- Paramètres Malus de Combat -->
+                                    <div class="trap-section-title">
+                                        <span class="material-symbols-outlined text-sm text-warning">tune</span>
+                                        Paramètres du Malus
+                                    </div>
+                                    <div class="trap-panel-card">
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="text-muted text-xs block mb-1">${metaEff.primaryLabel}</label>
+                                                <input class="form-control" type="number" 
+                                                    value="${outcome.trapDebuffValue !== undefined ? outcome.trapDebuffValue : metaEff.primaryDefault}" 
+                                                    min="${metaEff.primaryMin !== undefined ? metaEff.primaryMin : 0}" max="${metaEff.primaryMax !== undefined ? metaEff.primaryMax : 9999}" 
+                                                    oninput="updateAltarField(${rIndex}, ${oIndex}, 'trapDebuffValue', parseInt(this.value) || 0)"
+                                                    onchange="updateAltarField(${rIndex}, ${oIndex}, 'trapDebuffValue', parseInt(this.value) || 0); renderRooms();">
+                                            </div>
+                                            <div>
+                                                <label class="text-muted text-xs block mb-1">Durée (Tours en combat)</label>
+                                                <input class="form-control" type="number" 
+                                                    value="${outcome.trapDebuffDuration !== undefined ? outcome.trapDebuffDuration : metaEff.durationDefault}" 
+                                                    min="1" max="10" 
+                                                    oninput="updateAltarField(${rIndex}, ${oIndex}, 'trapDebuffDuration', parseInt(this.value) || 1)"
+                                                    onchange="updateAltarField(${rIndex}, ${oIndex}, 'trapDebuffDuration', parseInt(this.value) || 1); renderRooms();">
+                                            </div>
+                                            ${metaEff.hasSecondary ? `
+                                            <div class="col-span-2">
+                                                <label class="text-muted text-xs block mb-1">${metaEff.secondaryLabel}</label>
+                                                <input class="form-control" type="number" 
+                                                    value="${outcome.trapDebuffSecondaryValue !== undefined ? outcome.trapDebuffSecondaryValue : metaEff.secondaryDefault}" 
+                                                    min="1" max="100" 
+                                                    oninput="updateAltarField(${rIndex}, ${oIndex}, 'trapDebuffSecondaryValue', parseInt(this.value) || 0)"
+                                                    onchange="updateAltarField(${rIndex}, ${oIndex}, 'trapDebuffSecondaryValue', parseInt(this.value) || 0); renderRooms();">
+                                            </div>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-3">
+                                        <label class="text-muted text-xs">Texte du piège</label>
+                                        <input class="form-control" type="text" value="${outcome.trapText || ''}" 
+                                            oninput="updateAltarField(${rIndex}, ${oIndex}, 'trapText', this.value)"
+                                            onchange="updateAltarField(${rIndex}, ${oIndex}, 'trapText', this.value)">
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-2 gap-2 mt-3">
+                                        <div>
+                                            <label class="text-muted text-xs">Perte PV (% max)</label>
+                                            <input class="form-control" type="number" value="${outcome.trapDamageHpPct || 0}" 
+                                                oninput="updateAltarField(${rIndex}, ${oIndex}, 'trapDamageHpPct', parseInt(this.value) || 0)"
+                                                onchange="updateAltarField(${rIndex}, ${oIndex}, 'trapDamageHpPct', parseInt(this.value) || 0)" min="0" max="100">
+                                        </div>
+                                        <div>
+                                            <label class="text-muted text-xs">Perte Mana (% max)</label>
+                                            <input class="form-control" type="number" value="${outcome.trapDamageManaPct || 0}" 
+                                                oninput="updateAltarField(${rIndex}, ${oIndex}, 'trapDamageManaPct', parseInt(this.value) || 0)"
+                                                onchange="updateAltarField(${rIndex}, ${oIndex}, 'trapDamageManaPct', parseInt(this.value) || 0)" min="0" max="100">
+                                        </div>
+                                        <div>
+                                            <label class="text-muted text-xs">Perte PV (Fixe)</label>
+                                            <input class="form-control" type="number" value="${outcome.trapDamageHpFixed || 0}" 
+                                                oninput="updateAltarField(${rIndex}, ${oIndex}, 'trapDamageHpFixed', parseInt(this.value) || 0)"
+                                                onchange="updateAltarField(${rIndex}, ${oIndex}, 'trapDamageHpFixed', parseInt(this.value) || 0)" min="0">
+                                        </div>
+                                        <div>
+                                            <label class="text-muted text-xs">Perte Mana (Fixe)</label>
+                                            <input class="form-control" type="number" value="${outcome.trapDamageManaFixed || 0}" 
+                                                oninput="updateAltarField(${rIndex}, ${oIndex}, 'trapDamageManaFixed', parseInt(this.value) || 0)"
+                                                onchange="updateAltarField(${rIndex}, ${oIndex}, 'trapDamageManaFixed', parseInt(this.value) || 0)" min="0">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="trap-switch-container mt-3">
+                                        <div class="flex flex-col gap-1">
+                                            <span class="flex items-center text-sm font-medium text-slate-50 gap-1">
+                                                <span class="material-symbols-outlined text-amber-500 text-lg">auto_fix</span> Option Corde d'évitement
                                             </span>
+                                            <span class="text-muted text-xs">Permet aux héros d'utiliser une Corde pour ignorer ce piège.</span>
+                                        </div>
+                                        <label class="relative inline-block m-0">
+                                            <input class="trap-switch-input" type="checkbox" ${outcome.trapHasRopeOption ? 'checked' : ''} 
+                                                onchange="updateAltarField(${rIndex}, ${oIndex}, 'trapHasRopeOption', this.checked); renderRooms();">
+                                            <span class="trap-switch-slider"></span>
                                         </label>
                                     </div>
                                 </div>
@@ -2268,18 +2712,10 @@ window.renderDungeonsList = function () {
     list.innerHTML = html;
 }
 
-async function moveDungeonOrder(id, direction) {
-    const index = pageState.allDungeons.findIndex(d => d.id === id);
-    if (index === -1) return;
-    if (index + direction < 0 || index + direction >= pageState.allDungeons.length) return;
+let dungeonReorderTimer = null;
 
-    // Swap in array
-    const temp = pageState.allDungeons[index];
-    pageState.allDungeons[index] = pageState.allDungeons[index + direction];
-    pageState.allDungeons[index + direction] = temp;
-
+async function syncDungeonOrderToServer() {
     const orderedIds = pageState.allDungeons.map(d => d.id);
-
     try {
         const res = await globalFetch('/api/admin/pve/dungeons/reorder', {
             method: 'POST',
@@ -2287,15 +2723,65 @@ async function moveDungeonOrder(id, direction) {
             body: JSON.stringify(orderedIds)
         });
 
-        if (res.ok) {
-            renderDungeonsList();
-        } else {
+        if (!res.ok) {
             showNotif("Erreur lors du changement d'ordre.", true);
+            loadDungeons();
         }
     } catch (e) {
         console.error(e);
         showNotif("Erreur réseau.", true);
+        loadDungeons();
     }
+}
+
+function moveDungeonOrder(id, direction) {
+    const query = (document.getElementById('dungeonSearchInput')?.value || '').toLowerCase();
+    const lvlSelect = document.getElementById('dungeonLevelFilter');
+    const lvlVal = lvlSelect ? lvlSelect.value : '';
+
+    if (query || lvlVal) {
+        let filtered = [...pageState.allDungeons];
+        if (query) {
+            filtered = filtered.filter(d => (d.name && d.name.toLowerCase().includes(query)) || (d.description && d.description.toLowerCase().includes(query)));
+        }
+        if (lvlVal) {
+            const lvl = parseInt(lvlVal);
+            filtered = filtered.filter(d => (d.recommendedLevel || 1) === lvl);
+        }
+
+        const filteredIdx = filtered.findIndex(d => d.id === id);
+        if (filteredIdx === -1) return;
+        const targetFilteredIdx = filteredIdx + direction;
+        if (targetFilteredIdx < 0 || targetFilteredIdx >= filtered.length) return;
+
+        const targetDungeon = filtered[targetFilteredIdx];
+        const idxA = pageState.allDungeons.findIndex(d => d.id === id);
+        const idxB = pageState.allDungeons.findIndex(d => d.id === targetDungeon.id);
+        if (idxA === -1 || idxB === -1) return;
+
+        const [removed] = pageState.allDungeons.splice(idxA, 1);
+        pageState.allDungeons.splice(idxB, 0, removed);
+    } else {
+        const index = pageState.allDungeons.findIndex(d => d.id === id);
+        if (index === -1) return;
+        if (index + direction < 0 || index + direction >= pageState.allDungeons.length) return;
+
+        const temp = pageState.allDungeons[index];
+        pageState.allDungeons[index] = pageState.allDungeons[index + direction];
+        pageState.allDungeons[index + direction] = temp;
+    }
+
+    // Optimistic UI: immediate redraw
+    renderDungeonsList();
+
+    // Debounce server call to batch rapid clicks
+    if (dungeonReorderTimer) {
+        clearTimeout(dungeonReorderTimer);
+    }
+    dungeonReorderTimer = setTimeout(() => {
+        dungeonReorderTimer = null;
+        syncDungeonOrderToServer();
+    }, 250);
 }
 
 async function editDungeon(id) {
@@ -2318,7 +2804,7 @@ async function editDungeon(id) {
             document.getElementById('dRequiredSecretLevel').value = d.requiredSecretLevel || 1;
 
             pageState.selectedRooms = d.salles.map(s => {
-                const room = { type: s.type };
+                const room = { id: s.id, type: s.type };
                 if (s.type === 'COMBAT') {
                     room.monsters = s.monsters.map(m => m.id);
                 } else if (s.type === 'BOSS') {
@@ -2375,10 +2861,25 @@ async function editDungeon(id) {
                     room.trapDamageManaPct = s.trapDamageManaPct || 0;
                     room.trapDamageHpFixed = s.trapDamageHpFixed || 0;
                     room.trapDamageManaFixed = s.trapDamageManaFixed || 0;
+                    let effType = s.trapEffectType;
+                    if (effType && typeof effType === 'object' && effType.name) {
+                        effType = effType.name;
+                    }
+                    room.trapEffectType = effType || 'CUSTOM';
+                    room.trapDebuffDuration = s.trapDebuffDuration !== undefined ? s.trapDebuffDuration : 2;
+                    room.trapDebuffValue = s.trapDebuffValue !== undefined ? s.trapDebuffValue : 0;
+                    room.trapDebuffSecondaryValue = s.trapDebuffSecondaryValue !== undefined ? s.trapDebuffSecondaryValue : 0;
 
                     if (s.doorOutcomes) {
                         try {
                             room.doorOutcomes = typeof s.doorOutcomes === 'string' ? JSON.parse(s.doorOutcomes) : s.doorOutcomes;
+                            if (Array.isArray(room.doorOutcomes)) {
+                                room.doorOutcomes.forEach(out => {
+                                    if (out.trapEffectType && typeof out.trapEffectType === 'object' && out.trapEffectType.name) {
+                                        out.trapEffectType = out.trapEffectType.name;
+                                    }
+                                });
+                            }
                         } catch (e) {
                             room.doorOutcomes = [];
                         }
@@ -2650,6 +3151,54 @@ window.showNotif = function (message, isError = false) {
     }, 3000);
 };
 
+
+window.toggleTrapTypeSelect = function (rIndex) {
+    const wrapper = document.getElementById(`room_trap_type_wrapper_${rIndex}`);
+    if (wrapper) {
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(el => {
+            if (el !== wrapper) el.classList.remove('open');
+        });
+        wrapper.classList.toggle('open');
+    }
+};
+
+window.selectTrapEffectType = function (rIndex, type) {
+    const room = pageState.selectedRooms[rIndex];
+    if (!room) return;
+    const meta = TRAP_EFFECT_META[type];
+    if (!meta) return;
+
+    room.trapEffectType = type;
+    room.trapDebuffValue = meta.primaryDefault || 0;
+    room.trapDebuffDuration = meta.durationDefault || 2;
+    room.trapDebuffSecondaryValue = meta.secondaryDefault || 0;
+
+    renderRooms();
+};
+
+window.toggleDoorTrapTypeSelect = function (rIndex, oIndex) {
+    const wrapper = document.getElementById(`room_door_trap_wrapper_${rIndex}_${oIndex}`);
+    if (wrapper) {
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(el => {
+            if (el !== wrapper) el.classList.remove('open');
+        });
+        wrapper.classList.toggle('open');
+    }
+};
+
+window.selectDoorTrapEffectType = function (rIndex, oIndex, type) {
+    const outcome = pageState.selectedRooms[rIndex]?.doorOutcomes?.[oIndex];
+    if (!outcome) return;
+    const meta = TRAP_EFFECT_META[type];
+    if (!meta) return;
+
+    outcome.trapEffectType = type;
+    outcome.trapDebuffValue = meta.primaryDefault || 0;
+    outcome.trapDebuffDuration = meta.durationDefault || 2;
+    outcome.trapDebuffSecondaryValue = meta.secondaryDefault || 0;
+
+    renderRooms();
+};
 
 window.toggleDoorOutcomeSelect = function (rIndex) {
     const wrapper = document.getElementById(`room_door_outcome_wrapper_${rIndex}`);

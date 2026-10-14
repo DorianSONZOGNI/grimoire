@@ -30,6 +30,13 @@ public class PvEAdminController {
         return ResponseEntity.ok(meta);
     }
 
+    @GetMapping("/trap-meta")
+    public ResponseEntity<java.util.Map<String, Object>> getTrapMeta() {
+        java.util.Map<String, Object> meta = new java.util.HashMap<>();
+        meta.put("types", generation.grimoire.enumeration.TrapEffectType.values());
+        return ResponseEntity.ok(meta);
+    }
+
     @GetMapping("/monsters")
     public ResponseEntity<List<Monstre>> getAllMonsters() {
         return ResponseEntity.ok(pvEAdminService.getAllMonsters());
@@ -231,7 +238,10 @@ public class PvEAdminController {
                 s.setTrapDamageHpPct(sDto.getTrapDamageHpPct());
                 s.setTrapDamageManaPct(sDto.getTrapDamageManaPct());
                 s.setTrapDamageHpFixed(sDto.getTrapDamageHpFixed());
-                s.setTrapDamageManaFixed(sDto.getTrapDamageManaFixed());
+                s.setTrapEffectType(sDto.getTrapEffectType() != null ? sDto.getTrapEffectType() : generation.grimoire.enumeration.TrapEffectType.CUSTOM);
+                s.setTrapDebuffDuration(sDto.getTrapDebuffDuration());
+                s.setTrapDebuffValue(sDto.getTrapDebuffValue());
+                s.setTrapDebuffSecondaryValue(sDto.getTrapDebuffSecondaryValue());
                 s.setDoorOutcomes(sDto.getDoorOutcomes());
                 s.setGlobalBuffs(sDto.getGlobalBuffs());
                 s.setChallenges(sDto.getChallenges());

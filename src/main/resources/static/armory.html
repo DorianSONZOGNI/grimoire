@@ -141,6 +141,32 @@
                 </div>
             </div>
 
+            <!-- Toile des spécificités du héros / voie -->
+            <div id="armorySpiderSection" class="armory-spider-section is-hidden">
+                <div class="armory-spider-header">
+                    <div class="armory-spider-title-wrap">
+                        <span class="material-symbols-outlined text-cyan-400">hub</span>
+                        <span class="armory-spider-title">Profil &amp; Spécificités de la Voie</span>
+                        <span class="material-symbols-outlined text-purple text-lg cursor-help hidden"
+                            id="spiderVoieInfoIcon" onmouseenter="showGlobalTooltip(this)"
+                            onmouseleave="hideGlobalTooltip()">
+                            info
+                            <template class="tooltip-data"></template>
+                        </span>
+                        <span class="material-symbols-outlined text-orange-400 text-lg cursor-help hidden"
+                            id="spiderSpiritInfoIcon" onmouseenter="showGlobalTooltip(this)"
+                            onmouseleave="hideGlobalTooltip()">
+                            info
+                            <template class="tooltip-data"></template>
+                        </span>
+                    </div>
+                </div>
+                <div class="armory-spider-body">
+                    <canvas id="armorySpiderCanvas" class="armory-spider-canvas" width="280" height="250"></canvas>
+                    <div id="armorySpecBadges" class="armory-spider-badges"></div>
+                </div>
+            </div>
+
             <!-- Stats -->
             <div class="flex flex-col gap-5 hidden" id="baseStatsSection">
                 <div class="armory-section-title">
@@ -349,6 +375,27 @@
         <div class="blacksmith work1"></div>
         <div class="blacksmith bored"></div>
     </div>
+    <!-- Spécificités Modal -->
+    <div class="equip-modal-overlay" id="specModalOverlay" onclick="if(event.target===this) closeSpecModal()">
+        <div class="equip-modal max-w-[540px]">
+            <div class="equip-modal-header">
+                <div class="equip-modal-title flex items-center gap-2 flex-wrap">
+                    <span class="material-symbols-outlined text-cyan-400">hub</span>
+                    <span id="specModalTitle" class="font-bold text-white"></span>
+                    <div id="specModalAffiliationBadges" class="char-card-badges flex items-center gap-1.5 flex-wrap"></div>
+                </div>
+                <button class="equip-modal-close" onclick="closeSpecModal()">
+                    <span class="material-symbols-outlined text-2xl">close</span>
+                </button>
+            </div>
+
+            <div class="equip-modal-body flex flex-col items-center gap-3">
+                <canvas id="specModalCanvas" class="armory-spider-canvas" width="280" height="250"></canvas>
+                <div id="specModalBadges" class="armory-spider-badges"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Notification -->
     <div class="armory-notif" id="armoryNotif"></div>
 
@@ -361,7 +408,8 @@
 
     <script defer src="/js/utils/utils.js"></script>
     <script type="module" src="/js/ui.js"></script>
-    <script defer src="/js/pages/armory.js?v=99"></script>
+    <script defer src="/js/pages/hero-spider.js?v=8"></script>
+    <script defer src="/js/pages/armory.js?v=103"></script>
     <script type="module" src="/js/services/auth.js?v=15"></script>
     
     <script defer src="/js/components/loader.js"></script>

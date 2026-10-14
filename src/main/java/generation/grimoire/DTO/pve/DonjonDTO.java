@@ -40,6 +40,10 @@ public class DonjonDTO {
         private Integer trapDamageManaPct;
         private Integer trapDamageHpFixed;
         private Integer trapDamageManaFixed;
+        private generation.grimoire.enumeration.TrapEffectType trapEffectType;
+        private Integer trapDebuffDuration;
+        private Integer trapDebuffValue;
+        private Integer trapDebuffSecondaryValue;
         private String doorOutcomes;
         private String globalBuffs;
         private String challenges;

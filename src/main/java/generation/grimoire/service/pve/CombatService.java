@@ -505,7 +505,7 @@ public class CombatService {
             }
             return result;
         }
-        return combatRoomService.useRope(session);
+        return combatRoomService.resolveTrapChoice(session, actionType);
     }
 
     public CombatSession consumeItem(String sessionId, Long consumableId, Long targetCharacterId, String username) {

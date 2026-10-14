@@ -42,6 +42,7 @@ const pageState = {
     userCharacters: null,
     availableConsumables: null,
     activeConsumableFilters: null,
+    inspectedCharacterId: null
 };
 pageState.currentDungeonId = null;
 pageState.selectedCharIds = [];
@@ -51,6 +52,7 @@ pageState.userCharacters = [];
 pageState.availableConsumables = [];
 pageState.activeConsumableFilters = { hp: false, mana: false, dmg: false, def: false, xp: false, util: false };
 pageState.allAnomalies = [];
+pageState.inspectedCharacterId = null;
 
 function collectDungeonAnomaliesLocal(salles) {
     const names = new Set();
@@ -766,9 +768,9 @@ async function loadCharacters() {
                             </div>
                             <div class="text-muted text-sm">Niv. ${c.voieLevel || 1} &bull; ${c.totalHealthMax !== undefined ? c.totalHealthMax : c.healthMax} PV max</div>
                         </div>
-                        <div onclick="event.stopPropagation(); window.inspectCharacter(${c.id})" style="padding: 0.5rem; border-radius: 0.5rem; background: rgba(255,255,255,0.05); color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; margin-left: 0.5rem;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='#fff';" onmouseout="this.style.background='rgba(255,255,255,0.05)'; this.style.color='#94a3b8';" title="Voir l'équipement">
-                            <span class="material-symbols-outlined" style="font-size: 1.2rem;">visibility</span>
-                        </div>
+                        <button type="button" class="char-inspect-btn ${pageState.inspectedCharacterId === c.id ? 'is-inspecting' : ''}" id="charInspectBtn_${c.id}" onclick="event.stopPropagation(); window.inspectCharacter(${c.id})" title="Voir l'équipement">
+                            <span class="material-symbols-outlined text-[1.2rem]">visibility</span>
+                        </button>
                     </div>
                 `;
             });
@@ -1048,6 +1050,13 @@ window.selectCharacter = async function (id) {
 };
 
 window.inspectCharacter = async function(id) {
+    pageState.inspectedCharacterId = id;
+    document.querySelectorAll('.char-inspect-btn').forEach(btn => btn.classList.remove('is-inspecting'));
+    const activeBtn = document.getElementById('charInspectBtn_' + id);
+    if (activeBtn) {
+        activeBtn.classList.add('is-inspecting');
+    }
+
     let equipments = [];
     try {
         const res = await globalFetch(`/api/equipments/personnage/${id}`);
@@ -1227,7 +1236,10 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
                 } else if (s.eventSubType === 'RENCONTRE') {
                     html += `<div class="flex-center text-emerald mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">storefront</span> Étape ${index + 1} : Rencontre</div>`;
                 } else if (s.eventSubType === 'PIEGE') {
-                    html += `<div class="flex-center text-red-400 mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">warning</span> Étape ${index + 1} : Piège</div>`;
+                    const trapEff = s.trapEffectType;
+                    const trapIcon = (typeof trapEff === 'object' && trapEff?.icon) ? trapEff.icon : 'warning';
+                    const trapName = (typeof trapEff === 'object' && trapEff?.label) ? trapEff.label : 'Piège';
+                    html += `<div class="flex-center text-red-400 mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">${trapIcon}</span> Étape ${index + 1} : Piège (${trapName})</div>`;
                 } else if (s.eventSubType === 'PORTE_ETRANGE') {
                     html += `<div class="flex-center text-amber-400 mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">door_front</span> Étape ${index + 1} : Porte étrange</div>`;
                 } else {
@@ -1306,6 +1318,9 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
         }
     });
 
+    pageState.inspectedCharacterId = null;
+    document.querySelectorAll('.char-inspect-btn').forEach(btn => btn.classList.remove('is-inspecting'));
+
     document.getElementById('prepStatEmpty').classList.remove('hidden');
     document.getElementById('prepStatEmpty').style.display = '';
     document.getElementById('prepStatGrid').classList.add('hidden');
@@ -1329,6 +1344,8 @@ window.closePrepInterface = function () {
     pageState.currentDungeonId = null;
     pageState.selectedCharIds = [];
     pageState.selectedConsumableIds = [];
+    pageState.inspectedCharacterId = null;
+    document.querySelectorAll('.char-inspect-btn').forEach(btn => btn.classList.remove('is-inspecting'));
 };
 
 window.startCombat = async function () {

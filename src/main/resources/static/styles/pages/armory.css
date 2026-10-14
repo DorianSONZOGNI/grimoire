@@ -652,4 +652,152 @@
 .eq-unequip-btn:hover {
     background: rgba(244, 63, 94, 0.15);
 }
+
+/* ===== Spider / Radar Web Section ===== */
+.armory-spider-section {
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    transition: all 0.3s ease;
+}
+
+.armory-spider-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 0.45rem;
+}
+
+.armory-spider-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.armory-spider-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.armory-spider-canvas {
+    display: block;
+    max-width: 100%;
+}
+
+.armory-spider-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    justify-content: center;
+    width: 100%;
+}
+
+.armory-spec-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.65rem;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border: 1px solid;
+    cursor: default;
+    transition: transform 0.15s ease;
+}
+
+.armory-spec-badge .material-symbols-outlined {
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+.armory-spec-badge:hover {
+    transform: scale(1.05);
+}
+
+/* Badges de spécificités sémantiques */
+.badge-berserk {
+    background: rgba(220, 38, 38, 0.15);
+    border-color: rgba(220, 38, 38, 0.4);
+    color: #f87171;
+}
+
+.badge-brulant {
+    background: rgba(249, 115, 22, 0.15);
+    border-color: rgba(249, 115, 22, 0.4);
+    color: #fb923c;
+}
+
+.badge-toxique {
+    background: rgba(74, 222, 128, 0.15);
+    border-color: rgba(74, 222, 128, 0.4);
+    color: #4ade80;
+}
+
+.badge-tactique {
+    background: rgba(250, 204, 21, 0.15);
+    border-color: rgba(250, 204, 21, 0.4);
+    color: #facc15;
+}
+
+.badge-tranchant {
+    background: rgba(248, 250, 252, 0.12);
+    border-color: rgba(248, 250, 252, 0.35);
+    color: #f8fafc;
+}
+
+.badge-arcane {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: rgba(56, 189, 248, 0.4);
+    color: #38bdf8;
+}
+
+.badge-tank {
+    background: rgba(96, 165, 250, 0.15);
+    border-color: rgba(96, 165, 250, 0.4);
+    color: #60a5fa;
+}
+
+.badge-vif {
+    background: rgba(253, 230, 138, 0.15);
+    border-color: rgba(253, 230, 138, 0.4);
+    color: #fde68a;
+}
+
+.badge-erosion {
+    background: rgba(129, 140, 248, 0.15);
+    border-color: rgba(129, 140, 248, 0.4);
+    color: #818cf8;
+}
+
+.badge-guerisseur {
+    background: rgba(52, 211, 153, 0.15);
+    border-color: rgba(52, 211, 153, 0.4);
+    color: #34d399;
+}
+
+/* Bouton Profil Spécificités sur les cartes de héros */
+.char-btn-spec {
+    color: #38bdf8;
+    border-color: rgba(56, 189, 248, 0.3) !important;
+}
+
+.char-btn-spec:hover {
+    background: rgba(56, 189, 248, 0.12) !important;
+}
+
 

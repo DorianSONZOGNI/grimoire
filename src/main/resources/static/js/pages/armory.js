@@ -29,6 +29,7 @@ const pageState = {
     equipModalPersoId: null,
     allEquipments: []
 };
+window.pageState = pageState;
 
 // Replaced by window.SLOT_LABELS and window.CONSUMABLE_CATEGORIES
 
@@ -405,6 +406,56 @@ function getSpiritColor(nom) {
     return '#a78bfa';
 }
 
+function buildCharBadgesHtml(p) {
+    if (!p) return '';
+    let badges = '';
+    if (p.voie) {
+        const vColor = getVoieColor(p.voie.nom);
+        const vFull = pageState.voies.find(v => v.id == p.voie.id) || p.voie;
+        const info = getVoieInfo(p.voie.nom);
+        badges += `<span class="char-badge" style="color: ${vColor}; border-color: ${vColor}40; background: ${vColor}15; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
+            <span class="material-symbols-outlined text-xs">route</span>
+            ${p.voie.nom}${p.voieLevel ? ' Lvl ' + p.voieLevel : ''}
+            <template class="tooltip-data">
+                <div class="text-sm font-medium mb-2 flex-center gap-1" style="color: ${info.color};">
+                    <span class="material-symbols-outlined text-lg">${info.icon}</span>
+                    ${vFull.nom}
+                </div>
+                <div class="text-xs text-slate-300 mb-2">${vFull.description || 'Description générique.'}</div>
+                <div class="flex-start-gap text-xs text-slate-200">
+                    <span class="material-symbols-outlined text-md" style="color: ${info.color};">bolt</span>
+                    <span class="font-italic whitespace-pre-wrap">${formatRichText(vFull.passiveDescription) || 'Passif spécifique.'}</span>
+                </div>
+            </template>
+        </span>`;
+    }
+    if (p.spiritualite) {
+        const sColor = getSpiritColor(p.spiritualite.nom);
+        const sFull = pageState.spiritualites.find(s => s.id == p.spiritualite.id) || p.spiritualite;
+        const info = getSpiritInfo(p.spiritualite.nom);
+        badges += `<span class="char-badge" style="color: ${sColor}; border-color: ${sColor}40; background: ${sColor}15; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
+            <span class="material-symbols-outlined text-xs">psychology</span>
+            ${p.spiritualite.nom}${p.spiritualiteLevel ? ' Lvl ' + p.spiritualiteLevel : ''}
+            <template class="tooltip-data">
+                <div class="text-sm font-medium mb-2 flex-center gap-1" style="color: ${info.color};">
+                    <span class="material-symbols-outlined text-lg">${info.icon}</span>
+                    ${sFull.nom}
+                </div>
+                <div class="text-xs text-slate-300 mb-2">${sFull.description || 'Description générique.'}</div>
+                <div class="flex-start-gap text-xs text-slate-200">
+                    <span class="material-symbols-outlined text-md" style="color: ${info.color};">bolt</span>
+                    <span class="font-italic whitespace-pre-wrap">${formatRichText(sFull.passiveDescription) || 'Passif spécifique.'}</span>
+                </div>
+            </template>
+        </span>`;
+    }
+    if (!p.voie && !p.spiritualite) {
+        badges = `<span class="font-italic text-muted text-xs">Aucune affiliation</span>`;
+    }
+    return badges;
+}
+window.buildCharBadgesHtml = buildCharBadgesHtml;
+
 function filterPersonnages() {
     renderPersonnages();
 }
@@ -453,50 +504,7 @@ function renderPersonnages() {
     }
 
     container.innerHTML = filtered.map(p => {
-        let badges = '';
-        if (p.voie) {
-            const vColor = getVoieColor(p.voie.nom);
-            const vFull = pageState.voies.find(v => v.id == p.voie.id) || p.voie;
-            const info = getVoieInfo(p.voie.nom);
-            badges += `<span class="char-badge" style="color: ${vColor}; border-color: ${vColor}40; background: ${vColor}15; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
-                <span class="material-symbols-outlined text-xs">route</span>
-                ${p.voie.nom} Lvl ${p.voieLevel}
-                <template class="tooltip-data">
-                    <div class="text-sm font-medium mb-2 flex-center gap-1" style="color: ${info.color};">
-                        <span class="material-symbols-outlined text-lg">${info.icon}</span>
-                        ${vFull.nom}
-                    </div>
-                    <div class="text-xs text-slate-300 mb-2">${vFull.description || 'Description générique.'}</div>
-                    <div class="flex-start-gap text-xs text-slate-200">
-                        <span class="material-symbols-outlined text-md" style="color: ${info.color};">bolt</span>
-                        <span class="font-italic whitespace-pre-wrap">${formatRichText(vFull.passiveDescription) || 'Passif spécifique.'}</span>
-                    </div>
-                </template>
-            </span>`;
-        }
-        if (p.spiritualite) {
-            const sColor = getSpiritColor(p.spiritualite.nom);
-            const sFull = pageState.spiritualites.find(s => s.id == p.spiritualite.id) || p.spiritualite;
-            const info = getSpiritInfo(p.spiritualite.nom);
-            badges += `<span class="char-badge" style="color: ${sColor}; border-color: ${sColor}40; background: ${sColor}15; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
-                <span class="material-symbols-outlined text-xs">psychology</span>
-                ${p.spiritualite.nom} Lvl ${p.spiritualiteLevel}
-                <template class="tooltip-data">
-                    <div class="text-sm font-medium mb-2 flex-center gap-1" style="color: ${info.color};">
-                        <span class="material-symbols-outlined text-lg">${info.icon}</span>
-                        ${sFull.nom}
-                    </div>
-                    <div class="text-xs text-slate-300 mb-2">${sFull.description || 'Description générique.'}</div>
-                    <div class="flex-start-gap text-xs text-slate-200">
-                        <span class="material-symbols-outlined text-md" style="color: ${info.color};">bolt</span>
-                        <span class="font-italic whitespace-pre-wrap">${formatRichText(sFull.passiveDescription) || 'Passif spécifique.'}</span>
-                    </div>
-                </template>
-            </span>`;
-        }
-        if (!p.voie && !p.spiritualite) {
-            badges = `<span class="font-italic text-muted text-xs">Aucune affiliation</span>`;
-        }
+        let badges = buildCharBadgesHtml(p);
 
         // Equipment summary
         const persoEquips = pageState.allEquipments.filter(e => e.personnage && e.personnage.id === p.id);
@@ -581,6 +589,9 @@ function renderPersonnages() {
                     <div class="char-card-actions">
                         <button class="char-btn-equip" onclick="openEquipModal(${p.id})" title="Gérer l'équipement">
                             <span class="material-symbols-outlined text-md">shield</span> Équiper
+                        </button>
+                        <button class="char-btn-spec" onclick="openSpecModal(${p.id})" title="Profil de voie & spécificités">
+                            <span class="material-symbols-outlined text-md">hub</span> Profil
                         </button>
                         ${window.isAdmin ? `
                         <button class="char-btn-edit" onclick="editPersonnage(${p.id})" title="Éditer">
@@ -887,6 +898,9 @@ function editPersonnage(id) {
     document.getElementById('cancelBtn').classList.add('inline-flex');
 
     updateSubmitButtonState();
+    if (window.updateArmoryVoieSpider) {
+        window.updateArmoryVoieSpider(p.voie ? p.voie.id : null, p.spiritualite ? p.spiritualite.id : null);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -922,6 +936,16 @@ function resetForm() {
         Forger le Personnage`;
     document.getElementById('cancelBtn').classList.add('hidden');
     document.getElementById('cancelBtn').classList.remove('inline-flex');
+    const cvIcon = document.getElementById('charVoieInfoIcon');
+    if (cvIcon) cvIcon.classList.add('hidden');
+    const csIcon = document.getElementById('charSpiritInfoIcon');
+    if (csIcon) csIcon.classList.add('hidden');
+    if (window.updateArmoryVoieSpider) {
+        window.updateArmoryVoieSpider(null);
+    }
+    if (window.updateArmorySpiritSpider) {
+        window.updateArmorySpiritSpider(null);
+    }
     updateSubmitButtonState();
 }
 
@@ -1041,6 +1065,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             if (!vId) {
                 if (iconEl) iconEl.classList.add('hidden');
                 applyVoieBaseStats(null);
+                if (window.updateArmoryVoieSpider) window.updateArmoryVoieSpider(null);
                 return;
             }
             const v = pageState.voies.find(x => x.id == vId);
@@ -1062,11 +1087,14 @@ window.addEventListener('DOMContentLoaded', async () => {
                 }
                 iconEl.classList.remove('hidden');
                 applyVoieBaseStats(v.nom);
+                if (window.updateArmoryVoieSpider) window.updateArmoryVoieSpider(vId);
             } else if (iconEl) {
                 iconEl.classList.add('hidden');
                 applyVoieBaseStats(null);
+                if (window.updateArmoryVoieSpider) window.updateArmoryVoieSpider(null);
             } else {
                 applyVoieBaseStats(null);
+                if (window.updateArmoryVoieSpider) window.updateArmoryVoieSpider(null);
             }
         });
     }
@@ -1079,6 +1107,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
             if (!sId) {
                 if (iconEl) iconEl.classList.add('hidden');
+                if (window.updateArmorySpiritSpider) window.updateArmorySpiritSpider(null);
                 return;
             }
             const s = pageState.spiritualites.find(x => x.id == sId);
@@ -1099,8 +1128,12 @@ window.addEventListener('DOMContentLoaded', async () => {
                     `;
                 }
                 iconEl.classList.remove('hidden');
+                if (window.updateArmorySpiritSpider) window.updateArmorySpiritSpider(s);
             } else if (iconEl) {
                 iconEl.classList.add('hidden');
+                if (window.updateArmorySpiritSpider) window.updateArmorySpiritSpider(null);
+            } else {
+                if (window.updateArmorySpiritSpider) window.updateArmorySpiritSpider(null);
             }
         });
     }
