@@ -58,6 +58,7 @@ public class CombatSession {
     private boolean isFinished = false;
     private boolean playerWon = false;
     private boolean roomEventCompleted = false;
+    private String trapResolutionType;
 
     private Long turnStartTime;
 
@@ -225,6 +226,7 @@ public class CombatSession {
     public void loadRoom(int index) {
         this.currentRoomIndex = index;
         this.roomEventCompleted = false;
+        this.trapResolutionType = null;
         this.purchasedMerchantItems.clear();
         this.availableMerchantItems.clear();
         this.combatLog.clear();
@@ -249,5 +251,13 @@ public class CombatSession {
 
     public boolean areAllEnemiesDead() {
         return enemies.stream().allMatch(monster -> monster != null && monster.isDead());
+    }
+
+    public String getTrapResolutionType() {
+        return trapResolutionType;
+    }
+
+    public void setTrapResolutionType(String trapResolutionType) {
+        this.trapResolutionType = trapResolutionType;
     }
 }

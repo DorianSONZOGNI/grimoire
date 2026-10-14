@@ -244,7 +244,20 @@ window.addRoom = function (type) {
     } else if (type === 'RENCONTRE') {
         pageState.selectedRooms.push({ type: 'EVENT', eventSubType: 'RENCONTRE', eventText: 'Un marchand ambulant vous interpelle...', lootTable: [] });
     } else if (type === 'PIEGE') {
-        pageState.selectedRooms.push({ type: 'EVENT', eventSubType: 'PIEGE', eventText: 'Un piège se déclenche !', trapType: 'PV', trapAmount: 10, trapHasRopeOption: false });
+        pageState.selectedRooms.push({
+            type: 'EVENT',
+            eventSubType: 'PIEGE',
+            eventText: 'Un piège se déclenche sous vos pas !',
+            trapEffectType: 'FOSSE_A_PIEUX',
+            trapDebuffDuration: 2,
+            trapDebuffValue: 25,
+            trapDebuffSecondaryValue: 0,
+            trapDamageHpPct: 15,
+            trapDamageManaPct: 0,
+            trapDamageHpFixed: 0,
+            trapDamageManaFixed: 0,
+            trapHasRopeOption: true
+        });
     } else if (type === 'PORTE_ETRANGE') {
         pageState.selectedRooms.push({ type: 'EVENT', eventSubType: 'PORTE_ETRANGE', eventText: 'Une porte étrange se dresse devant vous...', doorOutcomes: [] });
     }

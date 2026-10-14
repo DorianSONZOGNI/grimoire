@@ -2,6 +2,7 @@ package generation.grimoire.entity.pve;
 
 import generation.grimoire.enumeration.RoomType;
 import generation.grimoire.enumeration.EventSubType;
+import generation.grimoire.enumeration.TrapEffectType;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -80,6 +81,16 @@ public class Salle {
     private Integer trapDamageManaPct;
     private Integer trapDamageHpFixed;
     private Integer trapDamageManaFixed;
+
+    @Enumerated(EnumType.STRING)
+    private TrapEffectType trapEffectType = TrapEffectType.CUSTOM;
+
+    public TrapEffectType getTrapEffectType() {
+        return trapEffectType != null ? trapEffectType : TrapEffectType.CUSTOM;
+    }
+    private Integer trapDebuffDuration;
+    private Integer trapDebuffValue;
+    private Integer trapDebuffSecondaryValue;
 
     // IF PORTE_ETRANGE — outcomes as JSON string
     @Column(columnDefinition = "TEXT")

@@ -183,6 +183,102 @@ export function renderAndAnimateXPCards(containerId, players, prefix, isFirstCle
     });
 }
 
+
+export function getTrapEffectStats(room) {
+    if (!room) return { shortSummary: 'Subit les malus au combat', detailedHtml: '' };
+    const rawType = room.trapEffectType;
+    const typeKey = (typeof rawType === 'object' && rawType?.name) ? rawType.name : (typeof rawType === 'string' ? rawType : 'FOSSE_A_PIEUX');
+    
+    const val = (room.trapDebuffValue !== undefined && room.trapDebuffValue !== null && room.trapDebuffValue > 0) ? room.trapDebuffValue : null;
+    const secVal = (room.trapDebuffSecondaryValue !== undefined && room.trapDebuffSecondaryValue !== null && room.trapDebuffSecondaryValue > 0) ? room.trapDebuffSecondaryValue : null;
+
+    switch (typeKey) {
+        case 'FOSSE_A_PIEUX': {
+            const speed = val || 25;
+            const dur = (room.trapDebuffDuration && room.trapDebuffDuration > 0) ? room.trapDebuffDuration : 2;
+            return {
+                shortSummary: `-${speed} Vitesse (${dur} tours)`,
+                detailedHtml: `<span class="text-rose-400 font-bold">-${speed} Vitesse</span> pendant <span class="font-bold text-amber-300">${dur} tours</span>.`
+            };
+        }
+        case 'NEUROTOXINE': {
+            const poison = val || 5;
+            const dur = (room.trapDebuffDuration && room.trapDebuffDuration > 0) ? room.trapDebuffDuration : 3;
+            return {
+                shortSummary: `Poison ${poison}% PV/tour (${dur} tours)`,
+                detailedHtml: `<span class="text-emerald-400 font-bold">Poison de ${poison}% PV max par tour</span> pendant <span class="font-bold text-amber-300">${dur} tours</span>.`
+            };
+        }
+        case 'PLUIE_ACIDE': {
+            const loss = val || 30;
+            const dur = (room.trapDebuffDuration && room.trapDebuffDuration > 0) ? room.trapDebuffDuration : 3;
+            return {
+                shortSummary: `-${loss}% Armure & Résistance (${dur} tours)`,
+                detailedHtml: `<span class="text-lime-400 font-bold">-${loss}% Armure et Résistance</span> pendant <span class="font-bold text-amber-300">${dur} tours</span>.`
+            };
+        }
+        case 'RUPTURE_ARCANIQUE': {
+            const manaLoss = secVal || 30;
+            const resLoss = val || 25;
+            const dur = (room.trapDebuffDuration && room.trapDebuffDuration > 0) ? room.trapDebuffDuration : 3;
+            return {
+                shortSummary: `-${manaLoss}% Mana, -${resLoss}% Résist (${dur} tours)`,
+                detailedHtml: `<span class="text-cyan-400 font-bold">-${manaLoss}% Mana max</span> et <span class="text-cyan-300 font-bold">-${resLoss}% Résistance magique</span> pendant <span class="font-bold text-amber-300">${dur} tours</span>.`
+            };
+        }
+        case 'FUMEE_AVEUGLANTE': {
+            const crit = val || 50;
+            const stats = secVal || 25;
+            const dur = (room.trapDebuffDuration && room.trapDebuffDuration > 0) ? room.trapDebuffDuration : 2;
+            return {
+                shortSummary: `-${crit}% Crit, -${stats}% Force/Puiss (${dur} tours)`,
+                detailedHtml: `<span class="text-purple-400 font-bold">-${crit}% Critique</span> et <span class="text-purple-300 font-bold">-${stats}% Force & Puissance</span> pendant <span class="font-bold text-amber-300">${dur} tours</span>.`
+            };
+        }
+        case 'MALEDICTION_DESESPERANTE': {
+            const loss = val || 30;
+            const dur = (room.trapDebuffDuration && room.trapDebuffDuration > 0) ? room.trapDebuffDuration : 3;
+            return {
+                shortSummary: `-${loss}% Dégâts infligés (${dur} tours)`,
+                detailedHtml: `<span class="text-pink-400 font-bold">-${loss}% à tous les dégâts infligés</span> (physique, magique, brut) pendant <span class="font-bold text-amber-300">${dur} tours</span>.`
+            };
+        }
+        case 'MALEDICTION_MORTELLE': {
+            const vuln = val || 25;
+            const dur = (room.trapDebuffDuration && room.trapDebuffDuration > 0) ? room.trapDebuffDuration : 3;
+            return {
+                shortSummary: `+${vuln}% Dégâts subis (${dur} tours)`,
+                detailedHtml: `<span class="text-rose-400 font-bold">+${vuln}% à tous les dégâts subis</span> (vulnérabilité physique, magique, brut) pendant <span class="font-bold text-amber-300">${dur} tours</span>.`
+            };
+        }
+        case 'MALEDICTION_SOLITUDE': {
+            const loss = val || 50;
+            const dur = (room.trapDebuffDuration && room.trapDebuffDuration > 0) ? room.trapDebuffDuration : 3;
+            return {
+                shortSummary: `-${loss}% Soins & Boucliers (${dur} tours)`,
+                detailedHtml: `<span class="text-orange-400 font-bold">-${loss}% sur les soins et boucliers reçus</span> pendant <span class="font-bold text-amber-300">${dur} tours</span>.`
+            };
+        }
+        case 'FOURNAISE': {
+            const burn = val || 6;
+            const arm = secVal || 25;
+            const dur = (room.trapDebuffDuration && room.trapDebuffDuration > 0) ? room.trapDebuffDuration : 3;
+            return {
+                shortSummary: `Brûlure ${burn}% PV/tour, -${arm}% Armure (${dur} tours)`,
+                detailedHtml: `<span class="text-orange-500 font-bold">Brûlure de ${burn}% PV max/tour</span> et <span class="text-orange-400 font-bold">-${arm}% Armure</span> pendant <span class="font-bold text-amber-300">${dur} tours</span>.`
+            };
+        }
+        case 'CUSTOM':
+        default: {
+            const hpPct = room.trapDamageHpPct || room.trapAmount || 15;
+            return {
+                shortSummary: `-${hpPct}% PV immédiats`,
+                detailedHtml: `<span class="text-red-400 font-bold">-${hpPct}% PV immédiats</span> infligés à toute l'équipe.`
+            };
+        }
+    }
+}
+
 export function updateUI(data) {
     if (ui.hideGlobalTooltip) {
         ui.hideGlobalTooltip();
@@ -1702,110 +1798,185 @@ export function updateUI(data) {
                         lootContainer.classList.add('hidden'); lootContainer.classList.remove('flex');
                     }
                 } else if (subType === 'PIEGE') {
-                    icon.textContent = 'warning';
+                    const trapEffect = data.currentRoom.trapEffectType;
+                    const effectLabel = (typeof trapEffect === 'object' && trapEffect?.label) ? trapEffect.label : (typeof trapEffect === 'string' && trapEffect !== 'CUSTOM' ? trapEffect : null);
+                    const effectIcon = (typeof trapEffect === 'object' && trapEffect?.icon) ? trapEffect.icon : 'warning';
+                    const effectDesc = (typeof trapEffect === 'object' && trapEffect?.description) ? trapEffect.description : null;
+                    const malusInfo = getTrapEffectStats(data.currentRoom);
+
+                    icon.textContent = effectIcon;
                     icon.className = 'material-symbols-outlined mb-4 text-[5rem] text-error';
-                    title.textContent = 'Piège !';
+                    title.textContent = effectLabel ? `Piège : ${effectLabel}` : 'Piège !';
 
                     let trapDesc = data.currentRoom.eventText || 'Un piège se déclenche !';
 
                     if (data.roomEventCompleted) {
-                        trapDesc += `<br><br><span class="text-success">🪢 Piège évité grâce à une Corde !</span>`;
+                        let resHtml = '';
+                        if (data.trapResolutionType === 'ROPE') {
+                            resHtml = `
+                                <div class="trap-resolution-box trap-resolution-rope">
+                                    <div class="font-bold flex items-center justify-center gap-2 text-base">
+                                        <span class="material-symbols-outlined">gesture</span> Piège évité grâce à une Corde !
+                                    </div>
+                                    <div class="text-xs text-slate-300 mt-1">Vous avez contourné le piège sans subir de dégâts ni de malus.</div>
+                                </div>
+                            `;
+                        } else if (data.trapResolutionType === 'DISARM') {
+                            resHtml = `
+                                <div class="trap-resolution-box trap-resolution-disarm">
+                                    <div class="font-bold flex items-center justify-center gap-2 text-base">
+                                        <span class="material-symbols-outlined">build</span> Piège désamorcé !
+                                    </div>
+                                    <div class="text-xs text-slate-300 mt-1">Le mécanisme a été neutralisé au prix de vos forces. Aucun malus de combat ne sera appliqué !</div>
+                                </div>
+                            `;
+                        } else {
+                            resHtml = `<div class="mt-3 text-success font-semibold text-center">Piège résolu !</div>`;
+                        }
+                        trapDesc += resHtml;
                         desc.innerHTML = trapDesc;
                         btnOpen.classList.add('hidden');
                         btnCont.classList.remove('hidden');
                         btnCont.textContent = 'Continuer';
+                        btnCont.onclick = nextRoom;
                         lootContainer.classList.add('hidden'); lootContainer.classList.remove('flex');
                     } else {
-                        let trapDetails = [];
-                        if (data.currentRoom.trapDamageHpPct > 0) trapDetails.push(`<span style="color:#ef4444;">${data.currentRoom.trapDamageHpPct}% PV Max</span>`);
-                        if (data.currentRoom.trapDamageManaPct > 0) trapDetails.push(`<span style="color:#38bdf8;">${data.currentRoom.trapDamageManaPct}% Mana Max</span>`);
-                        if (data.currentRoom.trapDamageHpFixed > 0) trapDetails.push(`<span style="color:#ef4444;">${data.currentRoom.trapDamageHpFixed} PV</span>`);
-                        if (data.currentRoom.trapDamageManaFixed > 0) trapDetails.push(`<span style="color:#38bdf8;">${data.currentRoom.trapDamageManaFixed} Mana</span>`);
-
-                        // Legacy support
-                        if (trapDetails.length === 0 && data.currentRoom.trapAmount > 0) {
-                            if (data.currentRoom.trapType === 'PV') {
-                                trapDetails.push(`<span style="color:#ef4444;">${data.currentRoom.trapAmount} PV</span>`);
-                            } else if (data.currentRoom.trapType === 'MANA') {
-                                trapDetails.push(`<span style="color:#38bdf8;">${data.currentRoom.trapAmount} Mana</span>`);
-                            }
-                        }
-
-                        if (trapDetails.length > 0) {
-                            trapDesc += `<br><br>⚠️ Perte de : ` + trapDetails.join(' et ');
-                        }
+                        trapDesc += `
+                            <div class="text-xs bg-amber-950/40 border border-amber-500/40 p-3 rounded-lg mt-3 text-left">
+                                <div class="flex items-center gap-1.5 text-amber-400 font-bold mb-1">
+                                    <span class="material-symbols-outlined text-sm">warning</span>
+                                    Malus au prochain combat si déclenché :
+                                </div>
+                                <div class="text-slate-100 text-sm font-semibold pl-5">
+                                    ${malusInfo.detailedHtml}
+                                </div>
+                                ${effectDesc ? `<div class="text-[0.75rem] text-slate-400 pl-5 mt-1 italic">${effectDesc}</div>` : ''}
+                            </div>
+                        `;
 
                         desc.innerHTML = trapDesc;
                         btnOpen.classList.add('hidden');
 
-                        if (data.currentRoom.trapHasRopeOption) {
-                            const ropes = data.activeConsumables ? data.activeConsumables.filter(eq => eq.consumableCategory === 'CORDE') : [];
-                            const hasRope = ropes.length > 0;
+                        const ropes = data.activeConsumables ? data.activeConsumables.filter(eq => eq.consumableCategory === 'CORDE') : [];
+                        const hasRope = ropes.length > 0;
 
-                            // Multi-player voting state
-                            let totalUsers = 1;
-                            if (data.players && data.players.length > 0) {
-                                totalUsers = new Set(data.players.filter(p => p.healthCurrent > 0 && p.ownerUsername).map(p => p.ownerUsername)).size;
-                            }
-                            const isMulti = totalUsers > 1;
-
-                            let ropeVotes = 0;
-                            let acceptVotes = 0;
-                            let ropeSelectedStyle = '';
-                            let acceptSelectedStyle = '';
-                            let waitingHtml = '';
-
-                            if (data.playerRoomChoices) {
-                                for (let user in data.playerRoomChoices) {
-                                    const choice = data.playerRoomChoices[user];
-                                    if (choice.actionType === 'ROPE') {
-                                        ropeVotes++;
-                                    } else if (choice.actionType === 'ACCEPT') {
-                                        acceptVotes++;
-                                    }
-                                }
-
-                                const myChoice = data.playerRoomChoices[pageState.currentUsername];
-                                if (myChoice) {
-                                    if (myChoice.actionType === 'ROPE') {
-                                        ropeSelectedStyle = 'box-shadow: 0 0 15px rgba(245, 158, 11, 0.6); background: rgba(245, 158, 11, 0.25) !important; border-color: rgba(245, 158, 11, 0.8) !important;';
-                                    } else if (myChoice.actionType === 'ACCEPT') {
-                                        acceptSelectedStyle = 'box-shadow: 0 0 15px rgba(255, 255, 255, 0.4); background: rgba(255, 255, 255, 0.15) !important; border-color: rgba(255, 255, 255, 0.8) !important;';
-                                    }
-                                    if (isMulti) {
-                                        waitingHtml = `<div class="text-center w-full mt-2 text-sm text-sky-medium animate-pulse">En attente des autres joueurs...</div>`;
-                                    }
-                                }
-                            }
-
-                            let ropeVoteText = isMulti ? ` <span class="ready-counter" style="opacity: 0.7; font-size: 0.9em;">(${ropeVotes}/${totalUsers})</span>` : '';
-                            let acceptVoteText = isMulti ? ` <span class="ready-counter" style="opacity: 0.7; font-size: 0.9em;">(${acceptVotes}/${totalUsers})</span>` : '';
-
-                            let ropeButtonHtml;
-                            if (hasRope) {
-                                ropeButtonHtml = `<button type="button" class="btn" onclick="event.preventDefault(); useRope(null, 'ROPE');" style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; ${ropeSelectedStyle}"><span class="material-symbols-outlined text-[1.1rem] align-middle mr-1">gesture</span> Utiliser une Corde${ropeVoteText}</button>`;
-                            } else {
-                                ropeButtonHtml = `<button type="button" class="btn" disabled title="Vous n'avez pas de corde" style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: not-allowed; opacity: 0.5; transition: all 0.2s ease;"><span class="material-symbols-outlined text-[1.1rem] align-middle mr-1">gesture</span> Utiliser une Corde</button>`;
-                            }
-
-                            lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
-                            lootContainer.innerHTML = `
-                                <div class="flex-col items-center w-full">
-                                    <div class="flex-col items-center w-full" style="display:flex;">
-                                        ${ropeButtonHtml}
-                                    </div>
-                                    <div class="btn-row" style="margin-top: 1rem;">
-                                        <button type="button" class="btn text-muted" onclick="event.preventDefault(); useRope(null, 'ACCEPT');" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; ${acceptSelectedStyle}">Subir le piège et passer${acceptVoteText}</button>
-                                    </div>
-                                    ${waitingHtml}
-                                </div>
-                            `;
-                            btnCont.classList.add('hidden');
-                        } else {
-                            btnCont.classList.remove('hidden');
-                            btnCont.textContent = 'Subir le piège et passer';
-                            lootContainer.classList.add('hidden'); lootContainer.classList.remove('flex');
+                        // Multi-player voting state
+                        let totalUsers = 1;
+                        if (data.players && data.players.length > 0) {
+                            totalUsers = new Set(data.players.filter(p => p.healthCurrent > 0 && p.ownerUsername).map(p => p.ownerUsername)).size;
                         }
+                        const isMulti = totalUsers > 1;
+
+                        let ropeVotes = 0;
+                        let disarmVotes = 0;
+                        let acceptVotes = 0;
+                        let ropeSelectedClass = '';
+                        let disarmSelectedClass = '';
+                        let acceptSelectedClass = '';
+                        let waitingHtml = '';
+
+                        if (data.playerRoomChoices) {
+                            for (let user in data.playerRoomChoices) {
+                                const choice = data.playerRoomChoices[user];
+                                if (choice.actionType === 'ROPE') {
+                                    ropeVotes++;
+                                } else if (choice.actionType === 'DISARM') {
+                                    disarmVotes++;
+                                } else if (choice.actionType === 'ACCEPT') {
+                                    acceptVotes++;
+                                }
+                            }
+
+                            const myChoice = data.playerRoomChoices[pageState.currentUsername];
+                            if (myChoice) {
+                                if (myChoice.actionType === 'ROPE') {
+                                    ropeSelectedClass = 'is-selected';
+                                } else if (myChoice.actionType === 'DISARM') {
+                                    disarmSelectedClass = 'is-selected';
+                                } else if (myChoice.actionType === 'ACCEPT') {
+                                    acceptSelectedClass = 'is-selected';
+                                }
+                                if (isMulti) {
+                                    waitingHtml = `<div class="text-center w-full mt-2 text-sm text-sky-medium animate-pulse">En attente des autres joueurs...</div>`;
+                                }
+                            }
+                        }
+
+                        let ropeVoteText = isMulti ? ` <span class="ready-counter opacity-70 text-[0.85em]">(${ropeVotes}/${totalUsers})</span>` : '';
+                        let disarmVoteText = isMulti ? ` <span class="ready-counter opacity-70 text-[0.85em]">(${disarmVotes}/${totalUsers})</span>` : '';
+                        let acceptVoteText = isMulti ? ` <span class="ready-counter opacity-70 text-[0.85em]">(${acceptVotes}/${totalUsers})</span>` : '';
+
+                        // Build disarm cost string
+                        let disarmCostParts = [];
+                        if (data.currentRoom.trapDamageHpPct > 0) disarmCostParts.push(`${data.currentRoom.trapDamageHpPct}% PV`);
+                        if (data.currentRoom.trapDamageHpFixed > 0) disarmCostParts.push(`${data.currentRoom.trapDamageHpFixed} PV`);
+                        if (data.currentRoom.trapDamageManaPct > 0) disarmCostParts.push(`${data.currentRoom.trapDamageManaPct}% Mana`);
+                        if (data.currentRoom.trapDamageManaFixed > 0) disarmCostParts.push(`${data.currentRoom.trapDamageManaFixed} Mana`);
+                        if (disarmCostParts.length === 0 && data.currentRoom.trapAmount > 0) {
+                            disarmCostParts.push(`${data.currentRoom.trapAmount} ${data.currentRoom.trapType || 'PV'}`);
+                        }
+                        const disarmCostDesc = disarmCostParts.length > 0 
+                            ? `Coût : -${disarmCostParts.join(', -')} · Annule les malus de combat` 
+                            : `Gratuit · Annule les malus de combat`;
+
+                        // 1. ROPE BUTTON (only if room allows rope)
+                        let ropeButtonHtml = '';
+                        if (data.currentRoom.trapHasRopeOption) {
+                            if (hasRope) {
+                                ropeButtonHtml = `
+                                    <button type="button" class="btn trap-choice-btn trap-choice-rope ${ropeSelectedClass}" onclick="event.preventDefault(); useRope(null, 'ROPE');">
+                                        <div class="trap-choice-btn-title">
+                                            <span class="material-symbols-outlined text-[1.15rem]">gesture</span>
+                                            Utiliser une Corde${ropeVoteText}
+                                        </div>
+                                        <div class="trap-choice-btn-desc">Consomme 1 corde · Ignore entièrement le piège</div>
+                                    </button>
+                                `;
+                            } else {
+                                ropeButtonHtml = `
+                                    <button type="button" class="btn trap-choice-btn trap-choice-rope is-disabled" disabled title="Vous n'avez pas de corde dans votre inventaire">
+                                        <div class="trap-choice-btn-title">
+                                            <span class="material-symbols-outlined text-[1.15rem]">gesture</span>
+                                            Utiliser une Corde
+                                        </div>
+                                        <div class="trap-choice-btn-desc">Aucune corde disponible</div>
+                                    </button>
+                                `;
+                            }
+                        }
+
+                        // 2. DISARM BUTTON
+                        let disarmButtonHtml = `
+                            <button type="button" class="btn trap-choice-btn trap-choice-disarm ${disarmSelectedClass}" onclick="event.preventDefault(); useRope(null, 'DISARM');">
+                                <div class="trap-choice-btn-title">
+                                    <span class="material-symbols-outlined text-[1.15rem]">build</span>
+                                    Désamorcer le piège${disarmVoteText}
+                                </div>
+                                <div class="trap-choice-btn-desc">${disarmCostDesc}</div>
+                            </button>
+                        `;
+
+                        // 3. ACCEPT / SUBIR BUTTON
+                        let acceptButtonHtml = `
+                            <button type="button" class="btn trap-choice-btn trap-choice-accept ${acceptSelectedClass}" onclick="event.preventDefault(); useRope(null, 'ACCEPT');">
+                                <div class="trap-choice-btn-title">
+                                    <span class="material-symbols-outlined text-[1.15rem]">warning</span>
+                                    Subir le piège et passer${acceptVoteText}
+                                </div>
+                                <div class="trap-choice-btn-desc">Malus : ${malusInfo.shortSummary}</div>
+                            </button>
+                        `;
+
+                        lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
+                        lootContainer.innerHTML = `
+                            <div class="trap-choices-container">
+                                ${ropeButtonHtml}
+                                ${disarmButtonHtml}
+                                ${acceptButtonHtml}
+                                ${waitingHtml}
+                            </div>
+                        `;
+                        btnCont.classList.add('hidden');
                     }
                 } else if (subType === 'PORTE_ETRANGE') {
                     icon.textContent = 'door_front';

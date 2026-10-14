@@ -1227,7 +1227,10 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
                 } else if (s.eventSubType === 'RENCONTRE') {
                     html += `<div class="flex-center text-emerald mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">storefront</span> Étape ${index + 1} : Rencontre</div>`;
                 } else if (s.eventSubType === 'PIEGE') {
-                    html += `<div class="flex-center text-red-400 mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">warning</span> Étape ${index + 1} : Piège</div>`;
+                    const trapEff = s.trapEffectType;
+                    const trapIcon = (typeof trapEff === 'object' && trapEff?.icon) ? trapEff.icon : 'warning';
+                    const trapName = (typeof trapEff === 'object' && trapEff?.label) ? trapEff.label : 'Piège';
+                    html += `<div class="flex-center text-red-400 mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">${trapIcon}</span> Étape ${index + 1} : Piège (${trapName})</div>`;
                 } else if (s.eventSubType === 'PORTE_ETRANGE') {
                     html += `<div class="flex-center text-amber-400 mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">door_front</span> Étape ${index + 1} : Porte étrange</div>`;
                 } else {

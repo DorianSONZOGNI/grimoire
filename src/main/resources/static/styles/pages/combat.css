@@ -1238,3 +1238,120 @@ body {
     flex-wrap: wrap;
     gap: 0.3rem;
 }
+
+/* --- Trap Interaction Choices --- */
+.trap-choices-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 480px;
+    margin: 1rem auto 0 auto;
+}
+
+.trap-choice-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    border: 1px solid transparent;
+    text-align: center;
+}
+
+.trap-choice-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+}
+
+.trap-choice-btn-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.trap-choice-btn-desc {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    opacity: 0.85;
+    font-weight: normal;
+}
+
+/* Rope Option */
+.trap-choice-rope {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.35);
+}
+.trap-choice-rope:hover:not(:disabled) {
+    background: rgba(245, 158, 11, 0.22);
+    border-color: rgba(245, 158, 11, 0.6);
+}
+.trap-choice-rope.is-selected {
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.6);
+    background: rgba(245, 158, 11, 0.28) !important;
+    border-color: rgba(245, 158, 11, 0.9) !important;
+}
+
+/* Disarm Option */
+.trap-choice-disarm {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.35);
+}
+.trap-choice-disarm:hover:not(:disabled) {
+    background: rgba(16, 185, 129, 0.22);
+    border-color: rgba(16, 185, 129, 0.6);
+}
+.trap-choice-disarm.is-selected {
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.6);
+    background: rgba(16, 185, 129, 0.28) !important;
+    border-color: rgba(16, 185, 129, 0.9) !important;
+}
+
+/* Accept / Take Option */
+.trap-choice-accept {
+    background: rgba(255, 255, 255, 0.05);
+    color: #cbd5e1;
+    border-color: rgba(255, 255, 255, 0.15);
+}
+.trap-choice-accept:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+.trap-choice-accept.is-selected {
+    box-shadow: 0 0 16px rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.trap-choice-btn:disabled,
+.trap-choice-btn.is-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.trap-resolution-box {
+    text-align: center;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    margin-top: 1rem;
+    width: 100%;
+}
+.trap-resolution-rope {
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    color: #f59e0b;
+}
+.trap-resolution-disarm {
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #10b981;
+}

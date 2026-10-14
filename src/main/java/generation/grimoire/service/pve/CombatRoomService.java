@@ -23,6 +23,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import generation.grimoire.enumeration.DamageType;
+import generation.grimoire.enumeration.StatType;
+import generation.grimoire.enumeration.TrapEffectType;
+import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
+import generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect;
 
 /**
  * Logique d'interaction avec les salles hors-combat :
@@ -658,78 +663,330 @@ public class CombatRoomService {
     }
 
     CombatSession useRope(CombatSession session) {
+        String actionType = "ROPE";
+        if (session.getPlayerRoomChoices() != null && !session.getPlayerRoomChoices().isEmpty()) {
+            actionType = session.getPlayerRoomChoices().values().iterator().next().getActionType();
+        }
+        return resolveTrapChoice(session, actionType);
+    }
+
+    CombatSession resolveTrapChoice(CombatSession session, String actionType) {
         if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.EVENT ||
                 session.getCurrentRoom().getEventSubType() != generation.grimoire.enumeration.EventSubType.PIEGE) {
             throw new RuntimeException("Ce n'est pas un piège !");
-        }
-        if (!session.getCurrentRoom().isTrapHasRopeOption()) {
-            throw new RuntimeException("Vous ne pouvez pas utiliser de corde ici.");
         }
         if (session.isRoomEventCompleted()) {
             throw new RuntimeException("L'événement a déjà été résolu.");
         }
 
         generation.grimoire.entity.pve.Salle room = session.getCurrentRoom();
+
+        if ("ROPE".equals(actionType)) {
+            if (!room.isTrapHasRopeOption()) {
+                throw new RuntimeException("Vous ne pouvez pas utiliser de corde ici.");
+            }
+            Equipment rope = null;
+            for (Equipment eq : session.getActiveConsumables()) {
+                if (eq.getConsumableCategory() == generation.grimoire.enumeration.ConsumableCategory.CORDE) {
+                    if (rope == null || eq.getBaseWeight() > rope.getBaseWeight()) {
+                        rope = eq;
+                    }
+                }
+            }
+            if (rope == null) {
+                throw new RuntimeException("Corde introuvable dans votre inventaire !");
+            }
+            session.getActiveConsumables().remove(rope);
+            equipmentRepository.delete(rope);
+
+            for (Personnage p : session.getPlayers()) {
+                if (p.getHealthCurrent() <= 0 || !session.isEligibleForRewards(p)) continue;
+                AppUser u = p.getUser();
+                if (u != null) {
+                    session.logInteractionResult(u.getUsername(), "Vous utilisez " + rope.getName() + " pour éviter le piège sans encombre !");
+                }
+            }
+            session.setTrapResolutionType("ROPE");
+            session.setRoomEventCompleted(true);
+            session.addLog("Le piège a été contourné grâce à une Corde.");
+            return session;
+        } else if ("DISARM".equals(actionType)) {
+            int hpPct = room.getTrapDamageHpPct() != null ? room.getTrapDamageHpPct() : 0;
+            int manaPct = room.getTrapDamageManaPct() != null ? room.getTrapDamageManaPct() : 0;
+            int hpFixed = room.getTrapDamageHpFixed() != null ? room.getTrapDamageHpFixed() : 0;
+            int manaFixed = room.getTrapDamageManaFixed() != null ? room.getTrapDamageManaFixed() : 0;
+
+            if (hpPct == 0 && manaPct == 0 && hpFixed == 0 && manaFixed == 0 && room.getTrapAmount() > 0) {
+                if ("PV".equals(room.getTrapType())) hpFixed = room.getTrapAmount();
+                else if ("MANA".equals(room.getTrapType())) manaFixed = room.getTrapAmount();
+            }
+
+            for (Personnage p : session.getPlayers()) {
+                if (p.getHealthCurrent() <= 0 || !session.isEligibleForRewards(p)) continue;
+                int hpLoss = hpFixed + (int) (p.getHealthMax() * (hpPct / 100.0));
+                int manaLoss = manaFixed + (int) (p.getManaMax() * (manaPct / 100.0));
+
+                if (hpLoss > 0) p.takeDamage(hpLoss, DamageType.BRUT);
+                if (manaLoss > 0) p.setManaCurrent(Math.max(0, p.getManaCurrent() - manaLoss));
+                personnageService.save(p);
+
+                AppUser u = p.getUser();
+                if (u != null) {
+                    StringBuilder sb = new StringBuilder("🛠️ Mécanisme désamorcé ! ");
+                    if (hpLoss > 0 || manaLoss > 0) {
+                        sb.append("Vos héros sacrifient ");
+                        if (hpLoss > 0) sb.append(hpLoss).append(" PV");
+                        if (hpLoss > 0 && manaLoss > 0) sb.append(" et ");
+                        if (manaLoss > 0) sb.append(manaLoss).append(" Mana");
+                        sb.append(", neutralisant le piège. Aucun malus de combat ne sera appliqué !");
+                    } else {
+                        sb.append("Le piège est neutralisé sans encombre : aucun malus de combat ne sera appliqué !");
+                    }
+                    session.logInteractionResult(u.getUsername(), sb.toString());
+                }
+            }
+
+            session.setTrapResolutionType("DISARM");
+            session.setRoomEventCompleted(true);
+            session.addLog("Le groupe a désamorcé le piège au prix de ses forces.");
+
+            if (session.areAllPlayersDead()) {
+                session.setFinished(true);
+                session.setPlayerWon(false);
+                session.addLog("Le groupe a succombé en tentant de désamorcer le piège...");
+            }
+            return session;
+        }
+
+        throw new IllegalArgumentException("Action de piège non reconnue : " + actionType);
+    }
+
+    private void applyTrapToHero(CombatSession session, Personnage p, generation.grimoire.entity.pve.Salle room, String username) {
+        if (p == null || p.getHealthCurrent() <= 0 || room == null) return;
+
+        TrapEffectType effectType = room.getTrapEffectType();
         int hpPct = room.getTrapDamageHpPct() != null ? room.getTrapDamageHpPct() : 0;
         int manaPct = room.getTrapDamageManaPct() != null ? room.getTrapDamageManaPct() : 0;
         int hpFixed = room.getTrapDamageHpFixed() != null ? room.getTrapDamageHpFixed() : 0;
         int manaFixed = room.getTrapDamageManaFixed() != null ? room.getTrapDamageManaFixed() : 0;
 
-        if (hpPct == 0 && manaPct == 0 && hpFixed == 0 && manaFixed == 0 && room.getTrapAmount() > 0) {
-            if ("PV".equals(room.getTrapType())) hpFixed = room.getTrapAmount();
-            else if ("MANA".equals(room.getTrapType())) manaFixed = room.getTrapAmount();
+        // Fallback for old rooms
+        if (effectType == null || effectType == TrapEffectType.CUSTOM) {
+            if (hpPct == 0 && manaPct == 0 && hpFixed == 0 && manaFixed == 0 && room.getTrapAmount() > 0) {
+                if ("PV".equals(room.getTrapType())) hpFixed = room.getTrapAmount();
+                else if ("MANA".equals(room.getTrapType())) manaFixed = room.getTrapAmount();
+            }
         }
 
-        java.util.Map<String, generation.grimoire.model.pve.RoomInteractionChoice> choices = session.getPlayerRoomChoices();
-        if (choices == null) choices = new java.util.HashMap<>();
+        int duration = (room.getTrapDebuffDuration() != null && room.getTrapDebuffDuration() > 0) ? room.getTrapDebuffDuration() : 2;
+        int debuffVal = room.getTrapDebuffValue() != null ? room.getTrapDebuffValue() : 0;
+        int secVal = room.getTrapDebuffSecondaryValue() != null ? room.getTrapDebuffSecondaryValue() : 0;
 
-        // Traiter chaque joueur
-        for (Personnage p : session.getPlayers()) {
-            if (p.getHealthCurrent() <= 0 || !session.isEligibleForRewards(p)) continue;
-            AppUser u = p.getUser();
-            if (u == null) continue;
-            String username = u.getUsername();
+        StringBuilder logMsg = new StringBuilder();
 
-            generation.grimoire.model.pve.RoomInteractionChoice choice = choices.get(username);
-            boolean avoided = false;
+        if (effectType != null) {
+            switch (effectType) {
+                case FOSSE_A_PIEUX -> {
+                    
+                    int speedLoss = debuffVal > 0 ? debuffVal : 25;
+                    BuffDebuffEffect buff = new BuffDebuffEffect();
+                    buff.setStatAffected(StatType.SPEED);
+                    buff.setFlatValue(-Math.abs(speedLoss));
+                    buff.setDuration(duration);
+                    buff.setSourceName("Fosse à Pieux");
+                    p.getActiveBuffs().add(buff);
 
-            if (choice != null && "ROPE".equals(choice.getActionType())) {
-                // Auto-select the heaviest rope (by baseWeight desc)
-                Equipment rope = null;
-                for (Equipment eq : session.getActiveConsumables()) {
-                    if (eq.getConsumableCategory() == generation.grimoire.enumeration.ConsumableCategory.CORDE) {
-                        if (rope == null || eq.getBaseWeight() > rope.getBaseWeight()) {
-                            rope = eq;
-                        }
+                    logMsg.append("Vos héros tombent dans une fosse à pieux ! -").append(speedLoss).append(" Vitesse pour le prochain combat (")
+                          .append(duration).append(" tours).");
+                }
+                case NEUROTOXINE -> {
+
+                    int poisonPct = debuffVal > 0 ? debuffVal : 5;
+                    int dmgPerTick = Math.max(1, (int) (p.getHealthMax() * (poisonPct / 100.0)));
+                    DamageOverTimeEffect poison = new DamageOverTimeEffect();
+                    poison.setFixedDamagePerTick(dmgPerTick);
+                    poison.setDuration(duration > 0 ? duration : 3);
+                    poison.setDamageType(DamageType.BRUT);
+                    poison.setPoison(true);
+                    p.addDamageOverTimeEffect(poison);
+
+                    logMsg.append("Une neurotoxine infecte vos héros ! Poison de ").append(poisonPct)
+                          .append("% PV max par tour pendant ").append(poison.getDuration()).append(" tours.");
+                }
+                case PLUIE_ACIDE -> {
+
+                    int lossPct = debuffVal > 0 ? debuffVal : 30;
+                    double mod = -(lossPct / 100.0);
+
+                    BuffDebuffEffect armBuff = new BuffDebuffEffect();
+                    armBuff.setStatAffected(StatType.ARMURE);
+                    armBuff.setModifier(mod);
+                    armBuff.setDuration(duration > 0 ? duration : 3);
+                    armBuff.setSourceName("Pluie d'acide");
+                    p.getActiveBuffs().add(armBuff);
+
+                    BuffDebuffEffect resBuff = new BuffDebuffEffect();
+                    resBuff.setStatAffected(StatType.RESISTANCE);
+                    resBuff.setModifier(mod);
+                    resBuff.setDuration(duration > 0 ? duration : 3);
+                    resBuff.setSourceName("Pluie d'acide");
+                    p.getActiveBuffs().add(resBuff);
+
+                    logMsg.append("Une pluie d'acide corrosive s'abat ! -").append(lossPct)
+                          .append("% d'Armure et de Résistance pendant ").append(duration).append(" tours.");
+                }
+                case RUPTURE_ARCANIQUE -> {
+                    int lossManaPct = manaPct > 0 ? manaPct : (secVal > 0 ? secVal : 30);
+                    int manaLoss = (int) (p.getManaMax() * (lossManaPct / 100.0));
+                    if (manaLoss > 0) p.setManaCurrent(Math.max(0, p.getManaCurrent() - manaLoss));
+
+                    int resLossPct = debuffVal > 0 ? debuffVal : 25;
+                    double mod = -(resLossPct / 100.0);
+                    BuffDebuffEffect resBuff = new BuffDebuffEffect();
+                    resBuff.setStatAffected(StatType.RESISTANCE);
+                    resBuff.setModifier(mod);
+                    resBuff.setDuration(duration > 0 ? duration : 3);
+                    resBuff.setSourceName("Rupture arcanique");
+                    p.getActiveBuffs().add(resBuff);
+
+                    logMsg.append("Rupture arcanique ! -").append(lossManaPct).append("% Mana et -")
+                          .append(resLossPct).append("% Résistance magique pendant ").append(duration).append(" tours.");
+                }
+                case FUMEE_AVEUGLANTE -> {
+                    int critLoss = debuffVal > 0 ? debuffVal : 50;
+                    BuffDebuffEffect critBuff = new BuffDebuffEffect();
+                    critBuff.setStatAffected(StatType.CRIT);
+                    critBuff.setFlatValue(-Math.abs(critLoss));
+                    critBuff.setDuration(duration > 0 ? duration : 2);
+                    critBuff.setSourceName("Fumée aveuglante");
+                    p.getActiveBuffs().add(critBuff);
+
+                    int statLossPct = secVal > 0 ? secVal : 25;
+                    double statMod = -(statLossPct / 100.0);
+
+                    BuffDebuffEffect strBuff = new BuffDebuffEffect();
+                    strBuff.setStatAffected(StatType.STRENGTH);
+                    strBuff.setModifier(statMod);
+                    strBuff.setDuration(duration > 0 ? duration : 2);
+                    strBuff.setSourceName("Fumée aveuglante");
+                    p.getActiveBuffs().add(strBuff);
+
+                    BuffDebuffEffect powBuff = new BuffDebuffEffect();
+                    powBuff.setStatAffected(StatType.POWER);
+                    powBuff.setModifier(statMod);
+                    powBuff.setDuration(duration > 0 ? duration : 2);
+                    powBuff.setSourceName("Fumée aveuglante");
+                    p.getActiveBuffs().add(powBuff);
+
+                    logMsg.append("Une fumée aveuglante vous étouffe ! -").append(critLoss).append("% Crit, -")
+                          .append(statLossPct).append("% Force et Puissance (").append(duration).append(" tours).");
+                }
+                case MALEDICTION_DESESPERANTE -> {
+                    int lossPct = debuffVal > 0 ? debuffVal : 30;
+                    double mod = -(lossPct / 100.0);
+                    for (StatType st : List.of(
+                            StatType.DAMAGE_GIVEN_PHYSIC,
+                            StatType.DAMAGE_GIVEN_MAGIC,
+                            StatType.DAMAGE_GIVEN_BRUT)) {
+                        BuffDebuffEffect b = new BuffDebuffEffect();
+                        b.setStatAffected(st);
+                        b.setModifier(mod);
+                        b.setDuration(duration > 0 ? duration : 3);
+                        b.setSourceName("Malédiction désespérante");
+                        p.getActiveBuffs().add(b);
                     }
+
+                    logMsg.append("Malédiction désespérante ! -").append(lossPct)
+                          .append("% à tous les dégâts infligés pendant ").append(duration).append(" tours.");
                 }
-                if (rope != null) {
-                    session.getActiveConsumables().remove(rope);
-                    equipmentRepository.delete(rope);
-                    session.logInteractionResult(username, "Vous utilisez " + rope.getName() + " pour éviter le piège !");
-                    avoided = true;
-                } else {
-                    session.logInteractionResult(username, "Corde introuvable ! Le piège se déclenche...");
+                case MALEDICTION_MORTELLE -> {
+                    int vulnVal = debuffVal > 0 ? debuffVal : 25;
+                    double mod = (vulnVal / 100.0);
+                    for (StatType st : List.of(
+                            StatType.DAMAGE_TAKEN_PHYSIC,
+                            StatType.DAMAGE_TAKEN_MAGIC,
+                            StatType.DAMAGE_TAKEN_BRUT)) {
+                        BuffDebuffEffect b = new BuffDebuffEffect();
+                        b.setStatAffected(st);
+                        b.setModifier(mod);
+                        b.setDuration(duration > 0 ? duration : 3);
+                        b.setSourceName("Malédiction mortelle");
+                        p.getActiveBuffs().add(b);
+                    }
+
+                    logMsg.append("Malédiction mortelle ! +").append(vulnVal)
+                          .append("% aux dégâts reçus pendant ").append(duration).append(" tours.");
+                }
+                case MALEDICTION_SOLITUDE -> {
+                    int lossPct = debuffVal > 0 ? debuffVal : 50;
+                    double mod = -(lossPct / 100.0);
+
+                    BuffDebuffEffect healBuff = new BuffDebuffEffect();
+                    healBuff.setStatAffected(StatType.HEAL_RECEIVED);
+                    healBuff.setModifier(mod);
+                    healBuff.setDuration(duration > 0 ? duration : 3);
+                    healBuff.setSourceName("Malédiction de solitude");
+                    p.getActiveBuffs().add(healBuff);
+
+                    BuffDebuffEffect shBuff = new BuffDebuffEffect();
+                    shBuff.setStatAffected(StatType.SHIELD_RECEIVED);
+                    shBuff.setModifier(mod);
+                    shBuff.setDuration(duration > 0 ? duration : 3);
+                    shBuff.setSourceName("Malédiction de solitude");
+                    p.getActiveBuffs().add(shBuff);
+
+                    logMsg.append("Malédiction de solitude ! -").append(lossPct)
+                          .append("% sur les soins et boucliers reçus pendant ").append(duration).append(" tours.");
+                }
+                case FOURNAISE -> {
+
+                    int burnPct = debuffVal > 0 ? debuffVal : 6;
+                    int dmgPerTick = Math.max(1, (int) (p.getHealthMax() * (burnPct / 100.0)));
+                    DamageOverTimeEffect burnDoT = new DamageOverTimeEffect();
+                    burnDoT.setFixedDamagePerTick(dmgPerTick);
+                    burnDoT.setDuration(duration > 0 ? duration : 3);
+                    burnDoT.setDamageType(DamageType.MAGIC);
+                    burnDoT.setBurn(true);
+                    p.addDamageOverTimeEffect(burnDoT);
+
+                    int armLossPct = secVal > 0 ? secVal : 25;
+                    BuffDebuffEffect armBuff = new BuffDebuffEffect();
+                    armBuff.setStatAffected(StatType.ARMURE);
+                    armBuff.setModifier(-(armLossPct / 100.0));
+                    armBuff.setDuration(duration > 0 ? duration : 3);
+                    armBuff.setSourceName("Fournaise");
+                    p.getActiveBuffs().add(armBuff);
+
+                    logMsg.append("La fournaise vous calcine ! Brûlure (").append(burnPct)
+                          .append("% PV/tour) et -").append(armLossPct).append("% d'Armure (").append(duration).append(" tours).");
+                }
+                case CUSTOM -> {
+                    int hpDmg = hpFixed + (int) (p.getHealthMax() * (hpPct / 100.0));
+                    int manaDmg = manaFixed + (int) (p.getManaMax() * (manaPct / 100.0));
+                    if (hpDmg > 0) p.takeDamage(hpDmg, DamageType.BRUT);
+                    if (manaDmg > 0) p.setManaCurrent(Math.max(0, p.getManaCurrent() - manaDmg));
+
+                    logMsg.append("Vos héros tombent dans un piège !");
+                    if (hpDmg > 0) logMsg.append(" -").append(hpDmg).append(" PV.");
+                    if (manaDmg > 0) logMsg.append(" -").append(manaDmg).append(" Mana.");
                 }
             }
+        } else {
+            int hpDmg = hpFixed + (int) (p.getHealthMax() * (hpPct / 100.0));
+            int manaDmg = manaFixed + (int) (p.getManaMax() * (manaPct / 100.0));
+            if (hpDmg > 0) p.takeDamage(hpDmg, DamageType.BRUT);
+            if (manaDmg > 0) p.setManaCurrent(Math.max(0, p.getManaCurrent() - manaDmg));
 
-            if (!avoided) {
-                int hpDmg = hpFixed + (int) (p.getHealthMax() * (hpPct / 100.0));
-                int manaDmg = manaFixed + (int) (p.getManaMax() * (manaPct / 100.0));
-
-                if (hpDmg > 0) p.takeDamage(hpDmg, generation.grimoire.enumeration.DamageType.BRUT);
-                if (manaDmg > 0) p.setManaCurrent(Math.max(0, p.getManaCurrent() - manaDmg));
-
-                String log = "Vos héros tombent dans un piège !";
-                if (hpDmg > 0) log += " -" + hpDmg + " PV.";
-                if (manaDmg > 0) log += " -" + manaDmg + " Mana.";
-                session.logInteractionResult(username, log);
-            }
+            logMsg.append("Vos héros tombent dans un piège !");
+            if (hpDmg > 0) logMsg.append(" -").append(hpDmg).append(" PV.");
+            if (manaDmg > 0) logMsg.append(" -").append(manaDmg).append(" Mana.");
         }
 
-        session.setRoomEventCompleted(true);
-        session.addLog("Le groupe a fait face au piège.");
-        return session;
+        if (username != null) {
+            session.logInteractionResult(username, logMsg.toString());
+        } else {
+            session.addLog(logMsg.toString());
+        }
     }
 
     CombatSession consumeItem(CombatSession session, Long consumableId, Long targetCharacterId, String username) {
@@ -1050,37 +1307,11 @@ target.getActiveBuffs().add(effect);
             if (subType == generation.grimoire.enumeration.EventSubType.ALTERATION) {
                 // Ignored by player
             } else if (subType == generation.grimoire.enumeration.EventSubType.PIEGE) {
-                int hpPct = room.getTrapDamageHpPct() != null ? room.getTrapDamageHpPct() : 0;
-                int manaPct = room.getTrapDamageManaPct() != null ? room.getTrapDamageManaPct() : 0;
-                int hpFixed = room.getTrapDamageHpFixed() != null ? room.getTrapDamageHpFixed() : 0;
-                int manaFixed = room.getTrapDamageManaFixed() != null ? room.getTrapDamageManaFixed() : 0;
-
-                // Fallback for old rooms
-                if (hpPct == 0 && manaPct == 0 && hpFixed == 0 && manaFixed == 0 && room.getTrapAmount() > 0) {
-                    if ("PV".equals(room.getTrapType()))
-                        hpFixed = room.getTrapAmount();
-                    else if ("MANA".equals(room.getTrapType()))
-                        manaFixed = room.getTrapAmount();
-                }
-
                 for (Personnage p : session.getPlayers()) {
                     if (p.getHealthCurrent() > 0) {
-                        int hpDmg = hpFixed + (int) (p.getHealthMax() * (hpPct / 100.0));
-                        int manaDmg = manaFixed + (int) (p.getManaMax() * (manaPct / 100.0));
-
-                        if (hpDmg > 0)
-                            p.takeDamage(hpDmg, generation.grimoire.enumeration.DamageType.BRUT);
-                        if (manaDmg > 0)
-                            p.setManaCurrent(Math.max(0, p.getManaCurrent() - manaDmg));
+                        applyTrapToHero(session, p, room, null);
                     }
                 }
-
-                String log = "Vos héros tombent dans un piège !";
-                if (hpPct > 0 || hpFixed > 0)
-                    log += " Ils perdent des PV.";
-                if (manaPct > 0 || manaFixed > 0)
-                    log += " Ils perdent du Mana.";
-                session.addLog(log);
             } else {
                 // Generic fallback
                 int effect = room.getEventEffectAmount();
@@ -1372,6 +1603,16 @@ target.getActiveBuffs().add(effect);
                 room.setLootTable(null);
                 room.setTrapDamageHpFixed(selectedOutcome.path("trapDamageHpFixed").asInt(0));
                 room.setTrapDamageManaFixed(selectedOutcome.path("trapDamageManaFixed").asInt(0));
+                if (selectedOutcome.has("trapEffectType")) {
+                    try {
+                        room.setTrapEffectType(generation.grimoire.enumeration.TrapEffectType.valueOf(selectedOutcome.path("trapEffectType").asText("CUSTOM")));
+                    } catch (Exception ignored) {
+                        room.setTrapEffectType(generation.grimoire.enumeration.TrapEffectType.CUSTOM);
+                    }
+                }
+                room.setTrapDebuffDuration(selectedOutcome.path("trapDebuffDuration").asInt(2));
+                room.setTrapDebuffValue(selectedOutcome.path("trapDebuffValue").asInt(0));
+                room.setTrapDebuffSecondaryValue(selectedOutcome.path("trapDebuffSecondaryValue").asInt(0));
             } else {
                 session.addLog("Vous avez ouvert la porte... Il n'y a absolument rien derrière.");
                 room.setEventText("Vous avez ouvert la porte... Il n'y a absolument rien derrière.");
