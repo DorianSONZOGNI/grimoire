@@ -790,6 +790,18 @@
     color: #34d399;
 }
 
+.badge-entrave {
+    background: rgba(0, 229, 204, 0.15);
+    border-color: rgba(0, 229, 204, 0.4);
+    color: #00e5cc;
+}
+
+.badge-protecteur {
+    background: rgba(34, 211, 238, 0.15);
+    border-color: rgba(34, 211, 238, 0.4);
+    color: #22d3ee;
+}
+
 /* Bouton Profil Spécificités sur les cartes de héros */
 .char-btn-spec {
     color: #38bdf8;

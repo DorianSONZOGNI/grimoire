@@ -19,12 +19,14 @@
         { key: 'berserk',    label: 'Berserk',    icon: 'bloodtype',             cssClass: 'badge-berserk',    desc: 'Sorts basés sur les PV manquants',   score: s => s._berserkScore },
         { key: 'brulant',    label: 'Brûlant',    icon: 'local_fire_department', cssClass: 'badge-brulant',    desc: 'Inflige des brûlures',              score: s => s._burnCount * 2 },
         { key: 'toxique',    label: 'Toxique',    icon: 'skull',                 cssClass: 'badge-toxique',    desc: 'Inflige du poison',                 score: s => s._poisonCount * 2 },
-        { key: 'tactique',   label: 'Tactique',   icon: 'gps_fixed',             cssClass: 'badge-tactique',   desc: 'Exploite ou augmente le Critique',  score: s => s._critScore },
+        { key: 'tactique',   label: 'Tactique',   icon: 'gps_fixed',             cssClass: 'badge-tactique',   desc: 'Exploite ou augmente le Critique',  score: s => (s._critScore >= 4 ? s._critScore : 0) },
         { key: 'arcane',     label: 'Arcane',     icon: 'auto_awesome',          cssClass: 'badge-arcane',     desc: 'Capacité régénérative ou utilitaire lié au Mana',      score: s => s._arcaneScore },
         { key: 'tank',       label: 'Tank',       icon: 'shield',                cssClass: 'badge-tank',       desc: 'Boucliers et armure/résistance sur soi',       score: s => s._tankScore },
         { key: 'vif',        label: 'Vif',        icon: 'bolt',                  cssClass: 'badge-vif',        desc: 'Vitesse et vivacité',               score: s => s._speedScore },
         { key: 'erosion',    label: 'Érosion',    icon: 'heart_minus',           cssClass: 'badge-erosion',    desc: 'Pénétration et casse-bouclier',     score: s => s._erosionScore },
-        { key: 'guerisseur', label: 'Guérisseur', icon: 'healing',               cssClass: 'badge-guerisseur', desc: 'Spécialiste du soin',        score: s => s._healScore }
+        { key: 'guerisseur', label: 'Guérisseur', icon: 'healing',               cssClass: 'badge-guerisseur', desc: 'Spécialiste du soin',        score: s => s._healScore },
+        { key: 'entrave',    label: 'Entrave',    icon: 'lock',                  cssClass: 'badge-entrave',    desc: 'Ralentit et affaiblit les ennemis', score: s => s._entraveScore },
+        { key: 'protecteur', label: 'Protecteur', icon: 'shield_person',         cssClass: 'badge-protecteur', desc: 'Boucliers conférés aux alliés',     score: s => s._protecteurScore }
     ];
 
     // Cache des analyses par voieId
@@ -41,7 +43,8 @@
         const isAlly = ['CASTER', 'ALLY', 'ALL_ALLIES'].includes(target);
         const isEnemy = ['TARGET', 'ALL_ENEMIES', 'ALL_COMBATANTS'].includes(target);
         const isSelf = target === 'CASTER';
-        const src = effect.damageSource || effect.healSource || effect.manaSource || effect.source || effect.modifierSource || '';
+        const allSources = [effect.damageSource, effect.healSource, effect.manaSource, effect.shieldSource, effect.source, effect.modifierSource].filter(Boolean).join(' ');
+        const src = allSources;
 
         // 1. Puissance: ratio puissance ou buff puissance
         if (src.includes('POWER') && !src.includes('PHYSICAL')) sc.puissance += (effect.ratio || 1);
@@ -71,15 +74,45 @@
         if ((isAlly || isSelf) && (isHeal || isMana)) sc.soutien += 1;
 
         // Badges scores
-        if (src.includes('HEALTH_MISSING')) sc._berserkScore++;
-        if (src.includes('CRIT') || (type === 'BUFF_DEBUFF' && effect.statAffected === 'CRIT')) sc._critScore++;
+        // Berserk : sorts basés sur les PV manquants (dégâts, boucliers, soins, buffs de stats)
+        if (allSources.includes('HEALTH_MISSING')) sc._berserkScore++;
+
+        // Tactique : sort qui scale sur le Critique (CASTER_CRIT) ou buff crit positif sur soi/allié (pas de débuff sur cible ennemie)
+        const isCritScale = allSources.includes('CRIT');
+        const isCritBuff = type === 'BUFF_DEBUFF' && effect.statAffected === 'CRIT' && (isAlly || isSelf) && ((effect.modifier || 0) > 0 || (effect.flatValue || 0) > 0);
+        if (isCritScale || isCritBuff) sc._critScore++;
+
         if (isMana && (isAlly || isSelf)) sc._arcaneScore++;
-        if (isSelf && (isShield || isArmorBD)) sc._tankScore++;
-        if (src.includes('SPEED') || (type === 'BUFF_DEBUFF' && effect.statAffected === 'SPEED')) sc._speedScore++;
-        if (type === 'BUFF_DEBUFF' && (effect.statAffected || '').includes('SHIELD')) sc._erosionScore++;
+
+        // Tank badge : bouclier sur soi, armure/résistance sur soi, ou buff de bouclier reçu/donné sur soi
+        const isShieldSelf = isShield && isSelf;
+        const isShieldBuffSelf = type === 'BUFF_DEBUFF' && isSelf && (effect.statAffected || '').includes('SHIELD') && ((effect.modifier || 0) > 0 || (effect.flatValue || 0) > 0);
+        if ((isSelf && (isShieldSelf || isArmorBD)) || isShieldBuffSelf) sc._tankScore++;
+
+        // Protecteur : boucliers conférés aux alliés
+        const isShieldAlly = isShield && (target === 'ALLY' || target === 'ALL_ALLIES');
+        if (isShieldAlly) sc._protecteurScore += (target === 'ALL_ALLIES' ? 2 : 1.5);
+
+        // Vif : boost de vitesse sur soi ou allié (pas ralentissement ennemi)
+        const isSpeedBuff = (allSources.includes('SPEED') && (isAlly || isSelf)) || (type === 'BUFF_DEBUFF' && effect.statAffected === 'SPEED' && (isAlly || isSelf) && ((effect.modifier || 0) > 0 || (effect.flatValue || 0) > 0));
+        if (isSpeedBuff) sc._speedScore++;
+
+        // Érosion : strictement perforation/pénétration de bouclier, dégâts accrus aux boucliers, ou réduction directe de bouclier ennemi
+        const isShieldPierced = type === 'BUFF_DEBUFF' && ((effect.statAffected || '').includes('SHIELD_PIERCED') || (effect.statAffected || '').includes('SHIELD_PENETRATION'));
+        const isDamageToShield = type === 'BUFF_DEBUFF' && (effect.statAffected || '').includes('TO_SHIELD');
+        const isEnemyShieldReduction = type === 'BUFF_DEBUFF' && isEnemy && (effect.statAffected || '').includes('SHIELD') && ((effect.modifier || 0) < 0 || (effect.flatValue || 0) < 0);
+        if (isShieldPierced || isDamageToShield || isEnemyShieldReduction) sc._erosionScore++;
+
         if ((type === 'DOT' || type === 'BUFF_DEBUFF') && (effect.statAffected === 'BURN' || type === 'BURN')) sc._burnCount++;
         if ((type === 'DOT' || type === 'BUFF_DEBUFF') && (effect.statAffected === 'POISON' || type === 'POISON')) sc._poisonCount++;
         if (isHeal) sc._healScore += (target === 'ALL_ALLIES' ? 2 : 1);
+
+        // Entrave : ralentissement vitesse, réduction dégâts/puissance infligés, réduction crit ennemie
+        const isSlow = type === 'BUFF_DEBUFF' && effect.statAffected === 'SPEED' && isEnemy && ((effect.modifier || 0) < 0 || (effect.flatValue || 0) < 0);
+        const isDamageDebuff = type === 'BUFF_DEBUFF' && isEnemy && ((effect.modifier || 0) < 0 || (effect.flatValue || 0) < 0) && ((effect.statAffected || '').includes('DAMAGE_GIVEN') || effect.statAffected === 'POWER' || effect.statAffected === 'STRENGTH');
+        const isCritDebuff = type === 'BUFF_DEBUFF' && effect.statAffected === 'CRIT' && isEnemy && ((effect.modifier || 0) < 0 || (effect.flatValue || 0) < 0);
+        if (isSlow) sc._entraveScore += 2;
+        if (isDamageDebuff || isCritDebuff) sc._entraveScore += 1;
     }
 
     function createEmptyProfile(voieId, voieNom, description, passiveDescription) {
@@ -90,7 +123,8 @@
             passiveDescription: passiveDescription || '',
             puissance: 0, force: 0, mana: 0, tank: 0, soutien: 0,
             _berserkScore: 0, _burnCount: 0, _poisonCount: 0, _critScore: 0,
-            _arcaneScore: 0, _tankScore: 0, _speedScore: 0, _erosionScore: 0, _healScore: 0
+            _arcaneScore: 0, _tankScore: 0, _speedScore: 0, _erosionScore: 0, _healScore: 0,
+            _entraveScore: 0, _protecteurScore: 0
         };
     }
 
