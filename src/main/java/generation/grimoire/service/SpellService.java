@@ -64,7 +64,7 @@ public class SpellService {
      */
     public void castSpell(Spell spell, Personnage caster, Personnage target, Integer choiceKey) {
         SpellCastingType[] cTypeOut = new SpellCastingType[1];
-        Spell toCast = prepareAndPayCosts(spell, caster, target, choiceKey, cTypeOut);
+        Spell toCast = prepareAndPayCosts(spell, caster, target, null, null, choiceKey, cTypeOut);
         if (toCast == null) return;
         SpellCastingType cType = cTypeOut[0];
 
@@ -91,7 +91,7 @@ public class SpellService {
                                Personnage ally, List<Personnage> allAllies,
                                List<Personnage> allEnemies, Integer choiceKey) {
         SpellCastingType[] cTypeOut = new SpellCastingType[1];
-        Spell toCast = prepareAndPayCosts(spell, caster, target, choiceKey, cTypeOut);
+        Spell toCast = prepareAndPayCosts(spell, caster, target, allAllies, allEnemies, choiceKey, cTypeOut);
         if (toCast == null) return;
         SpellCastingType cType = cTypeOut[0];
 
@@ -110,7 +110,9 @@ public class SpellService {
         passiveDispatcher.dispatch(caster, toCast, spellCastEvent);
     }
 
-    private Spell prepareAndPayCosts(Spell spell, Personnage caster, Personnage target, Integer choiceKey, SpellCastingType[] cTypeOut) {
+    private Spell prepareAndPayCosts(Spell spell, Personnage caster, Personnage target,
+                                    List<Personnage> allAllies, List<Personnage> allEnemies,
+                                    Integer choiceKey, SpellCastingType[] cTypeOut) {
         Spell toCast = selectVariant(spell, caster, target, choiceKey);
 
         String castError = caster.canCast(toCast);
@@ -127,7 +129,7 @@ public class SpellService {
         cType = castingEvent.getCurrentType();
 
         if (!canCastInternal(caster, target, toCast, cType)) return null;
-        if (!payCosts(caster, target, toCast, choiceKey)) return null;
+        if (!payCosts(caster, target, toCast, allAllies, allEnemies, choiceKey)) return null;
 
         cTypeOut[0] = cType;
         return toCast;
@@ -505,7 +507,9 @@ public class SpellService {
         return canCastEvent.isAllowed();
     }
 
-    private boolean payCosts(Personnage caster, Personnage target, Spell toCast, Integer choiceKey) {
+    private boolean payCosts(Personnage caster, Personnage target, Spell toCast,
+                             List<Personnage> allAllies, List<Personnage> allEnemies,
+                             Integer choiceKey) {
         int actualManaCost = toCast.getManaCost();
         if (toCast.getPercentManaCost() > 0) {
             double manaBase = StatCalculator.getSourceValue(
@@ -610,7 +614,7 @@ public class SpellService {
             log.debug("{} dépense {} pour lancer {}", caster.getName(), costMsg, toCast.getNom());
         }
 
-        SpellCostPaidEvent costPaidEvent = new SpellCostPaidEvent(caster, target, toCast, actualManaCost, actualHealCost, actualHeatCost);
+        SpellCostPaidEvent costPaidEvent = new SpellCostPaidEvent(caster, target, toCast, actualManaCost, actualHealCost, actualHeatCost, allAllies, allEnemies);
         passiveDispatcher.dispatch(caster, toCast, costPaidEvent);
         return true;
     }

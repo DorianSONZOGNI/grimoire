@@ -2692,10 +2692,11 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         if (c.passiveStates && c.passiveStates['surete_points'] !== undefined) {
             suretePoints = c.passiveStates['surete_points'];
         }
+        let dangerClass = suretePoints >= 100 ? ' passive-orb-pulse' : '';
         passiveOrbs.push({
             icon: 'security', color: '#14b8a6', value: `${suretePoints}`,
-            title: `Sûreté : ${suretePoints} pts`, dangerClass: '',
-            tooltip: `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#14b8a6;">🛡️ Points de Sûreté</div><div class="text-xs" style="color:#cbd5e1;">Stack actuel : ${suretePoints}</div>`
+            title: `Sûreté : ${suretePoints}/100`, dangerClass,
+            tooltip: `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#14b8a6;">🛡️ Points de Sûreté (Sûreté)</div><div class="text-xs" style="color:#cbd5e1;">${suretePoints}/100${suretePoints >= 100 ? ' — <span style="color:#14b8a6; font-weight:bold;">100 points atteints ! Bonus consommés au prochain sort.</span>' : ''}</div>`
         });
     }
 
