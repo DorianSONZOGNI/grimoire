@@ -16,17 +16,18 @@
     ];
 
     const SPEC_BADGES = [
-        { key: 'berserk',    label: 'Berserk',    icon: 'bloodtype',             cssClass: 'badge-berserk',    desc: 'Sorts basés sur les PV manquants',   score: s => s._berserkScore },
-        { key: 'brulant',    label: 'Brûlant',    icon: 'local_fire_department', cssClass: 'badge-brulant',    desc: 'Inflige des brûlures',              score: s => s._burnCount * 2 },
-        { key: 'toxique',    label: 'Toxique',    icon: 'skull',                 cssClass: 'badge-toxique',    desc: 'Inflige du poison',                 score: s => s._poisonCount * 2 },
-        { key: 'tactique',   label: 'Tactique',   icon: 'gps_fixed',             cssClass: 'badge-tactique',   desc: 'Exploite ou augmente le Critique',  score: s => (s._critScore >= 4 ? s._critScore : 0) },
-        { key: 'arcane',     label: 'Arcane',     icon: 'auto_awesome',          cssClass: 'badge-arcane',     desc: 'Capacité régénérative ou utilitaire lié au Mana',      score: s => s._arcaneScore },
-        { key: 'tank',       label: 'Tank',       icon: 'shield',                cssClass: 'badge-tank',       desc: 'Boucliers et armure/résistance sur soi',       score: s => s._tankScore },
-        { key: 'vif',        label: 'Vif',        icon: 'bolt',                  cssClass: 'badge-vif',        desc: 'Vitesse et vivacité',               score: s => s._speedScore },
-        { key: 'erosion',    label: 'Érosion',    icon: 'heart_minus',           cssClass: 'badge-erosion',    desc: 'Pénétration et casse-bouclier',     score: s => s._erosionScore },
-        { key: 'guerisseur', label: 'Guérisseur', icon: 'healing',               cssClass: 'badge-guerisseur', desc: 'Spécialiste du soin',        score: s => s._healScore },
-        { key: 'entrave',    label: 'Entrave',    icon: 'lock',                  cssClass: 'badge-entrave',    desc: 'Ralentit et affaiblit les ennemis', score: s => s._entraveScore },
-        { key: 'protecteur', label: 'Protecteur', icon: 'shield_person',         cssClass: 'badge-protecteur', desc: 'Boucliers conférés aux alliés',     score: s => s._protecteurScore }
+        { key: 'berserk',         label: 'Berserk',         icon: 'bloodtype',             cssClass: 'badge-berserk',         desc: 'Sorts basés sur les PV manquants',   score: s => s._berserkScore },
+        { key: 'puits_sans_fond', label: 'Puits sans fond', icon: 'cyclone',               cssClass: 'badge-puits-sans-fond', desc: 'Sorts basés sur le Mana manquant',  score: s => s._manaMissingScore },
+        { key: 'brulant',         label: 'Brûlant',         icon: 'local_fire_department', cssClass: 'badge-brulant',         desc: 'Inflige des brûlures',              score: s => s._burnCount * 2 },
+        { key: 'toxique',         label: 'Toxique',         icon: 'skull',                 cssClass: 'badge-toxique',         desc: 'Inflige du poison',                 score: s => s._poisonCount * 2 },
+        { key: 'tactique',        label: 'Tactique',        icon: 'gps_fixed',             cssClass: 'badge-tactique',        desc: 'Exploite ou augmente le Critique',  score: s => (s._critScore >= 4 ? s._critScore : 0) },
+        { key: 'arcane',          label: 'Arcane',          icon: 'auto_awesome',          cssClass: 'badge-arcane',          desc: 'Capacité régénérative ou utilitaire lié au Mana',      score: s => s._arcaneScore },
+        { key: 'tank',            label: 'Tank',            icon: 'shield',                cssClass: 'badge-tank',            desc: 'Boucliers et armure/résistance sur soi',       score: s => s._tankScore },
+        { key: 'vif',             label: 'Vif',             icon: 'bolt',                  cssClass: 'badge-vif',             desc: 'Vitesse et vivacité',               score: s => s._speedScore },
+        { key: 'erosion',         label: 'Érosion',         icon: 'heart_minus',           cssClass: 'badge-erosion',         desc: 'Pénétration et casse-bouclier',     score: s => s._erosionScore },
+        { key: 'guerisseur',      label: 'Guérisseur',      icon: 'healing',               cssClass: 'badge-guerisseur',      desc: 'Spécialiste du soin',        score: s => s._healScore },
+        { key: 'entrave',         label: 'Entrave',         icon: 'lock',                  cssClass: 'badge-entrave',         desc: 'Ralentit et affaiblit les ennemis', score: s => s._entraveScore },
+        { key: 'protecteur',      label: 'Protecteur',      icon: 'shield_person',         cssClass: 'badge-protecteur',      desc: 'Boucliers conférés aux alliés',     score: s => s._protecteurScore }
     ];
 
     // Cache des analyses par voieId
@@ -78,6 +79,9 @@
         // Berserk : sorts basés sur les PV manquants (dégâts, boucliers, soins, buffs de stats)
         if (allSources.includes('HEALTH_MISSING')) sc._berserkScore++;
 
+        // Puits sans fond : sorts basés sur le Mana manquant
+        if (allSources.includes('MANA_MISSING')) sc._manaMissingScore++;
+
         // Tactique : sort qui scale sur le Critique (CASTER_CRIT) ou buff crit positif sur soi/allié (pas de débuff sur cible ennemie)
         const isCritScale = allSources.includes('CRIT');
         const isCritBuff = type === 'BUFF_DEBUFF' && effect.statAffected === 'CRIT' && (isAlly || isSelf) && ((effect.modifier || 0) > 0 || (effect.flatValue || 0) > 0);
@@ -124,7 +128,7 @@
             description: description || '',
             passiveDescription: passiveDescription || '',
             puissance: 0, force: 0, mana: 0, tank: 0, soutien: 0,
-            _berserkScore: 0, _burnCount: 0, _poisonCount: 0, _critScore: 0,
+            _berserkScore: 0, _manaMissingScore: 0, _burnCount: 0, _poisonCount: 0, _critScore: 0,
             _arcaneScore: 0, _tankScore: 0, _speedScore: 0, _erosionScore: 0, _healScore: 0,
             _entraveScore: 0, _protecteurScore: 0
         };
