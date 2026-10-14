@@ -449,46 +449,43 @@
         renderBadges(badges, profile);
     };
 
-    window.openSpecModal = async function (voieId, heroName, voieNom, spiritId) {
+    window.openSpecModal = async function (arg1, heroName, voieNom, spiritId) {
         const overlay = document.getElementById('specModalOverlay');
         const titleEl = document.getElementById('specModalTitle');
         const canvas = document.getElementById('specModalCanvas');
         const badges = document.getElementById('specModalBadges');
-        const modalIconEl = document.getElementById('specModalVoieInfoIcon');
-        const modalSpiritIconEl = document.getElementById('specModalSpiritInfoIcon');
+        const badgesRow = document.getElementById('specModalAffiliationBadges');
         if (!overlay || !canvas || !badges) return;
 
+        // Récupérer le personnage si disponible
+        let perso = null;
+        if (window.pageState && window.pageState.personnages) {
+            perso = window.pageState.personnages.find(p => p.id == arg1 || p.name === arg1 || (heroName && p.name === heroName));
+        }
+
+        const displayName = (perso && perso.name) || heroName || (typeof arg1 === 'string' ? arg1 : 'Héros');
+        const effectiveVoieId = (perso && perso.voie) ? perso.voie.id : (typeof arg1 === 'number' && !perso ? arg1 : null);
+
         if (titleEl) {
-            titleEl.textContent = `Spécificités : ${heroName || 'Héros'}${voieNom ? ' (' + voieNom + ')' : ''}`;
+            titleEl.textContent = displayName;
+        }
+
+        if (badgesRow) {
+            badgesRow.innerHTML = '';
+            if (perso && typeof window.buildCharBadgesHtml === 'function') {
+                badgesRow.innerHTML = window.buildCharBadgesHtml(perso);
+            }
         }
 
         overlay.classList.add('active');
 
-        if (!voieId) {
-            if (modalIconEl) modalIconEl.classList.add('hidden');
-            if (modalSpiritIconEl) modalSpiritIconEl.classList.add('hidden');
+        if (!effectiveVoieId) {
             drawSpiderWeb(canvas, null);
             badges.innerHTML = '<span class="text-xs text-muted font-italic">Aucune voie affiliée.</span>';
             return;
         }
 
-        const profile = await getProfileForVoie(voieId);
-        if (modalIconEl && profile) {
-            populateVoieTooltip(modalIconEl, profile);
-        }
-
-        if (spiritId && modalSpiritIconEl) {
-            let s = findSpirit(spiritId);
-            if (!s && spiritualitesCache.length === 0) {
-                await loadAllVoieProfiles();
-                s = findSpirit(spiritId);
-            }
-            if (s) populateSpiritTooltip(modalSpiritIconEl, s);
-            else modalSpiritIconEl.classList.add('hidden');
-        } else if (modalSpiritIconEl) {
-            modalSpiritIconEl.classList.add('hidden');
-        }
-
+        const profile = await getProfileForVoie(effectiveVoieId);
         drawSpiderWeb(canvas, profile);
         renderBadges(badges, profile);
     };

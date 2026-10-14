@@ -406,6 +406,56 @@ function getSpiritColor(nom) {
     return '#a78bfa';
 }
 
+function buildCharBadgesHtml(p) {
+    if (!p) return '';
+    let badges = '';
+    if (p.voie) {
+        const vColor = getVoieColor(p.voie.nom);
+        const vFull = pageState.voies.find(v => v.id == p.voie.id) || p.voie;
+        const info = getVoieInfo(p.voie.nom);
+        badges += `<span class="char-badge" style="color: ${vColor}; border-color: ${vColor}40; background: ${vColor}15; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
+            <span class="material-symbols-outlined text-xs">route</span>
+            ${p.voie.nom}${p.voieLevel ? ' Lvl ' + p.voieLevel : ''}
+            <template class="tooltip-data">
+                <div class="text-sm font-medium mb-2 flex-center gap-1" style="color: ${info.color};">
+                    <span class="material-symbols-outlined text-lg">${info.icon}</span>
+                    ${vFull.nom}
+                </div>
+                <div class="text-xs text-slate-300 mb-2">${vFull.description || 'Description générique.'}</div>
+                <div class="flex-start-gap text-xs text-slate-200">
+                    <span class="material-symbols-outlined text-md" style="color: ${info.color};">bolt</span>
+                    <span class="font-italic whitespace-pre-wrap">${formatRichText(vFull.passiveDescription) || 'Passif spécifique.'}</span>
+                </div>
+            </template>
+        </span>`;
+    }
+    if (p.spiritualite) {
+        const sColor = getSpiritColor(p.spiritualite.nom);
+        const sFull = pageState.spiritualites.find(s => s.id == p.spiritualite.id) || p.spiritualite;
+        const info = getSpiritInfo(p.spiritualite.nom);
+        badges += `<span class="char-badge" style="color: ${sColor}; border-color: ${sColor}40; background: ${sColor}15; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
+            <span class="material-symbols-outlined text-xs">psychology</span>
+            ${p.spiritualite.nom}${p.spiritualiteLevel ? ' Lvl ' + p.spiritualiteLevel : ''}
+            <template class="tooltip-data">
+                <div class="text-sm font-medium mb-2 flex-center gap-1" style="color: ${info.color};">
+                    <span class="material-symbols-outlined text-lg">${info.icon}</span>
+                    ${sFull.nom}
+                </div>
+                <div class="text-xs text-slate-300 mb-2">${sFull.description || 'Description générique.'}</div>
+                <div class="flex-start-gap text-xs text-slate-200">
+                    <span class="material-symbols-outlined text-md" style="color: ${info.color};">bolt</span>
+                    <span class="font-italic whitespace-pre-wrap">${formatRichText(sFull.passiveDescription) || 'Passif spécifique.'}</span>
+                </div>
+            </template>
+        </span>`;
+    }
+    if (!p.voie && !p.spiritualite) {
+        badges = `<span class="font-italic text-muted text-xs">Aucune affiliation</span>`;
+    }
+    return badges;
+}
+window.buildCharBadgesHtml = buildCharBadgesHtml;
+
 function filterPersonnages() {
     renderPersonnages();
 }
@@ -454,50 +504,7 @@ function renderPersonnages() {
     }
 
     container.innerHTML = filtered.map(p => {
-        let badges = '';
-        if (p.voie) {
-            const vColor = getVoieColor(p.voie.nom);
-            const vFull = pageState.voies.find(v => v.id == p.voie.id) || p.voie;
-            const info = getVoieInfo(p.voie.nom);
-            badges += `<span class="char-badge" style="color: ${vColor}; border-color: ${vColor}40; background: ${vColor}15; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
-                <span class="material-symbols-outlined text-xs">route</span>
-                ${p.voie.nom} Lvl ${p.voieLevel}
-                <template class="tooltip-data">
-                    <div class="text-sm font-medium mb-2 flex-center gap-1" style="color: ${info.color};">
-                        <span class="material-symbols-outlined text-lg">${info.icon}</span>
-                        ${vFull.nom}
-                    </div>
-                    <div class="text-xs text-slate-300 mb-2">${vFull.description || 'Description générique.'}</div>
-                    <div class="flex-start-gap text-xs text-slate-200">
-                        <span class="material-symbols-outlined text-md" style="color: ${info.color};">bolt</span>
-                        <span class="font-italic whitespace-pre-wrap">${formatRichText(vFull.passiveDescription) || 'Passif spécifique.'}</span>
-                    </div>
-                </template>
-            </span>`;
-        }
-        if (p.spiritualite) {
-            const sColor = getSpiritColor(p.spiritualite.nom);
-            const sFull = pageState.spiritualites.find(s => s.id == p.spiritualite.id) || p.spiritualite;
-            const info = getSpiritInfo(p.spiritualite.nom);
-            badges += `<span class="char-badge" style="color: ${sColor}; border-color: ${sColor}40; background: ${sColor}15; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
-                <span class="material-symbols-outlined text-xs">psychology</span>
-                ${p.spiritualite.nom} Lvl ${p.spiritualiteLevel}
-                <template class="tooltip-data">
-                    <div class="text-sm font-medium mb-2 flex-center gap-1" style="color: ${info.color};">
-                        <span class="material-symbols-outlined text-lg">${info.icon}</span>
-                        ${sFull.nom}
-                    </div>
-                    <div class="text-xs text-slate-300 mb-2">${sFull.description || 'Description générique.'}</div>
-                    <div class="flex-start-gap text-xs text-slate-200">
-                        <span class="material-symbols-outlined text-md" style="color: ${info.color};">bolt</span>
-                        <span class="font-italic whitespace-pre-wrap">${formatRichText(sFull.passiveDescription) || 'Passif spécifique.'}</span>
-                    </div>
-                </template>
-            </span>`;
-        }
-        if (!p.voie && !p.spiritualite) {
-            badges = `<span class="font-italic text-muted text-xs">Aucune affiliation</span>`;
-        }
+        let badges = buildCharBadgesHtml(p);
 
         // Equipment summary
         const persoEquips = pageState.allEquipments.filter(e => e.personnage && e.personnage.id === p.id);
@@ -583,7 +590,7 @@ function renderPersonnages() {
                         <button class="char-btn-equip" onclick="openEquipModal(${p.id})" title="Gérer l'équipement">
                             <span class="material-symbols-outlined text-md">shield</span> Équiper
                         </button>
-                        <button class="char-btn-spec" onclick="openSpecModal(${p.voie ? p.voie.id : 'null'}, '${p.name.replace(/'/g, "\\'")}', '${p.voie ? p.voie.nom.replace(/'/g, "\\'") : ''}', ${p.spiritualite ? p.spiritualite.id : 'null'})" title="Profil de voie & spécificités">
+                        <button class="char-btn-spec" onclick="openSpecModal(${p.id})" title="Profil de voie & spécificités">
                             <span class="material-symbols-outlined text-md">hub</span> Profil
                         </button>
                         ${window.isAdmin ? `
