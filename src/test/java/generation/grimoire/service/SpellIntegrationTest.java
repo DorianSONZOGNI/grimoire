@@ -172,20 +172,36 @@ class SpellIntegrationTest {
         safeSpell.setManaCost(143);
         safeSpell.setVoie(voieSurete);
 
-        // Lance le sort 2 fois (2 * 50 points = 100 points -> déclenche le buff crit)
-        for (int i = 0; i < 2; i++) {
-            hero.startTurn();
-            spellService.castSpell(safeSpell, hero, enemy, null);
-        }
+        generation.grimoire.entity.spell.type.effect.DamageFixedEffect dmg = new generation.grimoire.entity.spell.type.effect.DamageFixedEffect();
+        dmg.setEffectTarget(generation.grimoire.enumeration.EffectTarget.TARGET);
+        dmg.setDamageType(generation.grimoire.enumeration.DamageType.MAGIC);
+        dmg.setDamage(50);
+        safeSpell.getEffects().add(dmg);
 
-        // Vérifications
-        assertThat(hero.getManaCurrent()).isEqualTo(500 - (2 * 143)); // 214
-        assertThat(hero.getPassiveState("surete_points", -1)).isEqualTo(0); // 2 casts of 50 = 100, buff triggers, 0 left
+        // Tour 1: +10 pts tour + 50 pts sort = 60 pts
+        spellService.startTurn(hero);
+        spellService.castSpell(safeSpell, hero, enemy, null);
+        assertThat(hero.getPassiveState("surete_points", -1)).isEqualTo(60);
+        assertThat(enemy.getActiveBuffs()).isEmpty();
 
-        // Un buff de critique a dû être appliqué (pour le tour suivant)
-        assertThat(hero.getActiveBuffs()).hasSize(2);
-        assertThat(hero.getActiveBuffs().get(0).getStatAffected()).isEqualTo(StatType.CRIT);
-        assertThat(hero.getActiveBuffs().get(0).getFlatValue()).isEqualTo(15);
+        // Tour 2: 60 + 10 pts tour + 50 pts sort = 100 pts (max)
+        spellService.startTurn(hero);
+        spellService.castSpell(safeSpell, hero, enemy, null);
+        assertThat(hero.getPassiveState("surete_points", -1)).isEqualTo(100);
+        assertThat(enemy.getActiveBuffs()).isEmpty();
+
+        // Tour 3: Le héros a 100 points !
+        // Le prochain sort consomme les 100 points et applique les débuffs sur l'ennemi (+20% mag/phys)
+        spellService.startTurn(hero);
+        spellService.castSpell(safeSpell, hero, enemy, null);
+
+        // 100 consommés + 50 pts gagnés de ce sort = 50 pts
+        assertThat(hero.getPassiveState("surete_points", -1)).isEqualTo(50);
+
+        // L'ennemi a reçu les 2 débuffs de dégâts subis (2 tours)
+        assertThat(enemy.getActiveBuffs()).hasSize(2);
+        assertThat(enemy.getActiveBuffs().stream().anyMatch(b -> b.getStatAffected() == StatType.DAMAGE_TAKEN_MAGIC && b.getModifier() == 0.20)).isTrue();
+        assertThat(enemy.getActiveBuffs().stream().anyMatch(b -> b.getStatAffected() == StatType.DAMAGE_TAKEN_PHYSIC && b.getModifier() == 0.20)).isTrue();
     }
 
     @Test
