@@ -10,7 +10,6 @@
     const SPIDER_AXES = [
         { key: 'puissance', label: 'Puissance', color: '#a855f7' },
         { key: 'force',     label: 'Force',     color: '#ef4444' },
-        { key: 'pv',        label: 'PV',        color: '#ec4899' },
         { key: 'mana',      label: 'Mana',      color: '#38bdf8' },
         { key: 'tank',      label: 'Tank',      color: '#60a5fa' },
         { key: 'soutien',   label: 'Soutien',   color: '#34d399' }
@@ -32,7 +31,7 @@
     // Cache des analyses par voieId
     const voieProfiles = {};
     const globalAxisMax = {
-        puissance: 1, force: 1, pv: 1, mana: 1, tank: 1, soutien: 1
+        puissance: 1, force: 1, mana: 1, tank: 1, soutien: 1
     };
     let isInitialized = false;
 
@@ -52,24 +51,19 @@
         if (src.includes('PHYSICAL_POWER')) sc.force += (effect.ratio || 1);
         if (type === 'BUFF_DEBUFF' && effect.statAffected === 'STRENGTH') sc.force += 0.5;
 
-        // 3. PV: heal, hot, buff PV, ratio PV
-        const isHeal = ['FIXED_HEAL', 'PERCENTAGE_HEAL', 'HOT'].includes(type);
-        const isHpBD = type === 'BUFF_DEBUFF' && effect.statAffected === 'HEALTH';
-        if (isHeal || isHpBD) sc.pv += 1;
-        if (src.includes('HEALTH')) sc.pv += (effect.ratio || 1);
-
-        // 4. Mana: gain mana, mot, buff mana, ratio Mana
+        // 3. Mana: gain mana, mot, buff mana, ratio Mana
         const isMana = ['FIXED_MANA', 'PERCENTAGE_MANA', 'MOT'].includes(type);
         const isManaBD = type === 'BUFF_DEBUFF' && effect.statAffected === 'MANA';
         if (isMana || isManaBD) sc.mana += 1;
         if (src.includes('MANA')) sc.mana += (effect.ratio || 1);
 
-        // 5. Tank: bouclier, buff armure/résistance
+        // 4. Tank: bouclier, buff armure/résistance
         const isShield = type === 'SHIELD';
         const isArmorBD = type === 'BUFF_DEBUFF' && ['ARMURE', 'RESISTANCE', 'ARMOR', 'RESIST'].some(s => (effect.statAffected || '').includes(s));
         if (isShield || isArmorBD) sc.tank += 1;
 
-        // 6. Soutien: buff allié, débuff ennemi, et soins/mana support
+        // 5. Soutien: buff allié, débuff ennemi, et soins/mana support
+        const isHeal = ['FIXED_HEAL', 'PERCENTAGE_HEAL', 'HOT'].includes(type);
         const isBufPos = type === 'BUFF_DEBUFF' && (effect.flatValue > 0 || effect.modifier > 0);
         const isDebufNeg = type === 'BUFF_DEBUFF' && (effect.flatValue < 0 || effect.modifier < 0);
         if (isAlly && !isSelf && (isBufPos || isShield || isHeal || isMana)) sc.soutien += 1;
@@ -94,7 +88,7 @@
         return {
             id: voieId,
             nom: voieNom || '',
-            puissance: 0, force: 0, pv: 0, mana: 0, tank: 0, soutien: 0,
+            puissance: 0, force: 0, mana: 0, tank: 0, soutien: 0,
             _berserkScore: 0, _burnCount: 0, _poisonCount: 0, _critScore: 0,
             _fixedDmgScore: 0, _arcaneScore: 0, _tankScore: 0,
             _speedScore: 0, _erosionScore: 0, _healScore: 0
