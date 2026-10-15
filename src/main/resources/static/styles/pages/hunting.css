@@ -403,3 +403,64 @@
 .btn-dungeon-access .material-symbols-outlined {
     font-size: 1.15rem;
 }
+
+.btn-dungeon-access.locked {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #64748b;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.btn-dungeon-access.locked:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #94a3b8;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Locked state when secret is missing */
+.quest-card.secret-locked {
+    border-color: rgba(239, 68, 68, 0.25);
+}
+
+.quest-dungeon-info.secret-locked .quest-dungeon-name {
+    color: #94a3b8;
+}
+
+.quest-dungeon-info.secret-locked .quest-reward-box {
+    opacity: 0.65;
+    filter: grayscale(0.4);
+}
+
+.quest-lock-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.quest-lock-banner .material-symbols-outlined {
+    font-size: 1.15rem;
+    color: #ef4444;
+}
+
+.quest-meta-tag.secret-tag.locked {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.35);
+    color: #f87171;
+}
+
+.quest-meta-tag.secret-tag.unlocked {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.35);
+    color: #34d399;
+}
