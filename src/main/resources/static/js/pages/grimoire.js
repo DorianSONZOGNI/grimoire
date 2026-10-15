@@ -387,7 +387,7 @@ export function getSpellEffectsSummaryHtml(sp) {
                         detailsStr = `➔ rend ${pct}% de ${ui.formatSrc(e.healSource || e.source)} en PV`;
                     }
                 } else if (t === 'AME_DETACHEE') {
-                    detailsStr = `➔ +5 Dégâts Phys. et +40% Dégâts Phys. (2 tours)`;
+                    detailsStr = `➔ +5 Dégâts Phys. et +30% Dégâts Phys. (3 tours)`;
                 } else if (t === 'BuffDebuff' || t === 'BUFF_DEBUFF' || t === 'POISON' || t === 'BURN') {
                     let parts = [];
                     if (e.flatValue) {
