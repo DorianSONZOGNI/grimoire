@@ -138,7 +138,7 @@ class AlchemyServiceTest {
             alchemyService.craftRecipe("testuser", 1L, 1L, new ArrayList<>(), new ArrayList<>());
         });
 
-        assertEquals("ExpÃ©rience de spiritualitÃ© insuffisante pour ce personnage.", exception.getMessage());
+        assertEquals("Expérience de spiritualité insuffisante pour ce personnage.", exception.getMessage());
     }
 
     @Test
@@ -175,7 +175,7 @@ class AlchemyServiceTest {
             alchemyService.craftRecipe("testuser", 1L, 1L, List.of(1L), new ArrayList<>());
         });
 
-        assertTrue(exception.getMessage().contains("Veuillez sÃ©lectionner"));
+        assertTrue(exception.getMessage().contains("Veuillez sélectionner"));
     }
 
     @Test
@@ -192,7 +192,7 @@ class AlchemyServiceTest {
 
         assertEquals(1, user.getUnlockedSecrets().get("Secret_A"));
         verify(userRepository, atLeastOnce()).save(Objects.requireNonNull(user));
-        assertTrue(result.contains("Vous avez dÃ©bloquÃ© le secret"));
+        assertTrue(result.contains("Vous avez débloqué le secret"));
     }
 
     @Test
@@ -209,7 +209,7 @@ class AlchemyServiceTest {
             alchemyService.craftRecipe("testuser", 1L, 1L, new ArrayList<>(), new ArrayList<>());
         });
 
-        assertEquals("Vous possÃ©dez dÃ©jÃ  ce niveau de secret.", exception.getMessage());
+        assertEquals("Vous possédez déjà ce niveau de secret.", exception.getMessage());
     }
 
     @Test
@@ -226,7 +226,7 @@ class AlchemyServiceTest {
             alchemyService.craftRecipe("testuser", 1L, 1L, new ArrayList<>(), new ArrayList<>());
         });
 
-        assertEquals("Vous devez d'abord dÃ©bloquer le niveau prÃ©cÃ©dent de ce secret.", exception.getMessage());
+        assertEquals("Vous devez d'abord débloquer le niveau précédent de ce secret.", exception.getMessage());
     }
 
     @Test
@@ -265,7 +265,7 @@ class AlchemyServiceTest {
             alchemyService.craftRecipe("testuser", 1L, 1L, new ArrayList<>(), List.of(10L));
         });
 
-        assertTrue(exception.getMessage().contains("Veuillez sÃ©lectionner"));
+        assertTrue(exception.getMessage().contains("Veuillez sélectionner"));
     }
 
     @Test
@@ -311,18 +311,18 @@ class AlchemyServiceTest {
     @SuppressWarnings({ "null" })
     void giveReward_giveEquipment() {
         recipe.setRewardType(RecipeRewardType.GIVE_EQUIPMENT);
-        recipe.setRewardName("EpÃ©e");
+        recipe.setRewardName("Épée");
         recipe.setRewardQuantity(1);
 
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
         when(recipeRepository.findById(1L)).thenReturn(Optional.of(recipe));
         when(personnageRepository.findById(1L)).thenReturn(Optional.of(personnage));
-        when(equipmentRepository.findFirstByNameAndIsTemplateTrueOrderByIdAsc("EpÃ©e")).thenReturn(null);
+        when(equipmentRepository.findFirstByNameAndIsTemplateTrueOrderByIdAsc("Épée")).thenReturn(null);
 
         String result = alchemyService.craftRecipe("testuser", 1L, 1L, new ArrayList<>(), new ArrayList<>());
 
         verify(equipmentRepository, times(1)).save(any(generation.grimoire.entity.Equipment.class));
-        assertTrue(result.contains("Vous avez obtenu 1x Ã‰quipement : EpÃ©e"));
+        assertTrue(result.contains("Vous avez obtenu 1x Équipement : Épée"));
     }
 
     @Test
@@ -340,7 +340,7 @@ class AlchemyServiceTest {
         String result = alchemyService.craftRecipe("testuser", 1L, 1L, new ArrayList<>(), new ArrayList<>());
 
         verify(anomalieRepository, times(1)).save(any(Anomalie.class));
-        assertTrue(result.contains("Vous avez amÃ©liorÃ© une anomalie en : Anomalie Magique (Niv. 2)"));
+        assertTrue(result.contains("Vous avez amélioré une anomalie en : Anomalie Magique (Niv. 2)"));
     }
 
     @Test
@@ -357,7 +357,7 @@ class AlchemyServiceTest {
 
         assertEquals(145, personnage.getSpiritualiteExperience()); // 50 (initial) - 5 (cost) + 100
         verify(personnageRepository, times(2)).save(any(Personnage.class));
-        assertTrue(result.contains("a gagnÃ© 100 XP de SpiritualitÃ©"));
+        assertTrue(result.contains("a gagné 100 XP de Spiritualité"));
     }
 
     @Test
