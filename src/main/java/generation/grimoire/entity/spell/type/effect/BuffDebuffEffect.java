@@ -77,13 +77,13 @@ return clone;
                 .filter(b -> b.getStatAffected() == StatType.AME_DETACHEE)
                 .findFirst();
             if (existing.isPresent()) {
-                existing.get().setDuration(2);
-                System.out.println(target.getName() + " réinitialise son Âme Détachée à 2 tours.");
+                existing.get().setDuration(3);
+                System.out.println(target.getName() + " réinitialise son Âme Détachée à 3 tours.");
             } else {
                 BuffDebuffEffect clone = this.cloneEffect();
-                clone.setDuration(2);
-        target.getActiveBuffs().add(clone);
-                System.out.println(target.getName() + " reçoit l'état Âme Détachée pour 2 tours.");
+                clone.setDuration(3);
+                target.getActiveBuffs().add(clone);
+                System.out.println(target.getName() + " reçoit l'état Âme Détachée pour 3 tours.");
             }
             return;
         }

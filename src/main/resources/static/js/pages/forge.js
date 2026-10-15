@@ -336,8 +336,8 @@ export function addEffectPanel(type) {
         manaAmount: 20,
         percentage: 0.10,
         flatValue: type === 'BUD' ? 1 : (type === 'AME_DETACHEE' ? 5 : 5),
-        modifier: type === 'AME_DETACHEE' ? 0.40 : 0.20,
-        duration: 2,
+        modifier: type === 'AME_DETACHEE' ? 0.30 : 0.20,
+        duration: type === 'AME_DETACHEE' ? 3 : 2,
         damageType: 'MAGIC',
         statAffected: stat,
         source: (type === 'BUFF_DEBUFF' || type === 'AME_DETACHEE') ? null : 'TARGET_HEALTH_MAX',
@@ -752,7 +752,7 @@ export function renderEffects() {
         } else if (eff.effectType === 'AME_DETACHEE') {
             fieldsHtml = `
                         <div class="p-2 bg-rose-500/10 border-l-[3px] border-rose-500 rounded text-sm text-rose-300">
-                            ✨ Confère au lanceur +5 Dégâts Physiques et +40% de Dégâts Physiques supplémentaires pendant 2 tours.
+                            ✨ Confère au lanceur +5 Dégâts Physiques et +30% de Dégâts Physiques supplémentaires pendant 3 tours.
                         </div>
                     `;
         }

@@ -59,9 +59,9 @@ public class ViolencePassiveEffect extends VoiePassiveEffect {
         if (spell.getCategory() == SpellCategory.INSPIRATION) {
             // Swap check: Consuming Expiration stacks
             if (expirationCount >= 4 && expirationCount <= 6) {
-                applyBuff(personnage, StatType.STRENGTH, 0.30, 0, 2);
+                applyBuff(personnage, StatType.STRENGTH, 0.30, 0, 3);
             } else if (expirationCount >= 7) {
-                applyBuff(personnage, StatType.STRENGTH, 0.60, 0, 2);
+                applyBuff(personnage, StatType.STRENGTH, 0.60, 0, 3);
             }
 
             personnage.setPassiveState(STATE_EXPIRATION, 0); // Reset Expiration
@@ -79,9 +79,9 @@ public class ViolencePassiveEffect extends VoiePassiveEffect {
         } else if (spell.getCategory() == SpellCategory.EXPIRATION) {
             // Swap check: Consuming Inspiration stacks
             if (inspirationCount >= 4 && inspirationCount <= 6) {
-                applyBuff(personnage, StatType.CRIT, 1.0, 0, 2);
+                applyBuff(personnage, StatType.CRIT, 1.0, 0, 3);
             } else if (inspirationCount >= 7) {
-                applyBuff(personnage, StatType.CRIT, 2.0, 0, 2);
+                applyBuff(personnage, StatType.CRIT, 2.0, 0, 3);
             }
 
             personnage.setPassiveState(STATE_INSPIRATION, 0); // Reset Inspiration

@@ -572,7 +572,7 @@ public class PersonnageCombatHelper {
         if (statType == StatType.DAMAGE_GIVEN_PHYSIC) {
             boolean hasAmeDetachee = p.getActiveBuffs().stream().anyMatch(b -> b.getStatAffected() == StatType.AME_DETACHEE);
             if (hasAmeDetachee) {
-                positiveModifier += 0.40;
+                positiveModifier += 0.30;
             }
         }
         return (1.0 + positiveModifier) * negativeMultiplier;

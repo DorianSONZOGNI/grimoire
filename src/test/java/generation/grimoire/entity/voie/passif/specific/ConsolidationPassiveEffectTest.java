@@ -28,6 +28,27 @@ class ConsolidationPassiveEffectTest {
         
         assertThat(hero.getHealthCurrent()).isEqualTo(45); // 50 - 5
         assertThat(hero.getTotalShield()).isEqualTo(5); // 10% de 50
+        assertThat(hero.getActiveShields()).hasSize(1);
+        assertThat(hero.getActiveShields().get(0).getDuration()).isEqualTo(2);
+    }
+
+    @Test
+    void shieldShouldLastTwoTurns() {
+        hero.setHealthMax(100);
+        hero.setHealthCurrent(50);
+        
+        passive.onTurnStart(hero);
+        assertThat(hero.getTotalShield()).isEqualTo(5);
+        
+        // Fin tour 1
+        hero.updateShields();
+        assertThat(hero.getTotalShield()).isEqualTo(5);
+        assertThat(hero.getActiveShields().get(0).getDuration()).isEqualTo(1);
+        
+        // Fin tour 2
+        hero.updateShields();
+        assertThat(hero.getTotalShield()).isEqualTo(0);
+        assertThat(hero.getActiveShields()).isEmpty();
     }
 
     @Test

@@ -51,7 +51,7 @@ class ViolencePassiveEffectTest {
         // Expiration reset
         assertThat(hero.getPassiveState("violence_expiration", -1)).isEqualTo(0);
         // Should have a STRENGTH buff
-        assertThat(hero.getActiveBuffs()).anyMatch(b -> b.getStatAffected() == generation.grimoire.enumeration.StatType.STRENGTH);
+        assertThat(hero.getActiveBuffs()).anyMatch(b -> b.getStatAffected() == generation.grimoire.enumeration.StatType.STRENGTH && b.getDuration() == 3);
     }
 
     @Test
@@ -65,8 +65,8 @@ class ViolencePassiveEffectTest {
         assertThat(hero.getPassiveState("violence_expiration", 0)).isEqualTo(1);
         // Inspiration reset
         assertThat(hero.getPassiveState("violence_inspiration", -1)).isEqualTo(0);
-        // Should have a CRIT buff of +200%
-        assertThat(hero.getActiveBuffs()).anyMatch(b -> b.getStatAffected() == generation.grimoire.enumeration.StatType.CRIT && b.getModifier() == 2.0);
+        // Should have a CRIT buff of +200% with duration 3
+        assertThat(hero.getActiveBuffs()).anyMatch(b -> b.getStatAffected() == generation.grimoire.enumeration.StatType.CRIT && b.getModifier() == 2.0 && b.getDuration() == 3);
     }
 
     @Test

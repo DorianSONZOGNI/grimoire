@@ -2822,7 +2822,7 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         passiveOrbs.push({
             icon: 'hand_bones', color: '#fda4af', value: `${turns}`,
             title: `Âme Détachée : ${turns} tour(s)`, dangerClass: '',
-            tooltip: `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#fda4af;">💀 Âme Détachée</div><div class="text-xs" style="color:#cbd5e1;">+5 Dégâts Phys. et +40% Dégâts Phys.<br/>Reste ${turns} tour(s)</div>`
+            tooltip: `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#fda4af;">💀 Âme Détachée</div><div class="text-xs" style="color:#cbd5e1;">+5 Dégâts Phys. et +30% Dégâts Phys.<br/>Reste ${turns} tour(s)</div>`
         });
     }
 
@@ -3392,7 +3392,7 @@ export function renderBuffsHtml(c, buffList, motList, hotList) {
 
                     if (b.statAffected === 'DAMAGE_GIVEN_PHYSIC') {
                         if (allBuffs.some(ab => ab.statAffected === 'AME_DETACHEE')) {
-                            runPos += 0.40;
+                            runPos += 0.30;
                         }
                     }
 

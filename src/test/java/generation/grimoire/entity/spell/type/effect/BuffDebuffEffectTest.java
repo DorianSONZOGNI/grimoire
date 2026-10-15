@@ -165,7 +165,9 @@ class BuffDebuffEffectTest {
         assertEquals(1, target.getActiveBuffs().size());
         BuffDebuffEffect ame = target.getActiveBuffs().get(0);
         assertEquals(StatType.AME_DETACHEE, ame.getStatAffected());
-        assertEquals(2, ame.getDuration(), "Ame Detachee duration is strictly 2");
+        assertEquals(3, ame.getDuration(), "Ame Detachee duration is strictly 3");
+        assertEquals(1.30, target.getStatBuffMultiplier(StatType.DAMAGE_GIVEN_PHYSIC), 0.001);
+        assertEquals(5, target.getStatFlatBonus(StatType.DAMAGE_GIVEN_PHYSIC));
 
         // Simulate duration passing
         ame.setDuration(1);
@@ -174,7 +176,7 @@ class BuffDebuffEffectTest {
         effect.apply(caster, target);
 
         assertEquals(1, target.getActiveBuffs().size(), "Doit réinitialiser sans dupliquer");
-        assertEquals(2, ame.getDuration(), "La durée doit avoir été réinitialisée à 2");
+        assertEquals(3, ame.getDuration(), "La durée doit avoir été réinitialisée à 3");
     }
 
     @Test
