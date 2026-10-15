@@ -692,4 +692,212 @@ class PersonnageTest {
         
         assertThat(hero.hasDebuff()).isFalse();
     }
+
+    @Test
+    void shouldLevelUpVoieAndApplyStats() {
+        Voie conviction = new Voie();
+        conviction.setNom("Voie de la Conviction");
+        hero.setVoie(conviction);
+        hero.setExperience(150); // Level 2 (100 xp threshold)
+
+        assertThat(hero.getVoieLevel()).isEqualTo(2);
+        assertThat(hero.getPower()).isEqualTo(21); // 20 + 1
+        assertThat(hero.getResistance()).isEqualTo(52); // 50 + 2
+        assertThat(hero.getHealthMax()).isEqualTo(107); // 100 + 7
+        assertThat(hero.getRegenMana()).isEqualTo(4); // 0 + 4
+    }
+
+    @Test
+    void shouldApplyStatsForOtherVoiesOnLevelUp() {
+        // Raison
+        Personnage pRaison = new Personnage();
+        Voie raison = new Voie();
+        raison.setNom("Voie de la Raison");
+        pRaison.setVoie(raison);
+        pRaison.setExperience(100);
+        assertThat(pRaison.getSpeed()).isEqualTo(1);
+
+        // Violence
+        Personnage pViolence = new Personnage();
+        Voie violence = new Voie();
+        violence.setNom("Voie de la Violence");
+        pViolence.setVoie(violence);
+        pViolence.setExperience(100);
+        assertThat(pViolence.getPower()).isEqualTo(1);
+        assertThat(pViolence.getStrength()).isEqualTo(1);
+
+        // Création
+        Personnage pCreation = new Personnage();
+        Voie creation = new Voie();
+        creation.setNom("Voie de la Création");
+        pCreation.setVoie(creation);
+        pCreation.setExperience(100);
+        assertThat(pCreation.getRegenHp()).isEqualTo(2);
+        assertThat(pCreation.getArmor()).isEqualTo(1);
+
+        // Trahison
+        Personnage pTrahison = new Personnage();
+        Voie trahison = new Voie();
+        trahison.setNom("Voie de la Trahison");
+        pTrahison.setVoie(trahison);
+        pTrahison.setExperience(100);
+        assertThat(pTrahison.getCrit()).isEqualTo(2);
+        assertThat(pTrahison.getSpeed()).isEqualTo(1);
+
+        // Consolidation
+        Personnage pConso = new Personnage();
+        Voie conso = new Voie();
+        conso.setNom("Voie de la Consolidation");
+        pConso.setVoie(conso);
+        pConso.setExperience(100);
+        assertThat(pConso.getArmor()).isEqualTo(2);
+        assertThat(pConso.getResistance()).isEqualTo(2);
+
+        // Destruction
+        Personnage pDestruct = new Personnage();
+        Voie destruct = new Voie();
+        destruct.setNom("Voie de la Destruction");
+        pDestruct.setVoie(destruct);
+        pDestruct.setExperience(100);
+        assertThat(pDestruct.getPower()).isEqualTo(2);
+        assertThat(pDestruct.getRegenMana()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldLevelUpSpiritualiteAndApplyStats() {
+        Spiritualite tenebre = new Spiritualite();
+        tenebre.setNom("Spiritualité des Ténèbres");
+        hero.setSpiritualite(tenebre);
+        hero.setSpiritualiteExperience(120); // Level 2 (100 xp threshold)
+
+        assertThat(hero.getSpiritualiteLevel()).isEqualTo(2);
+        assertThat(hero.getBaseHealthMax()).isEqualTo(105); // 100 + 5
+        assertThat(hero.getBaseManaMax()).isEqualTo(5); // 0 + 5
+
+        // Esprit
+        Personnage pEsprit = new Personnage();
+        Spiritualite esprit = new Spiritualite();
+        esprit.setNom("Spiritualité de l'Esprit");
+        pEsprit.setSpiritualite(esprit);
+        pEsprit.setSpiritualiteExperience(100);
+        assertThat(pEsprit.getArmor()).isEqualTo(2);
+        assertThat(pEsprit.getResistance()).isEqualTo(2);
+
+        // Karma
+        Personnage pKarma = new Personnage();
+        Spiritualite karma = new Spiritualite();
+        karma.setNom("Spiritualité du Karma");
+        pKarma.setSpiritualite(karma);
+        pKarma.setSpiritualiteExperience(100);
+        assertThat(pKarma.getPower()).isEqualTo(1);
+        assertThat(pKarma.getStrength()).isEqualTo(1);
+    }
+
+    @Test
+    void shouldManageSpecialItems() {
+        assertThat(hero.getSpecialItemQuantity("Crystal")).isEqualTo(0);
+
+        hero.addSpecialItem("Crystal", 5);
+        assertThat(hero.getSpecialItemQuantity("Crystal")).isEqualTo(5);
+
+        hero.removeSpecialItem("Crystal", 2);
+        assertThat(hero.getSpecialItemQuantity("Crystal")).isEqualTo(3);
+
+        hero.removeSpecialItem("Crystal", 10); // More than available
+        assertThat(hero.getSpecialItemQuantity("Crystal")).isEqualTo(0);
+    }
+
+    @Test
+    void shouldRestoreManaAndClampCorrectly() {
+        hero.setManaMax(100);
+        hero.setManaCurrent(50);
+
+        hero.restoreMana(30);
+        assertThat(hero.getManaCurrent()).isEqualTo(80);
+
+        hero.restoreMana(50); // Exceeds max 100
+        assertThat(hero.getManaCurrent()).isEqualTo(100);
+    }
+
+    @Test
+    void shouldResetCombatStateAndCancelChanneling() {
+        hero.addShield(50, 2, "Shield");
+        hero.setRemainingChannelingTurns(3);
+        hero.setInstantSpellCastThisTurn(true);
+        hero.setBanalSpellCastThisTurn(true);
+
+        hero.resetCombatState();
+
+        assertThat(hero.getTotalShield()).isEqualTo(0);
+        assertThat(hero.getRemainingChannelingTurns()).isEqualTo(0);
+        assertThat(hero.isInstantSpellCastThisTurn()).isFalse();
+        assertThat(hero.isBanalSpellCastThisTurn()).isFalse();
+    }
+
+    @Test
+    void shouldValidateCanCastRules() {
+        Voie raison = new Voie();
+        raison.setId(1L);
+        raison.setNom("Raison");
+        hero.setVoie(raison);
+        hero.setVoieLevel(2);
+
+        Spiritualite esprit = new Spiritualite();
+        esprit.setId(2L);
+        esprit.setNom("Esprit");
+        hero.setSpiritualite(esprit);
+        hero.setSpiritualiteLevel(1);
+
+        // Valid Voie spell
+        Spell spellRaison = new Spell();
+        spellRaison.setNom("Bouclier Mental");
+        spellRaison.setVoie(raison);
+        spellRaison.setNiveau(2);
+        assertThat(hero.canCast(spellRaison)).isNull();
+
+        // Voie level too high
+        spellRaison.setNiveau(3);
+        assertThat(hero.canCast(spellRaison)).contains("a besoin de Raison niveau 3");
+
+        // Wrong Voie
+        Voie violence = new Voie();
+        violence.setId(99L);
+        violence.setNom("Violence");
+        Spell spellViolence = new Spell();
+        spellViolence.setNom("Frappe");
+        spellViolence.setVoie(violence);
+        spellViolence.setNiveau(1);
+        assertThat(hero.canCast(spellViolence)).contains("n'a pas la Violence requise");
+
+        // Generic spell blocked when hero has affinity
+        Spell spellGeneric = new Spell();
+        spellGeneric.setNom("Sort Neutre");
+        assertThat(hero.canCast(spellGeneric)).contains("ne peut pas lancer de sorts génériques sans affinité");
+
+        // Basic attack allowed even with affinity
+        Spell spellBase = new Spell();
+        spellBase.setNom("Attaque de base");
+        assertThat(hero.canCast(spellBase)).isNull();
+
+        // Mutation spell allowed even with affinity
+        Spell spellMutation = new Spell();
+        spellMutation.setNom("Griffes");
+        spellMutation.setMutation(new generation.grimoire.entity.pve.Mutation());
+        assertThat(hero.canCast(spellMutation)).isNull();
+    }
+
+    @Test
+    void shouldReturnOwnerUsernameAndGold() {
+        assertThat(hero.getOwnerUsername()).isNull();
+        assertThat(hero.getGold()).isEqualTo(0);
+
+        generation.grimoire.entity.auth.AppUser user = new generation.grimoire.entity.auth.AppUser();
+        user.setUsername("heroMaster");
+        user.setMonnaie(500.0);
+        hero.setUser(user);
+
+        assertThat(hero.getOwnerUsername()).isEqualTo("heroMaster");
+        assertThat(hero.getGold()).isEqualTo(500);
+    }
 }
+
