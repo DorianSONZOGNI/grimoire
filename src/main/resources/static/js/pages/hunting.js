@@ -81,6 +81,11 @@ async function loadDaily() {
                             🥇 Or (2 challenges) : <strong>+${Math.floor((reward['base'] || 0) * 3.00)}</strong> gold
                         </div>
                     </div>
+                    ${quest.dungeonId ? `
+                    <a href="/dungeons.html?dungeonId=${quest.dungeonId}" class="btn-dungeon-access daily">
+                        <span class="material-symbols-outlined">swords</span>
+                        <span>Accéder au donjon</span>
+                    </a>` : ''}
                     ${renderClaimButton(quest, myEntry, 'daily')}
                 </div>
                 <div class="quest-leaderboard">
@@ -206,6 +211,11 @@ async function loadWeekly() {
                             <strong>Anomalie Niv.${quest.requiredSecretLevel || 2}</strong> liée au secret <strong>${escHtml(quest.requiredSecret || '?')}</strong>.
                         </div>
                     </div>
+                    ${quest.dungeonId ? `
+                    <a href="/dungeons.html?dungeonId=${quest.dungeonId}" class="btn-dungeon-access weekly">
+                        <span class="material-symbols-outlined">swords</span>
+                        <span>Accéder au donjon</span>
+                    </a>` : ''}
                     ${renderClaimButton(quest, myEntry, 'weekly', data.rewardAnomalie)}
                 </div>
                 <div class="quest-leaderboard">
