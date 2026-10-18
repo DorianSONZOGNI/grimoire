@@ -70,8 +70,25 @@
 
 .vault-card-actions {
     display: flex;
-    gap: 0.4rem;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.2rem;
     flex-shrink: 0;
+}
+
+.vault-action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.vault-action-buttons:empty {
+    display: none;
+}
+
+.shop-admin-row .vault-card-actions {
+    flex-direction: row;
+    align-items: center;
 }
 
 .vault-btn-delete {
@@ -378,6 +395,33 @@
     background: rgba(240, 171, 252, 0.2) !important;
     border-color: #f0abfc !important;
     color: #f8fafc !important;
+}
+.type-toggle input:checked+.toggle-btn.non-loot {
+    background: rgba(245, 158, 11, 0.2) !important;
+    border-color: #f59e0b !important;
+    color: #f8fafc !important;
+}
+.type-toggle input:checked+.toggle-btn.craft {
+    background: rgba(56, 189, 248, 0.2) !important;
+    border-color: #38bdf8 !important;
+    color: #f8fafc !important;
+}
+.vault-btn-dungeon {
+    background: transparent;
+    border: none;
+    cursor: help;
+    padding: 0.25rem 0.35rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    opacity: 0.85;
+}
+.vault-btn-dungeon:hover {
+    background: rgba(255, 255, 255, 0.08);
+    opacity: 1;
 }
 .type-toggle .toggle-btn {
     display: inline-flex;

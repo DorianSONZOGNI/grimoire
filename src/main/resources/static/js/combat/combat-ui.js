@@ -2343,23 +2343,15 @@ export function updateUI(data) {
                     updateUI(newData);
                 } catch (e) {
                     console.error('Auto-turn error:', e);
-                    // Retry: re-fetch current state to unblock UI
-                    try {
-                        const retryRes = await globalFetch(`/api/pve/combat/${pageState.sessionId}/resume`, { method: 'POST' });
-                        const retryData = await retryRes.json();
-                        window.isAutoTurnInProgress = false;
-                        updateUI(retryData);
-                    } catch (e2) {
-                        console.error('Auto-turn recovery failed:', e2);
-                        window.isAutoTurnInProgress = false;
-                        // Last resort: re-enable buttons so user isn't stuck
-                        const btnAttack = document.getElementById('btnAttack');
-                        if (btnAttack) { btnAttack.disabled = false; btnAttack.classList.remove('disabled'); }
-                        const btnEnd = document.getElementById('btnEndTurn');
-                        if (btnEnd) { btnEnd.disabled = false; }
-                        const spellButtons = document.querySelectorAll('.spell-btn, .filter-chip');
-                        spellButtons.forEach(btn => { btn.disabled = false; btn.classList.remove('disabled'); btn.classList.remove('disabled'); });
-                        window.showNotif("Erreur de synchronisation. Veuillez réessayer.", true);
+                    window.isAutoTurnInProgress = false;
+                    const btnAttack = document.getElementById('btnAttack');
+                    if (btnAttack) { btnAttack.disabled = false; btnAttack.classList.remove('disabled'); }
+                    const btnEnd = document.getElementById('btnEndTurn');
+                    if (btnEnd) { btnEnd.disabled = false; }
+                    const spellButtons = document.querySelectorAll('.spell-btn, .filter-chip');
+                    spellButtons.forEach(btn => { btn.disabled = false; btn.classList.remove('disabled'); });
+                    if (window.showNotif) {
+                        window.showNotif("Erreur lors du tour adverse : " + (e.message || "Erreur serveur"), true);
                     }
                 }
             }, 600); // Fetch next turn

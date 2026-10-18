@@ -6,6 +6,8 @@ import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.spell.type.effect.DamageFixedEffect;
 import generation.grimoire.enumeration.DamageType;
 import generation.grimoire.enumeration.EquipmentEffectType;
+import generation.grimoire.enumeration.EquipmentRarity;
+import generation.grimoire.enumeration.StatType;
 import generation.grimoire.repository.SpellRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -185,5 +187,188 @@ class CursedEffectTest {
         // Cost is 50 base + 50% = 75 mana.
         // Current mana: 200 - 75 = 125.
         assertThat(hero.getManaCurrent()).isEqualTo(125);
+    }
+
+    @Test
+    void testCursedDefaillance() {
+        // -20% armor and resistance for 2 turns applied at start of turn
+        Equipment cursedEq = new Equipment();
+        cursedEq.setSpecialEffect(EquipmentEffectType.CURSED_DEFAILANCE);
+        cursedEq.setSpecialEffectValue(-20);
+        hero.getEquipments().add(cursedEq);
+
+        hero.setArmor(100);
+        hero.setResistance(100);
+
+        // Turn 1 starts
+        hero.startTurn();
+
+        // 2 debuffs added (ARMURE and RESISTANCE), duration 2, modifier -0.20
+        assertThat(hero.getActiveBuffs()).hasSize(2);
+        assertThat(hero.getStatBuffMultiplier(StatType.ARMURE)).isEqualTo(0.80);
+        assertThat(hero.getStatBuffMultiplier(StatType.RESISTANCE)).isEqualTo(0.80);
+
+        // End of Turn 1
+        hero.updateBuffs();
+        // Still active with remaining duration 1
+        assertThat(hero.getActiveBuffs()).hasSize(2);
+        assertThat(hero.getActiveBuffs().get(0).getDuration()).isEqualTo(1);
+
+        // Turn 2 starts -> applies a second stack
+        hero.startTurn();
+        assertThat(hero.getActiveBuffs()).hasSize(4);
+        // During turn 2: (1 - 0.20) * (1 - 0.20) = 0.64
+        assertThat(hero.getStatBuffMultiplier(StatType.ARMURE)).isCloseTo(0.64, org.assertj.core.data.Offset.offset(0.001));
+
+        // End of Turn 2 -> first stack expires (duration reached 0)
+        hero.updateBuffs();
+        assertThat(hero.getActiveBuffs()).hasSize(2);
+        assertThat(hero.getActiveBuffs().get(0).getDuration()).isEqualTo(1);
+    }
+
+    @Test
+    void testCursedBurningBlood() {
+        // Receives a burn of 20 flat damage for 3 turns each turn
+        Equipment cursedEq = new Equipment();
+        cursedEq.setSpecialEffect(EquipmentEffectType.CURSED_BURNING_BLOOD);
+        cursedEq.setSpecialEffectValue(-20);
+        hero.getEquipments().add(cursedEq);
+
+        hero.setHealthMax(200);
+        hero.setHealthCurrent(200);
+        hero.setResistance(0); // 0 resistance so full 20 burn damage
+
+        // Turn 1 starts
+        hero.startTurn();
+
+        // Burn buff added with flat 20, duration 3
+        assertThat(hero.getActiveBuffs()).hasSize(1);
+        assertThat(hero.getActiveBuffs().get(0).getStatAffected()).isEqualTo(StatType.BURN);
+        assertThat(hero.getActiveBuffs().get(0).getFlatValue()).isEqualTo(20);
+        assertThat(hero.getActiveBuffs().get(0).getDuration()).isEqualTo(3);
+
+        // End of Turn 1: updateBuffs triggers burn damage
+        hero.updateBuffs();
+
+        // Hero takes 20 burn damage: 200 - 20 = 180 HP
+        assertThat(hero.getHealthCurrent()).isEqualTo(180);
+        // Burn duration decreased from 3 to 2
+        assertThat(hero.getActiveBuffs().get(0).getDuration()).isEqualTo(2);
+    }
+
+    @Test
+    void testCursedDefaillance_IncreasesDamageTaken() {
+        // Hero has 100 Armor (reduction = 100 / (100 + 100) = 50%)
+        // With Défaillance -50%, effectiveArmor = 50, reduction = 50 / 150 = 33.33%
+        Equipment cursedEq = new Equipment();
+        cursedEq.setSpecialEffect(EquipmentEffectType.CURSED_DEFAILANCE);
+        cursedEq.setSpecialEffectValue(-50);
+        hero.getEquipments().add(cursedEq);
+
+        hero.setHealthMax(200);
+        hero.setHealthCurrent(200);
+        hero.setArmor(100);
+
+        hero.startTurn();
+
+        // Enemy hits hero for 60 physical damage
+        hero.takeDamage(60, DamageType.PHYSIC, enemy);
+
+        // Effective armor is 50. Reduction = 50 / (50 + 100) = 1/3 (33.33%).
+        // Damage taken = 60 * (1 - 1/3) = 40 damage. (Instead of 30 if without debuff)
+        assertThat(hero.getHealthCurrent()).isEqualTo(160);
+    }
+
+    @Test
+    void testCursedDefaillance_PurgeAndReapplication() {
+        Equipment cursedEq = new Equipment();
+        cursedEq.setSpecialEffect(EquipmentEffectType.CURSED_DEFAILANCE);
+        cursedEq.setSpecialEffectValue(-20);
+        hero.getEquipments().add(cursedEq);
+
+        hero.startTurn();
+        assertThat(hero.getActiveBuffs()).hasSize(2);
+
+        // Hero is purged
+        hero.purgeAllBuffsAndDebuffs();
+        assertThat(hero.getActiveBuffs()).isEmpty();
+
+        // Next turn starts -> Défaillance reapplies
+        hero.startTurn();
+        assertThat(hero.getActiveBuffs()).hasSize(2);
+    }
+
+    @Test
+    void testCursedBurningBlood_CumulativeOverTurns() {
+        Equipment cursedEq = new Equipment();
+        cursedEq.setSpecialEffect(EquipmentEffectType.CURSED_BURNING_BLOOD);
+        cursedEq.setSpecialEffectValue(-10); // 10 burn damage per stack
+        hero.getEquipments().add(cursedEq);
+
+        hero.setHealthMax(500);
+        hero.setHealthCurrent(500);
+        hero.setResistance(0);
+
+        // Turn 1: 1 stack of 10. End of T1 tick: -10 HP. HP: 490
+        hero.startTurn();
+        hero.updateBuffs();
+        assertThat(hero.getHealthCurrent()).isEqualTo(490);
+
+        // Turn 2: 2 stacks (first dur 2, second dur 3). Total burn = 20. End of T2 tick: -20 HP. HP: 470
+        hero.startTurn();
+        assertThat(hero.getActiveBuffs()).hasSize(2);
+        hero.updateBuffs();
+        assertThat(hero.getHealthCurrent()).isEqualTo(470);
+
+        // Turn 3: 3 stacks (dur 1, dur 2, dur 3). Total burn = 30. End of T3 tick: -30 HP. HP: 440
+        hero.startTurn();
+        assertThat(hero.getActiveBuffs()).hasSize(3);
+        hero.updateBuffs();
+        assertThat(hero.getHealthCurrent()).isEqualTo(440);
+
+        // First stack has expired (dur was 1 before updateBuffs, now 0 and removed).
+        // Turn 4: 2 remaining stacks + 1 new stack = 3 stacks.
+        hero.startTurn();
+        assertThat(hero.getActiveBuffs()).hasSize(3);
+    }
+
+    @Test
+    void testCursedBurningBlood_MitigatedByDoubleMagicResistance() {
+        // Burn is magic damage, against which magic resistance is doubled
+        Equipment cursedEq = new Equipment();
+        cursedEq.setSpecialEffect(EquipmentEffectType.CURSED_BURNING_BLOOD);
+        cursedEq.setSpecialEffectValue(-20);
+        hero.getEquipments().add(cursedEq);
+
+        hero.setHealthMax(200);
+        hero.setHealthCurrent(200);
+        // 50 Resistance. For burn, resistance is doubled: 50 * 2 = 100.
+        // reduction = 100 / (100 + 100) = 50% reduction!
+        hero.setResistance(50);
+
+        hero.startTurn();
+        hero.updateBuffs();
+
+        // 20 burn * (1 - 0.50) = 10 damage taken -> HP: 190
+        assertThat(hero.getHealthCurrent()).isEqualTo(190);
+    }
+
+    @Test
+    void testCursedEffects_EquipmentWeight() {
+        Equipment defaillanceEq = new Equipment();
+        defaillanceEq.setRarity(EquipmentRarity.MAUDIT);
+        defaillanceEq.setSpecialEffect(EquipmentEffectType.CURSED_DEFAILANCE);
+        defaillanceEq.setSpecialEffectValue(-30);
+
+        // Cursed weight: -30 * 0.2 = -6.0
+        assertThat(defaillanceEq.calculateWeight()).isEqualTo(-6.0);
+
+        Equipment burningEq = new Equipment();
+        burningEq.setRarity(EquipmentRarity.MAUDIT);
+        burningEq.setSpecialEffect(EquipmentEffectType.CURSED_BURNING_BLOOD);
+        burningEq.setSpecialEffectValue(-25);
+
+        // Cursed weight: -25 * 0.2 = -5.0
+        assertThat(burningEq.calculateWeight()).isEqualTo(-5.0);
     }
 }

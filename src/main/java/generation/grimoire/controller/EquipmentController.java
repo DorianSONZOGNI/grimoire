@@ -27,19 +27,22 @@ public class EquipmentController {
     private final LootEntryRepository lootEntryRepository;
     private final generation.grimoire.service.RenameCascadeService renameCascadeService;
     private final EquipmentMapper equipmentMapper;
+    private final generation.grimoire.service.pve.DungeonLootTrackerService dungeonLootTrackerService;
 
     public EquipmentController(EquipmentRepository equipmentRepository,
             PersonnageService personnageService,
             generation.grimoire.repository.auth.UserRepository userRepository,
             LootEntryRepository lootEntryRepository,
             generation.grimoire.service.RenameCascadeService renameCascadeService,
-            EquipmentMapper equipmentMapper) {
+            EquipmentMapper equipmentMapper,
+            generation.grimoire.service.pve.DungeonLootTrackerService dungeonLootTrackerService) {
         this.equipmentRepository = equipmentRepository;
         this.personnageService = personnageService;
         this.userRepository = userRepository;
         this.lootEntryRepository = lootEntryRepository;
         this.renameCascadeService = renameCascadeService;
         this.equipmentMapper = equipmentMapper;
+        this.dungeonLootTrackerService = dungeonLootTrackerService;
     }
 
     /** Liste tous les équipements du joueur */
@@ -49,7 +52,9 @@ public class EquipmentController {
         if (principal == null)
             return ResponseEntity.status(401).build();
         List<Equipment> equipmentList = equipmentRepository.findByUser_Username(principal.getName());
-        return ResponseEntity.ok(equipmentList.stream().filter(e -> !e.isTemplate()).map(this::toResponseDto).toList());
+        var sourcesMap = dungeonLootTrackerService.buildEquipmentDungeonSourcesMap();
+        var alchemyMap = dungeonLootTrackerService.buildEquipmentAlchemyRecipesMap();
+        return ResponseEntity.ok(equipmentList.stream().filter(e -> !e.isTemplate()).map(e -> toResponseDto(e, sourcesMap, alchemyMap)).toList());
     }
 
     /** Liste TOUS les équipements (réservé aux admins) */
@@ -64,7 +69,9 @@ public class EquipmentController {
             return ResponseEntity.status(403).build();
 
         List<Equipment> equipmentList = equipmentRepository.findAll();
-        return ResponseEntity.ok(equipmentList.stream().map(this::toResponseDto).toList());
+        var sourcesMap = dungeonLootTrackerService.buildEquipmentDungeonSourcesMap();
+        var alchemyMap = dungeonLootTrackerService.buildEquipmentAlchemyRecipesMap();
+        return ResponseEntity.ok(equipmentList.stream().map(e -> toResponseDto(e, sourcesMap, alchemyMap)).toList());
     }
 
     /** Récupérer tous les templates publiquement */
@@ -81,7 +88,9 @@ public class EquipmentController {
                 }
             }
         }
-        return ResponseEntity.ok(uniqueMap.values().stream().map(this::toResponseDto).toList());
+        var sourcesMap = dungeonLootTrackerService.buildEquipmentDungeonSourcesMap();
+        var alchemyMap = dungeonLootTrackerService.buildEquipmentAlchemyRecipesMap();
+        return ResponseEntity.ok(uniqueMap.values().stream().map(e -> toResponseDto(e, sourcesMap, alchemyMap)).toList());
     }
 
     /** Liste les équipements d'un personnage */
@@ -616,6 +625,16 @@ public class EquipmentController {
     }
 
     private EquipmentResponseDTO toResponseDto(Equipment e) {
+        return toResponseDto(e, null, null);
+    }
+
+    private EquipmentResponseDTO toResponseDto(Equipment e, java.util.Map<String, java.util.List<generation.grimoire.dto.equipment.DungeonDropSourceDTO>> sourcesMap) {
+        return toResponseDto(e, sourcesMap, null);
+    }
+
+    private EquipmentResponseDTO toResponseDto(Equipment e,
+            java.util.Map<String, java.util.List<generation.grimoire.dto.equipment.DungeonDropSourceDTO>> sourcesMap,
+            java.util.Map<String, java.util.List<String>> alchemyMap) {
         EquipmentResponseDTO dto = equipmentMapper.toResponse(e);
         dto.setMaxWeight(getMaxWeight(e.getSlot(), e.getRarity()));
         
@@ -633,6 +652,16 @@ public class EquipmentController {
             dto.setOwnerUsername(e.getOwnerUsername());
         } else if (e.getUser() != null) {
             dto.setOwnerUsername(e.getUser().getUsername());
+        }
+
+        if (e.getName() != null) {
+            String key = e.getName().trim().toLowerCase();
+            if (sourcesMap != null) {
+                dto.setDungeonSources(sourcesMap.getOrDefault(key, java.util.Collections.emptyList()));
+            }
+            if (alchemyMap != null) {
+                dto.setAlchemyRecipes(alchemyMap.getOrDefault(key, java.util.Collections.emptyList()));
+            }
         }
         
         return dto;

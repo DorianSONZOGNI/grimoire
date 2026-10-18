@@ -50,4 +50,10 @@ public class Anomalie {
     @JoinColumn(name = "user_id")
     @JsonIgnore
     private AppUser user;
+
+    @Transient
+    private java.util.List<generation.grimoire.dto.equipment.DungeonDropSourceDTO> dungeonSources = new java.util.ArrayList<>();
+
+    @Transient
+    private java.util.List<String> alchemyRecipes = new java.util.ArrayList<>();
 }

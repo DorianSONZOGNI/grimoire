@@ -266,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('dungeonsContent').style.display = 'block';
         await loadCharacters();
         await loadAnomalies();
-        loadConsumables();
+        await loadConsumables();
         await loadDungeons();
     };
 
@@ -701,14 +701,27 @@ async function loadDungeons() {
     const openDungeonId = urlParams.get('dungeonId');
     if (openDungeonId) {
         const card = document.getElementById(`dungeon-card-${openDungeonId}`);
-        if (card && !card.classList.contains('locked')) {
-            card.click();
-
-            // Remove the parameter from URL so it doesn't stay on refresh
-            const url = new URL(window.location);
-            url.searchParams.delete('dungeonId');
-            window.history.replaceState({}, '', url);
+        if (card) {
+            const section = card.closest('.tab-content');
+            if (section && section.id) {
+                const tabId = section.id.replace('DungeonsSection', '');
+                if (typeof window.switchDungeonTab === 'function') {
+                    window.switchDungeonTab(tabId);
+                }
+            }
+            if (!card.classList.contains('locked')) {
+                card.click();
+                window.scrollTo({ top: 0, behavior: 'instant' });
+            } else {
+                if (window.showNotif) window.showNotif('Ce donjon est actuellement verrouillé.', true);
+            }
+        } else {
+            if (window.showNotif) window.showNotif('Donjon introuvable ou prérequis de niveau/secret non satisfaits.', true);
         }
+
+        const url = new URL(window.location);
+        url.searchParams.delete('dungeonId');
+        window.history.replaceState({}, '', url);
     }
 }
 

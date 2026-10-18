@@ -238,6 +238,118 @@ function groupEquipments(list) {
 }
 
 // ===== Rendu =====
+function getDungeonLootButtonHtml(eq) {
+    const sources = eq.dungeonSources || [];
+    const isLootable = sources.length > 0;
+    const recipes = eq.alchemyRecipes || [];
+    const isCraftable = recipes.length > 0;
+
+    let dungeonTooltipHtml = '';
+    if (!isLootable) {
+        dungeonTooltipHtml = `
+            <div>
+                <div class="tooltip-title font-bold text-sm mb-1 pb-1 flex items-center gap-1 text-muted" style="border-bottom: 1px solid rgba(148, 163, 184, 0.3);">
+                    <span class="material-symbols-outlined text-sm">explore_off</span>
+                    <span>Obtention en donjon</span>
+                </div>
+                <div class="text-xs text-muted italic mt-1">
+                    Jamais lootable dans un donjon
+                </div>
+            </div>
+        `;
+    } else {
+        const rows = sources.map(s => {
+            const types = (s.sourceTypes || []).join(', ');
+            let dungeonColor = '#94a3b8'; // Gris pour donjon libre
+            let secretIcon = '';
+
+            if (s.requiredSecret && s.requiredSecret.trim() !== '') {
+                const cleanSecret = s.requiredSecret.trim().toLowerCase();
+                const meta = (window.DEFAULT_SECRETS_META || []).find(m => m.name.toLowerCase() === cleanSecret)
+                    || (window.DEFAULT_SECRETS_META || []).find(m => cleanSecret.includes(m.name.toLowerCase()) || m.name.toLowerCase().includes(cleanSecret));
+                if (meta) {
+                    dungeonColor = meta.color || '#f59e0b';
+                    if (meta.icon) {
+                        secretIcon = `<span class="material-symbols-outlined" style="color: ${dungeonColor}; font-size: 13px; vertical-align: -1px;" title="${s.requiredSecret}">${meta.icon}</span> `;
+                    }
+                } else {
+                    dungeonColor = '#f59e0b';
+                }
+            }
+
+            return `
+                <div class="flex items-start gap-1 py-0.5">
+                    <span class="font-semibold shrink-0" style="color: ${dungeonColor};">• ${secretIcon}${s.dungeonName} :</span>
+                    <span class="text-slate-200">${types}</span>
+                </div>
+            `;
+        }).join('');
+
+        dungeonTooltipHtml = `
+            <div>
+                <div class="tooltip-title font-bold text-sm mb-1 pb-1 flex items-center gap-1 text-warning" style="border-bottom: 1px solid rgba(245, 158, 11, 0.4);">
+                    <span class="material-symbols-outlined text-sm">explore</span>
+                    <span>Lootable dans :</span>
+                </div>
+                <div class="text-xs text-slate-200 mt-1 flex flex-col">
+                    ${rows}
+                </div>
+            </div>
+        `;
+    }
+
+    let alchemyTooltipHtml = '';
+    if (!isCraftable) {
+        alchemyTooltipHtml = `
+            <div class="mt-2">
+                <div class="tooltip-title font-bold text-sm mb-1 pb-1 flex items-center gap-1 text-muted" style="border-bottom: 1px solid rgba(148, 163, 184, 0.3);">
+                    <span class="material-symbols-outlined text-sm">science_off</span>
+                    <span>Alchimie</span>
+                </div>
+                <div class="text-xs text-muted italic mt-1">
+                    Non craftable en alchimie
+                </div>
+            </div>
+        `;
+    } else {
+        const recipeRows = recipes.map(r => `
+            <div class="flex items-start gap-1 py-0.5">
+                <span class="text-mana font-semibold shrink-0">•</span>
+                <span class="text-slate-200">${r}</span>
+            </div>
+        `).join('');
+
+        alchemyTooltipHtml = `
+            <div class="mt-2">
+                <div class="tooltip-title font-bold text-sm mb-1 pb-1 flex items-center gap-1 text-mana" style="border-bottom: 1px solid rgba(56, 189, 248, 0.4);">
+                    <span class="material-symbols-outlined text-sm">science</span>
+                    <span>Craftable en alchimie :</span>
+                </div>
+                <div class="text-xs text-slate-200 mt-1 flex flex-col">
+                    ${recipeRows}
+                </div>
+            </div>
+        `;
+    }
+
+    const tooltipContent = `
+        <div class="flex flex-col min-w-[220px]">
+            ${dungeonTooltipHtml}
+            ${alchemyTooltipHtml}
+        </div>
+    `;
+
+    return `
+        <button type="button" class="vault-btn-dungeon"
+            onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()"
+            aria-label="Obtention donjon et alchimie">
+            <span class="material-symbols-outlined text-base ${isLootable ? 'text-warning' : 'text-muted opacity-40'}">${isLootable ? 'explore' : 'explore_off'}</span>
+            <span class="material-symbols-outlined text-base ${isCraftable ? 'text-mana' : 'text-muted opacity-40'}">${isCraftable ? 'science' : 'science_off'}</span>
+            <div class="tooltip-data hidden">${tooltipContent}</div>
+        </button>
+    `;
+}
+
 function filterVault() {
     const searchName = document.getElementById('searchItemName').value.toLowerCase();
     const searchOwner = document.getElementById('searchOwnerName')?.value.toLowerCase() || '';
@@ -247,8 +359,19 @@ function filterVault() {
     const sortVault = document.getElementById('sortVault').value;
     const filterConsommable = document.getElementById('filterConsommableOnly')?.checked;
     const filterAnomalie = document.getElementById('filterAnomalieOnly')?.checked;
+    const filterNonLootable = document.getElementById('filterNonLootableOnly')?.checked;
+    const filterCraftable = document.getElementById('filterCraftableOnly')?.checked;
 
     let filtered = pageState.allEquipments.filter(eq => {
+        if (filterNonLootable) {
+            const isLootable = eq.dungeonSources && eq.dungeonSources.length > 0;
+            if (isLootable) return false;
+        }
+        if (filterCraftable) {
+            const isCraftable = eq.alchemyRecipes && eq.alchemyRecipes.length > 0;
+            if (!isCraftable) return false;
+        }
+
         let matchMainType = false;
 
         if (filterConsommable && filterAnomalie) {
@@ -294,6 +417,31 @@ function filterVault() {
             const charB = b.personnage ? (b.personnage.name || '') : '';
             const charCmp = charA.localeCompare(charB);
             if (charCmp !== 0) return charCmp;
+        }
+
+        if (sortVault === 'not_lootable_first') {
+            const aLoot = (a.dungeonSources && a.dungeonSources.length > 0) ? 1 : 0;
+            const bLoot = (b.dungeonSources && b.dungeonSources.length > 0) ? 1 : 0;
+            if (aLoot !== bLoot) return aLoot - bLoot; // 0 first
+            return a.name.localeCompare(b.name);
+        }
+        if (sortVault === 'lootable_first') {
+            const aLoot = (a.dungeonSources && a.dungeonSources.length > 0) ? 1 : 0;
+            const bLoot = (b.dungeonSources && b.dungeonSources.length > 0) ? 1 : 0;
+            if (aLoot !== bLoot) return bLoot - aLoot; // 1 first
+            return a.name.localeCompare(b.name);
+        }
+        if (sortVault === 'craftable_first') {
+            const aCraft = (a.alchemyRecipes && a.alchemyRecipes.length > 0) ? 1 : 0;
+            const bCraft = (b.alchemyRecipes && b.alchemyRecipes.length > 0) ? 1 : 0;
+            if (aCraft !== bCraft) return bCraft - aCraft; // 1 first
+            return a.name.localeCompare(b.name);
+        }
+        if (sortVault === 'not_craftable_first') {
+            const aCraft = (a.alchemyRecipes && a.alchemyRecipes.length > 0) ? 1 : 0;
+            const bCraft = (b.alchemyRecipes && b.alchemyRecipes.length > 0) ? 1 : 0;
+            if (aCraft !== bCraft) return aCraft - bCraft; // 0 first
+            return a.name.localeCompare(b.name);
         }
 
         if (sortVault === 'name_asc') return a.name.localeCompare(b.name);
@@ -406,12 +554,15 @@ function renderGrid(equipments) {
                         ${adminOwnerHtml ? `<div>${adminOwnerHtml}</div>` : ''}
                     </div>
                     <div class="vault-card-actions">
-                        ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editAnomalie(${eq.id})" title="Modifier l'anomalie">
-                            <span class="material-symbols-outlined">edit</span>
-                        </button>` : ''}
-                        ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteAnomalie('${eq.stackIds ? eq.stackIds.join(',') : eq.id}')" title="Détruire l'anomalie">
-                            <span class="material-symbols-outlined">delete</span>
-                        </button>` : ''}
+                        <div class="vault-action-buttons">
+                            ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editAnomalie(${eq.id})" title="Modifier l'anomalie">
+                                <span class="material-symbols-outlined">edit</span>
+                            </button>` : ''}
+                            ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteAnomalie('${eq.stackIds ? eq.stackIds.join(',') : eq.id}')" title="Détruire l'anomalie">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>` : ''}
+                        </div>
+                        ${getDungeonLootButtonHtml(eq)}
                     </div>
                 </div>
                 <div class="vault-card-stats text-sm font-italic text-center rounded-lg p-4" style="color: ${spColor}; background: ${spColor}10; border: 1px dashed ${spColor}30;">
@@ -509,12 +660,15 @@ function renderGrid(equipments) {
                         ${adminOwnerHtml ? `<div class="mt-1">${adminOwnerHtml}</div>` : ''}
                     </div>
                     <div class="vault-card-actions">
-                        ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editEquipment(${eq.id})" title="Modifier l'objet">
-                            <span class="material-symbols-outlined">edit</span>
-                        </button>` : ''}
-                        ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteEquipment('${eq.stackIds ? eq.stackIds.join(',') : eq.id}')" title="Détruire l'objet">
-                            <span class="material-symbols-outlined">delete</span>
-                        </button>` : ''}
+                        <div class="vault-action-buttons">
+                            ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editEquipment(${eq.id})" title="Modifier l'objet">
+                                <span class="material-symbols-outlined">edit</span>
+                            </button>` : ''}
+                            ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteEquipment('${eq.stackIds ? eq.stackIds.join(',') : eq.id}')" title="Détruire l'objet">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>` : ''}
+                        </div>
+                        ${getDungeonLootButtonHtml(eq)}
                     </div>
                 </div>
                 
@@ -591,6 +745,12 @@ window.addEventListener('authLoaded', async () => {
     if (searchOwnerContainer) {
         if (window.isAdmin) searchOwnerContainer.classList.remove('hidden');
         else searchOwnerContainer.classList.add('hidden');
+    }
+
+    const filterNonLootableContainer = document.getElementById('filterNonLootableContainer');
+    if (filterNonLootableContainer) {
+        if (window.isAdmin) filterNonLootableContainer.classList.remove('hidden');
+        else filterNonLootableContainer.classList.add('hidden');
     }
 
     await loadEquipments();
