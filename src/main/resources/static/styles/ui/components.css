@@ -1405,3 +1405,13 @@
     padding-left: 1.25rem;
     border-left: 1px solid var(--glass-border);
 }
+
+.hero-modal-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #fde047;
+    font-style: italic;
+    letter-spacing: 0.5px;
+    margin-top: 0.25rem;
+    text-shadow: 0 0 10px rgba(234, 179, 8, 0.4);
+}

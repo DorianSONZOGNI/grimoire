@@ -139,6 +139,7 @@ public class CombatService {
         CombatSession session = new CombatSession(sessionId, d, players);
         session.setFirstClear(!account.getCompletedDungeons().contains(d.getId()));
         for (Personnage p : players) {
+            p.setOwnerActiveTitle(p.getUser() != null && p.getUser().getActiveTitle() != null ? p.getUser().getActiveTitle() : account.getActiveTitle());
             p.setEligibleForCatchupXp(personnageService.isEligibleForCatchupXp(p, session));
         }
         questRepository.findByTypeAndActiveTrue("DAILY").ifPresent(quest -> {
@@ -275,6 +276,14 @@ public class CombatService {
         boolean guestFirstClear = !guestAccount.getCompletedDungeons().contains(d.getId());
         session.setFirstClear(hostFirstClear || guestFirstClear);
         for (Personnage p : players) {
+            String owner = p.getUser() != null ? p.getUser().getUsername() : null;
+            if (hostUsername.equals(owner)) {
+                p.setOwnerActiveTitle(hostAccount.getActiveTitle());
+            } else if (guestUsername.equals(owner)) {
+                p.setOwnerActiveTitle(guestAccount.getActiveTitle());
+            } else if (p.getUser() != null) {
+                p.setOwnerActiveTitle(p.getUser().getActiveTitle());
+            }
             p.setEligibleForCatchupXp(personnageService.isEligibleForCatchupXp(p, session));
         }
 
