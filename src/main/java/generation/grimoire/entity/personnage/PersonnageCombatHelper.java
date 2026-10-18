@@ -62,6 +62,50 @@ public class PersonnageCombatHelper {
                 System.out.println("🥀 " + p.getName() + " perd " + (-totalManaRegen) + " Mana à cause de sa régénération de Mana par tour (négative).");
                 p.setManaCurrent(Math.max(0, p.getManaCurrent() + totalManaRegen));
             }
+
+            int defaillanceVal = p.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CURSED_DEFAILANCE);
+            if (defaillanceVal != 0) {
+                int pct = Math.abs(defaillanceVal);
+                double modifier = -(pct / 100.0);
+
+                if (p.getActiveBuffs() == null) {
+                    p.setActiveBuffs(new java.util.ArrayList<>());
+                }
+
+                BuffDebuffEffect armBuff = new BuffDebuffEffect();
+                armBuff.setStatAffected(StatType.ARMURE);
+                armBuff.setModifier(modifier);
+                armBuff.setDuration(2);
+                armBuff.setSourceName("Défaillance");
+                p.getActiveBuffs().add(armBuff);
+
+                BuffDebuffEffect resBuff = new BuffDebuffEffect();
+                resBuff.setStatAffected(StatType.RESISTANCE);
+                resBuff.setModifier(modifier);
+                resBuff.setDuration(2);
+                resBuff.setSourceName("Défaillance");
+                p.getActiveBuffs().add(resBuff);
+
+                System.out.println("⚠️ [Défaillance] " + p.getName() + " subit un malus de " + pct + "% d'Armure et de Résistance pour 2 tours.");
+            }
+
+            int burningBloodVal = p.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CURSED_BURNING_BLOOD);
+            if (burningBloodVal != 0) {
+                int burnDamage = Math.abs(burningBloodVal);
+
+                if (p.getActiveBuffs() == null) {
+                    p.setActiveBuffs(new java.util.ArrayList<>());
+                }
+
+                BuffDebuffEffect burnBuff = new BuffDebuffEffect();
+                burnBuff.setStatAffected(StatType.BURN);
+                burnBuff.setFlatValue(burnDamage);
+                burnBuff.setDuration(3);
+                burnBuff.setSourceName("Sang Brûlant");
+                p.getActiveBuffs().add(burnBuff);
+
+                System.out.println("🔥 [Sang Brûlant] " + p.getName() + " reçoit une Brûlure de " + burnDamage + " dégâts pour 3 tours.");
+            }
         }
     }
 
