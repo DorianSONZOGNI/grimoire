@@ -260,9 +260,26 @@ function getDungeonLootButtonHtml(eq) {
     } else {
         const rows = sources.map(s => {
             const types = (s.sourceTypes || []).join(', ');
+            let dungeonColor = '#94a3b8'; // Gris pour donjon libre
+            let secretIcon = '';
+
+            if (s.requiredSecret && s.requiredSecret.trim() !== '') {
+                const cleanSecret = s.requiredSecret.trim().toLowerCase();
+                const meta = (window.DEFAULT_SECRETS_META || []).find(m => m.name.toLowerCase() === cleanSecret)
+                    || (window.DEFAULT_SECRETS_META || []).find(m => cleanSecret.includes(m.name.toLowerCase()) || m.name.toLowerCase().includes(cleanSecret));
+                if (meta) {
+                    dungeonColor = meta.color || '#f59e0b';
+                    if (meta.icon) {
+                        secretIcon = `<span class="material-symbols-outlined" style="color: ${dungeonColor}; font-size: 13px; vertical-align: -1px;" title="${s.requiredSecret}">${meta.icon}</span> `;
+                    }
+                } else {
+                    dungeonColor = '#f59e0b';
+                }
+            }
+
             return `
                 <div class="flex items-start gap-1 py-0.5">
-                    <span class="text-warning font-semibold shrink-0">• ${s.dungeonName} :</span>
+                    <span class="font-semibold shrink-0" style="color: ${dungeonColor};">• ${secretIcon}${s.dungeonName} :</span>
                     <span class="text-slate-200">${types}</span>
                 </div>
             `;

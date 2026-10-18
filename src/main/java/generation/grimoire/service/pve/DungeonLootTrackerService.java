@@ -44,7 +44,7 @@ public class DungeonLootTrackerService {
                             String eqName = entry.getEquipment().getName();
                             if (eqName != null && !eqName.trim().isEmpty()) {
                                 String sourceType = determineLootTableSourceType(s);
-                                addSource(resultMap, eqName, d.getId(), d.getName(), sourceType);
+                                addSource(resultMap, eqName, d.getId(), d.getName(), d.getRequiredSecret(), sourceType);
                                 equipmentIdToName.putIfAbsent(entry.getEquipment().getId(), eqName);
                             }
                         }
@@ -60,7 +60,7 @@ public class DungeonLootTrackerService {
                         eqName = resolveEquipmentName((long) s.getAltarRewardValue(), equipmentIdToName);
                     }
                     if (eqName != null && !eqName.trim().isEmpty()) {
-                        addSource(resultMap, eqName, d.getId(), d.getName(), "Autel sacrificiel");
+                        addSource(resultMap, eqName, d.getId(), d.getName(), d.getRequiredSecret(), "Autel sacrificiel");
                     }
                 }
 
@@ -91,7 +91,7 @@ public class DungeonLootTrackerService {
             for (Salle s : d.getSalles()) {
                 // 1. Récompense spéciale d'altération
                 if (s.getAlterationSpecialItemReward() != null && !s.getAlterationSpecialItemReward().trim().isEmpty()) {
-                    addSource(resultMap, s.getAlterationSpecialItemReward(), d.getId(), d.getName(), "Altération");
+                    addSource(resultMap, s.getAlterationSpecialItemReward(), d.getId(), d.getName(), d.getRequiredSecret(), "Altération");
                 }
 
                 // 2. Tables de loot avec specialItemName
@@ -99,7 +99,7 @@ public class DungeonLootTrackerService {
                     for (LootEntry entry : s.getLootTable()) {
                         if (entry.getSpecialItemName() != null && !entry.getSpecialItemName().trim().isEmpty()) {
                             String sourceType = determineLootTableSourceType(s);
-                            addSource(resultMap, entry.getSpecialItemName(), d.getId(), d.getName(), sourceType);
+                            addSource(resultMap, entry.getSpecialItemName(), d.getId(), d.getName(), d.getRequiredSecret(), sourceType);
                         }
                     }
                 }
@@ -158,7 +158,7 @@ public class DungeonLootTrackerService {
             return "Coffre";
         } else if (s.getType() == RoomType.EVENT) {
             if (s.getEventSubType() == EventSubType.RENCONTRE) {
-                return "Boutique";
+                return "Marchand";
             } else if (s.getEventSubType() == EventSubType.PORTE_ETRANGE) {
                 return "Coffre (Porte étrange)";
             }
@@ -186,7 +186,7 @@ public class DungeonLootTrackerService {
                             if (eqId > 0) {
                                 String eqName = resolveEquipmentName(eqId, equipmentIdToName);
                                 if (eqName != null && !eqName.trim().isEmpty()) {
-                                    addSource(resultMap, eqName, d.getId(), d.getName(), "Autel sacrificiel");
+                                    addSource(resultMap, eqName, d.getId(), d.getName(), d.getRequiredSecret(), "Autel sacrificiel");
                                 }
                             }
                         }
@@ -212,7 +212,7 @@ public class DungeonLootTrackerService {
                         if (anId > 0) {
                             String anName = resolveAnomalieName(anId, anomalieIdToName);
                             if (anName != null && !anName.trim().isEmpty()) {
-                                addSource(resultMap, anName, d.getId(), d.getName(), "Trésor (Porte étrange)");
+                                addSource(resultMap, anName, d.getId(), d.getName(), d.getRequiredSecret(), "Trésor (Porte étrange)");
                             }
                         }
                     }
@@ -242,26 +242,28 @@ public class DungeonLootTrackerService {
     }
 
     private void addSource(Map<String, Map<Long, DungeonSourceAccumulator>> resultMap, String name,
-            Long dungeonId, String dungeonName, String sourceType) {
+            Long dungeonId, String dungeonName, String requiredSecret, String sourceType) {
         if (name == null || name.trim().isEmpty()) return;
         String key = name.trim().toLowerCase();
         resultMap.computeIfAbsent(key, k -> new LinkedHashMap<>())
-                .computeIfAbsent(dungeonId, id -> new DungeonSourceAccumulator(dungeonId, dungeonName))
+                .computeIfAbsent(dungeonId, id -> new DungeonSourceAccumulator(dungeonId, dungeonName, requiredSecret))
                 .sourceTypes.add(sourceType);
     }
 
     private static class DungeonSourceAccumulator {
         private final Long dungeonId;
         private final String dungeonName;
+        private final String requiredSecret;
         private final Set<String> sourceTypes = new LinkedHashSet<>();
 
-        DungeonSourceAccumulator(Long dungeonId, String dungeonName) {
+        DungeonSourceAccumulator(Long dungeonId, String dungeonName, String requiredSecret) {
             this.dungeonId = dungeonId;
             this.dungeonName = dungeonName;
+            this.requiredSecret = requiredSecret;
         }
 
         DungeonDropSourceDTO toDTO() {
-            return new DungeonDropSourceDTO(dungeonId, dungeonName, new ArrayList<>(sourceTypes));
+            return new DungeonDropSourceDTO(dungeonId, dungeonName, requiredSecret, new ArrayList<>(sourceTypes));
         }
     }
 }

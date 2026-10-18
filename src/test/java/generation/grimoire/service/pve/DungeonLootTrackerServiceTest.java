@@ -83,6 +83,7 @@ class DungeonLootTrackerServiceTest {
         entry2.setEquipment(shield);
         shopRoom.getLootTable().add(entry2);
 
+        donjon1.setRequiredSecret("Secret du Chaos");
         donjon1.getSalles().add(treasureRoom);
         donjon1.getSalles().add(shopRoom);
 
@@ -94,12 +95,13 @@ class DungeonLootTrackerServiceTest {
         List<DungeonDropSourceDTO> swordSources = sources.get("épée spectrale");
         assertEquals(1, swordSources.size());
         assertEquals("Crypte Maudite", swordSources.get(0).dungeonName());
+        assertEquals("Secret du Chaos", swordSources.get(0).requiredSecret());
         assertTrue(swordSources.get(0).sourceTypes().contains("Coffre"));
 
         assertTrue(sources.containsKey("bouclier de lumière"));
         List<DungeonDropSourceDTO> shieldSources = sources.get("bouclier de lumière");
         assertEquals(1, shieldSources.size());
-        assertTrue(shieldSources.get(0).sourceTypes().contains("Boutique"));
+        assertTrue(shieldSources.get(0).sourceTypes().contains("Marchand"));
     }
 
     @Test
@@ -185,7 +187,7 @@ class DungeonLootTrackerServiceTest {
         assertEquals(1, daggerSources.size()); // 1 entry per dungeon
         assertEquals(2, daggerSources.get(0).sourceTypes().size());
         assertTrue(daggerSources.get(0).sourceTypes().contains("Coffre"));
-        assertTrue(daggerSources.get(0).sourceTypes().contains("Boutique"));
+        assertTrue(daggerSources.get(0).sourceTypes().contains("Marchand"));
     }
 
     @Test
