@@ -28,6 +28,7 @@ public class EquipmentController {
     private final generation.grimoire.service.RenameCascadeService renameCascadeService;
     private final EquipmentMapper equipmentMapper;
     private final generation.grimoire.service.pve.DungeonLootTrackerService dungeonLootTrackerService;
+    private final generation.grimoire.service.AchievementService achievementService;
 
     public EquipmentController(EquipmentRepository equipmentRepository,
             PersonnageService personnageService,
@@ -35,7 +36,8 @@ public class EquipmentController {
             LootEntryRepository lootEntryRepository,
             generation.grimoire.service.RenameCascadeService renameCascadeService,
             EquipmentMapper equipmentMapper,
-            generation.grimoire.service.pve.DungeonLootTrackerService dungeonLootTrackerService) {
+            generation.grimoire.service.pve.DungeonLootTrackerService dungeonLootTrackerService,
+            generation.grimoire.service.AchievementService achievementService) {
         this.equipmentRepository = equipmentRepository;
         this.personnageService = personnageService;
         this.userRepository = userRepository;
@@ -43,6 +45,7 @@ public class EquipmentController {
         this.renameCascadeService = renameCascadeService;
         this.equipmentMapper = equipmentMapper;
         this.dungeonLootTrackerService = dungeonLootTrackerService;
+        this.achievementService = achievementService;
     }
 
     /** Liste tous les équipements du joueur */
@@ -587,6 +590,8 @@ public class EquipmentController {
                 generation.grimoire.entity.auth.AppUser owner = equipment.getUser();
                 owner.setMonnaie(owner.getMonnaie() + equipment.calculateWeight());
                 userRepository.save(owner);
+                achievementService.onEquipmentRecycled(owner, 1);
+                achievementService.onGoldChanged(owner);
             }
 
             // Supprimer les références dans les tables de loot avant suppression
