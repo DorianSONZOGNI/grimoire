@@ -5,6 +5,7 @@ import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.spell.type.effect.DamageFixedEffect;
 import generation.grimoire.enumeration.DamageType;
 import generation.grimoire.enumeration.EquipmentEffectType;
+import generation.grimoire.enumeration.EquipmentRarity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -353,5 +354,121 @@ class EpicRelicEffectTest {
         assertThat(enemy.getManaCurrent()).isEqualTo(38);
         assertThat(hero.getManaCurrent()).isEqualTo(32);
         assertThat(enemy.getHealthCurrent()).isEqualTo(72); // 100 - (40 - 12) = 72
+    }
+
+    @Test
+    void testCapillarity_MultipleEquipments() {
+        Equipment eq1 = new Equipment();
+        eq1.setSpecialEffect(EquipmentEffectType.CAPILLARITY);
+        eq1.setSpecialEffectValue(15);
+        hero.getEquipments().add(eq1);
+
+        Equipment eq2 = new Equipment();
+        eq2.setSpecialEffect(EquipmentEffectType.CAPILLARITY);
+        eq2.setSpecialEffectValue(10);
+        hero.getEquipments().add(eq2);
+
+        // Total capillarity = 15 + 10 = 25%
+        hero.setManaMax(100);
+        hero.setManaCurrent(50);
+
+        enemy.setHealthMax(100);
+        enemy.setHealthCurrent(100);
+        enemy.setManaMax(100);
+        enemy.setManaCurrent(100);
+
+        // 40 damage, 25% = 10 mana drained
+        enemy.takeDamage(40, DamageType.PHYSIC, hero);
+
+        assertThat(enemy.getManaCurrent()).isEqualTo(90);
+        assertThat(hero.getManaCurrent()).isEqualTo(60);
+        assertThat(enemy.getHealthCurrent()).isEqualTo(70); // 100 - (40 - 10) = 70
+    }
+
+    @Test
+    void testCapillarity_CasterManaCappedAtMax() {
+        Equipment capillarityEq = new Equipment();
+        capillarityEq.setSpecialEffect(EquipmentEffectType.CAPILLARITY);
+        capillarityEq.setSpecialEffectValue(20);
+        hero.getEquipments().add(capillarityEq);
+
+        hero.setManaMax(100);
+        hero.setManaCurrent(95); // Missing only 5 mana
+
+        enemy.setHealthMax(100);
+        enemy.setHealthCurrent(100);
+        enemy.setManaMax(100);
+        enemy.setManaCurrent(50);
+
+        // 50 damage -> 20% = 10 mana drained from enemy
+        enemy.takeDamage(50, DamageType.PHYSIC, hero);
+
+        // Enemy loses 10 mana
+        assertThat(enemy.getManaCurrent()).isEqualTo(40);
+        // Hero gains up to max mana (100)
+        assertThat(hero.getManaCurrent()).isEqualTo(100);
+        // Enemy damage reduced by 10 -> takes 40 damage
+        assertThat(enemy.getHealthCurrent()).isEqualTo(60);
+    }
+
+    @Test
+    void testCapillarity_SpellFixedDamage() {
+        Equipment capillarityEq = new Equipment();
+        capillarityEq.setSpecialEffect(EquipmentEffectType.CAPILLARITY);
+        capillarityEq.setSpecialEffectValue(25);
+        hero.getEquipments().add(capillarityEq);
+
+        hero.setManaMax(100);
+        hero.setManaCurrent(20);
+
+        enemy.setHealthMax(100);
+        enemy.setHealthCurrent(100);
+        enemy.setManaMax(100);
+        enemy.setManaCurrent(50);
+
+        DamageFixedEffect damageEffect = new DamageFixedEffect();
+        damageEffect.setDamageType(DamageType.MAGIC);
+        damageEffect.setDamage(80);
+
+        // Apply spell effect from hero onto enemy
+        damageEffect.apply(hero, enemy);
+
+        // 25% of 80 = 20 mana drained
+        assertThat(enemy.getManaCurrent()).isEqualTo(30);
+        assertThat(hero.getManaCurrent()).isEqualTo(40);
+        // Enemy takes 80 - 20 = 60 damage -> 100 - 60 = 40 HP
+        assertThat(enemy.getHealthCurrent()).isEqualTo(40);
+    }
+
+    @Test
+    void testCapillarity_NoSelfDrain() {
+        Equipment capillarityEq = new Equipment();
+        capillarityEq.setSpecialEffect(EquipmentEffectType.CAPILLARITY);
+        capillarityEq.setSpecialEffectValue(20);
+        hero.getEquipments().add(capillarityEq);
+
+        hero.setHealthMax(100);
+        hero.setHealthCurrent(100);
+        hero.setManaMax(100);
+        hero.setManaCurrent(50);
+
+        // Self-damage where caster is hero itself
+        hero.takeDamage(50, DamageType.PHYSIC, hero);
+
+        // Mana should not be drained from self
+        assertThat(hero.getManaCurrent()).isEqualTo(50);
+        // Full damage taken
+        assertThat(hero.getHealthCurrent()).isEqualTo(50);
+    }
+
+    @Test
+    void testCapillarity_EquipmentWeight() {
+        Equipment eq = new Equipment();
+        eq.setRarity(EquipmentRarity.EPIQUE);
+        eq.setSpecialEffect(EquipmentEffectType.CAPILLARITY);
+        eq.setSpecialEffectValue(20);
+
+        // Base weight = 0 + 20 * 1.5 = 30.0
+        assertThat(eq.calculateWeight()).isEqualTo(30.0);
     }
 }
