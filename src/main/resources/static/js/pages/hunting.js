@@ -352,10 +352,15 @@ function renderLeaderboard(entries, type) {
             ? (e.firstCompletionTime ? formatTime(e.firstCompletionTime) : '')
             : (e.bestTurnCount != null ? `${e.bestTurnCount} tour${e.bestTurnCount > 1 ? 's' : ''}` : 'Non terminé');
 
+        const titleHtml = e.activeTitle ? `<span class="lb-title" title="Titre équipé : ${escHtml(e.activeTitle)}">« ${escHtml(e.activeTitle)} »</span>` : '';
+
         return `
             <div class="lb-row ${isMe ? 'me' : ''}">
                 <span class="lb-rank ${rankClass}">${rankIcon}</span>
-                <span class="lb-name">${escHtml(e.accountName)}${isMe ? ' (vous)' : ''}</span>
+                <div class="lb-player-col">
+                    <span class="lb-name">${escHtml(e.accountName)}${isMe ? ' (vous)' : ''}</span>
+                    ${titleHtml}
+                </div>
                 <span class="lb-stat">${stat}</span>
             </div>
         `;
