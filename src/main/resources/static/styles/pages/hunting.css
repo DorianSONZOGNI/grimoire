@@ -243,10 +243,36 @@
 .lb-rank.bronze { color: #cd7f32; }
 .lb-rank.normal { color: #475569; }
 
-.lb-name {
+.lb-player-col {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.lb-name {
     font-size: 0.9rem;
     color: #e2e8f0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.lb-title {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: #fbbf24;
+    font-style: italic;
+    letter-spacing: 0.25px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    opacity: 0.9;
 }
 
 .lb-stat {

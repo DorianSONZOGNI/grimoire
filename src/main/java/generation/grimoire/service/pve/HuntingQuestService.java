@@ -590,7 +590,19 @@ public class HuntingQuestService {
             });
         }
 
-        return entries.stream().map(this::entryToMap).collect(Collectors.toList());
+        List<String> usernames = entries.stream()
+                .map(HuntingQuestEntry::getAccountName)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        Map<String, String> titlesByUsername = usernames.isEmpty() ? Map.of() :
+                userRepository.findByUsernameIn(usernames).stream()
+                        .filter(u -> u.getActiveTitle() != null && !u.getActiveTitle().trim().isEmpty())
+                        .collect(Collectors.toMap(AppUser::getUsername, AppUser::getActiveTitle, (t1, t2) -> t1));
+
+        return entries.stream()
+                .map(e -> entryToMap(e, titlesByUsername.get(e.getAccountName())))
+                .collect(Collectors.toList());
     }
 
     private Map<String, Object> questToMap(HuntingQuest q) {
@@ -611,8 +623,19 @@ public class HuntingQuestService {
     }
 
     private Map<String, Object> entryToMap(HuntingQuestEntry e) {
+        String activeTitle = null;
+        if (e.getAccountName() != null) {
+            activeTitle = userRepository.findByUsername(e.getAccountName())
+                    .map(AppUser::getActiveTitle)
+                    .orElse(null);
+        }
+        return entryToMap(e, activeTitle);
+    }
+
+    private Map<String, Object> entryToMap(HuntingQuestEntry e, String activeTitle) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("accountName", e.getAccountName());
+        m.put("activeTitle", activeTitle);
         m.put("completionCount", e.getCompletionCount());
         m.put("bestTurnCount", e.getBestTurnCount());
         m.put("firstCompletionTime", e.getFirstCompletionTime() != null ? e.getFirstCompletionTime().toString() : null);

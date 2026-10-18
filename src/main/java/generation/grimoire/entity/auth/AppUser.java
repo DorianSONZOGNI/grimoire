@@ -112,4 +112,13 @@ public class AppUser {
 
     @Column(nullable = false)
     private int shopLevel = 1;
+
+    @Column
+    private String activeTitle;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
+    @CollectionTable(name = "user_unlocked_titles", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "title")
+    private Set<String> unlockedTitles = new HashSet<>();
 }

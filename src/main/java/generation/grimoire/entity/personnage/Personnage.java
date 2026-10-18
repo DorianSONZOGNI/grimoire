@@ -347,6 +347,22 @@ public class Personnage {
         return user != null ? user.getUsername() : null;
     }
 
+    @Transient
+    private String ownerActiveTitle;
+
+    @com.fasterxml.jackson.annotation.JsonProperty("ownerActiveTitle")
+    @Transient
+    public String getOwnerActiveTitle() {
+        if (ownerActiveTitle != null && !ownerActiveTitle.trim().isEmpty()) {
+            return ownerActiveTitle;
+        }
+        return user != null ? user.getActiveTitle() : null;
+    }
+
+    public void setOwnerActiveTitle(String ownerActiveTitle) {
+        this.ownerActiveTitle = ownerActiveTitle;
+    }
+
     @com.fasterxml.jackson.annotation.JsonProperty("gold")
     @Transient
     public int getGold() {

@@ -31,19 +31,22 @@ public class AlchemyService {
     private final AnomalieRepository anomalieRepository;
     private final EquipmentRepository equipmentRepository;
     private final LootEntryRepository lootEntryRepository;
+    private final generation.grimoire.service.AchievementService achievementService;
 
     public AlchemyService(AlchemyRecipeRepository recipeRepository,
                           UserRepository userRepository,
                           PersonnageRepository personnageRepository,
                           AnomalieRepository anomalieRepository,
                           EquipmentRepository equipmentRepository,
-                          LootEntryRepository lootEntryRepository) {
+                          LootEntryRepository lootEntryRepository,
+                          generation.grimoire.service.AchievementService achievementService) {
         this.recipeRepository = recipeRepository;
         this.userRepository = userRepository;
         this.personnageRepository = personnageRepository;
         this.anomalieRepository = anomalieRepository;
         this.equipmentRepository = equipmentRepository;
         this.lootEntryRepository = lootEntryRepository;
+        this.achievementService = achievementService;
     }
 
     @Cacheable(value = "alchemyRecipes")
@@ -274,6 +277,7 @@ public class AlchemyService {
         }
 
         userRepository.save(java.util.Objects.requireNonNull(user));
+        achievementService.onTransmutation(user);
 
         // Attribution de la récompense
         return giveReward(username, recipe, crafterPersonnageId);
