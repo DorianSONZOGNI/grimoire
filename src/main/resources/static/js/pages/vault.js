@@ -238,6 +238,53 @@ function groupEquipments(list) {
 }
 
 // ===== Rendu =====
+function getDungeonLootButtonHtml(eq) {
+    const sources = eq.dungeonSources || [];
+    const isLootable = sources.length > 0;
+
+    let tooltipContent = '';
+    if (!isLootable) {
+        tooltipContent = `
+            <div class="tooltip-title font-bold text-sm mb-1 pb-1 flex items-center gap-1" style="color: #94a3b8; border-bottom: 1px solid rgba(148, 163, 184, 0.3);">
+                <span class="material-symbols-outlined text-sm">explore_off</span>
+                <span>Obtention en donjon</span>
+            </div>
+            <div class="text-xs text-slate-300 italic mt-1">
+                Jamais lootable dans un donjon
+            </div>
+        `;
+    } else {
+        const rows = sources.map(s => {
+            const types = (s.sourceTypes || []).join(', ');
+            return `
+                <div class="flex items-start gap-1 py-0.5">
+                    <span class="text-amber-400 font-semibold shrink-0">• ${s.dungeonName} :</span>
+                    <span class="text-slate-200">${types}</span>
+                </div>
+            `;
+        }).join('');
+
+        tooltipContent = `
+            <div class="tooltip-title font-bold text-sm mb-1 pb-1 flex items-center gap-1" style="color: #f59e0b; border-bottom: 1px solid rgba(245, 158, 11, 0.4);">
+                <span class="material-symbols-outlined text-sm">explore</span>
+                <span>Lootable dans :</span>
+            </div>
+            <div class="text-xs text-slate-200 mt-1 flex flex-col">
+                ${rows}
+            </div>
+        `;
+    }
+
+    return `
+        <button type="button" class="vault-btn-dungeon ${isLootable ? 'is-lootable' : 'not-lootable'}"
+            onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()"
+            aria-label="${isLootable ? 'Lootable en donjon' : 'Jamais lootable en donjon'}">
+            <span class="material-symbols-outlined text-base">${isLootable ? 'explore' : 'explore_off'}</span>
+            <div class="tooltip-data hidden">${tooltipContent}</div>
+        </button>
+    `;
+}
+
 function filterVault() {
     const searchName = document.getElementById('searchItemName').value.toLowerCase();
     const searchOwner = document.getElementById('searchOwnerName')?.value.toLowerCase() || '';
@@ -247,8 +294,14 @@ function filterVault() {
     const sortVault = document.getElementById('sortVault').value;
     const filterConsommable = document.getElementById('filterConsommableOnly')?.checked;
     const filterAnomalie = document.getElementById('filterAnomalieOnly')?.checked;
+    const filterNonLootable = document.getElementById('filterNonLootableOnly')?.checked;
 
     let filtered = pageState.allEquipments.filter(eq => {
+        if (filterNonLootable) {
+            const isLootable = eq.dungeonSources && eq.dungeonSources.length > 0;
+            if (isLootable) return false;
+        }
+
         let matchMainType = false;
 
         if (filterConsommable && filterAnomalie) {
@@ -294,6 +347,19 @@ function filterVault() {
             const charB = b.personnage ? (b.personnage.name || '') : '';
             const charCmp = charA.localeCompare(charB);
             if (charCmp !== 0) return charCmp;
+        }
+
+        if (sortVault === 'not_lootable_first') {
+            const aLoot = (a.dungeonSources && a.dungeonSources.length > 0) ? 1 : 0;
+            const bLoot = (b.dungeonSources && b.dungeonSources.length > 0) ? 1 : 0;
+            if (aLoot !== bLoot) return aLoot - bLoot; // 0 first
+            return a.name.localeCompare(b.name);
+        }
+        if (sortVault === 'lootable_first') {
+            const aLoot = (a.dungeonSources && a.dungeonSources.length > 0) ? 1 : 0;
+            const bLoot = (b.dungeonSources && b.dungeonSources.length > 0) ? 1 : 0;
+            if (aLoot !== bLoot) return bLoot - aLoot; // 1 first
+            return a.name.localeCompare(b.name);
         }
 
         if (sortVault === 'name_asc') return a.name.localeCompare(b.name);
@@ -406,6 +472,7 @@ function renderGrid(equipments) {
                         ${adminOwnerHtml ? `<div>${adminOwnerHtml}</div>` : ''}
                     </div>
                     <div class="vault-card-actions">
+                        ${getDungeonLootButtonHtml(eq)}
                         ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editAnomalie(${eq.id})" title="Modifier l'anomalie">
                             <span class="material-symbols-outlined">edit</span>
                         </button>` : ''}
@@ -509,6 +576,7 @@ function renderGrid(equipments) {
                         ${adminOwnerHtml ? `<div class="mt-1">${adminOwnerHtml}</div>` : ''}
                     </div>
                     <div class="vault-card-actions">
+                        ${getDungeonLootButtonHtml(eq)}
                         ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editEquipment(${eq.id})" title="Modifier l'objet">
                             <span class="material-symbols-outlined">edit</span>
                         </button>` : ''}
@@ -591,6 +659,12 @@ window.addEventListener('authLoaded', async () => {
     if (searchOwnerContainer) {
         if (window.isAdmin) searchOwnerContainer.classList.remove('hidden');
         else searchOwnerContainer.classList.add('hidden');
+    }
+
+    const filterNonLootableContainer = document.getElementById('filterNonLootableContainer');
+    if (filterNonLootableContainer) {
+        if (window.isAdmin) filterNonLootableContainer.classList.remove('hidden');
+        else filterNonLootableContainer.classList.add('hidden');
     }
 
     await loadEquipments();

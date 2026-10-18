@@ -180,6 +180,10 @@
                         <div class="custom-option" data-value="weight_asc"><span
                                 class="material-symbols-outlined cs-icon text-success">scale</span> Poids
                             (Légers)</div>
+                        <div class="custom-option" data-value="not_lootable_first"><span
+                                class="material-symbols-outlined cs-icon text-warning">explore_off</span> Jamais lootables d'abord</div>
+                        <div class="custom-option" data-value="lootable_first"><span
+                                class="material-symbols-outlined cs-icon text-mana">explore</span> Lootables d'abord</div>
                     </div>
                     <input type="hidden" id="sortVault" value="rarity_desc">
                 </div>
@@ -200,6 +204,13 @@
                             onchange="if(this.checked) document.getElementById('filterConsommableOnly').checked = false; filterVault();">
                         <span class="toggle-btn ano">
                             <span class="material-symbols-outlined text-lg text-pv">star</span> Anomalies
+                        </span>
+                    </label>
+                    <label class="type-toggle hidden" id="filterNonLootableContainer" title="Afficher uniquement les objets jamais lootables en donjon (Admin)">
+                        <input type="checkbox" id="filterNonLootableOnly" onchange="filterVault();">
+                        <span class="toggle-btn non-loot">
+                            <span class="material-symbols-outlined text-warning text-lg">explore_off</span>
+                            Non lootables
                         </span>
                     </label>
                 </div>

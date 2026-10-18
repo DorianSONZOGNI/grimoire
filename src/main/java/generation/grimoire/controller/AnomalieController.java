@@ -26,6 +26,9 @@ public class AnomalieController {
     @Autowired
     private generation.grimoire.service.RenameCascadeService renameCascadeService;
 
+    @Autowired
+    private generation.grimoire.service.pve.DungeonLootTrackerService dungeonLootTrackerService;
+
     private String getCurrentUsername() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !auth.getPrincipal().equals("anonymousUser")) {
@@ -46,7 +49,9 @@ public class AnomalieController {
             syncAdminAnomalies(userOpt.get());
         }
 
-        return ResponseEntity.ok(anomalieRepository.findByOwnerUsername(username));
+        List<Anomalie> list = anomalieRepository.findByOwnerUsername(username);
+        enrichAnomalies(list);
+        return ResponseEntity.ok(list);
     }
 
     @GetMapping("/all")
@@ -60,7 +65,19 @@ public class AnomalieController {
             return ResponseEntity.status(403).build();
         }
 
-        return ResponseEntity.ok(anomalieRepository.findAll());
+        List<Anomalie> list = anomalieRepository.findAll();
+        enrichAnomalies(list);
+        return ResponseEntity.ok(list);
+    }
+
+    private void enrichAnomalies(List<Anomalie> list) {
+        if (list == null || list.isEmpty()) return;
+        var sources = dungeonLootTrackerService.buildAnomalieDungeonSourcesMap();
+        for (Anomalie a : list) {
+            if (a.getName() != null) {
+                a.setDungeonSources(sources.getOrDefault(a.getName().trim().toLowerCase(), java.util.Collections.emptyList()));
+            }
+        }
     }
 
     private void syncAdminAnomalies(AppUser adminUser) {

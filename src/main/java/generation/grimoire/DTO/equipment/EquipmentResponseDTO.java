@@ -41,6 +41,7 @@ public class EquipmentResponseDTO {
     private java.util.Map<String, Integer> priceAnomalies;
     private String ownerUsername;
     private PersonnageRef personnage;
+    private java.util.List<DungeonDropSourceDTO> dungeonSources = new java.util.ArrayList<>();
 
     @Data
     public static class PersonnageRef {
