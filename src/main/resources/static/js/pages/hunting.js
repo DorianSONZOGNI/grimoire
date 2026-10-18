@@ -48,9 +48,17 @@ async function loadDaily() {
         // Timer
         updateTimer('dailyTimer', quest.endDate, 'Renouvellement dans');
 
+        const isSecretLocked = !hasUserUnlockedSecret(quest.requiredSecret, quest.requiredSecretLevel);
+        card.classList.toggle('secret-locked', isSecretLocked);
+
         card.innerHTML = `
             <div class="quest-card-inner">
-                <div class="quest-dungeon-info">
+                <div class="quest-dungeon-info ${isSecretLocked ? 'secret-locked' : ''}">
+                    ${isSecretLocked ? `
+                    <div class="quest-lock-banner">
+                        <span class="material-symbols-outlined">lock</span>
+                        <span>Accès verrouillé — Requiert le <strong>${escHtml(quest.requiredSecret)}</strong> (Niv. ${quest.requiredSecretLevel || 1})</span>
+                    </div>` : ''}
                     <div class="quest-dungeon-name">${escHtml(quest.dungeonName)}</div>
                     <div class="quest-meta">
                         <span class="quest-meta-tag">
@@ -61,11 +69,7 @@ async function loadDaily() {
                             <span class="material-symbols-outlined">door_front</span>
                             ${quest.dungeonRoomCount} salles
                         </span>
-                        ${quest.requiredSecret ? `
-                        <span class="quest-meta-tag">
-                            <span class="material-symbols-outlined">lock</span>
-                            ${escHtml(quest.requiredSecret)} Niv.${quest.requiredSecretLevel}
-                        </span>` : ''}
+                        ${renderSecretMetaTag(quest)}
                     </div>
                     <div class="quest-reward-box" style="position: relative;">
                         <div class="quest-reward-title" style="display: flex; align-items: center;">
@@ -81,6 +85,7 @@ async function loadDaily() {
                             🥇 Or (2 challenges) : <strong>+${Math.floor((reward['base'] || 0) * 3.00)}</strong> gold
                         </div>
                     </div>
+                    ${renderDungeonAccessButton(quest, 'daily')}
                     ${renderClaimButton(quest, myEntry, 'daily')}
                 </div>
                 <div class="quest-leaderboard">
@@ -177,9 +182,17 @@ async function loadWeekly() {
 
         window._weeklyTop20Threshold = data.top20Threshold || 1;
 
+        const isSecretLocked = !hasUserUnlockedSecret(quest.requiredSecret, quest.requiredSecretLevel);
+        card.classList.toggle('secret-locked', isSecretLocked);
+
         card.innerHTML = `
             <div class="quest-card-inner">
-                <div class="quest-dungeon-info">
+                <div class="quest-dungeon-info ${isSecretLocked ? 'secret-locked' : ''}">
+                    ${isSecretLocked ? `
+                    <div class="quest-lock-banner">
+                        <span class="material-symbols-outlined">lock</span>
+                        <span>Accès verrouillé — Requiert le <strong>${escHtml(quest.requiredSecret)}</strong> (Niv. ${quest.requiredSecretLevel || 1})</span>
+                    </div>` : ''}
                     <div class="quest-dungeon-name">${escHtml(quest.dungeonName)}</div>
                     <div class="quest-meta">
                         <span class="quest-meta-tag">
@@ -190,11 +203,7 @@ async function loadWeekly() {
                             <span class="material-symbols-outlined">door_front</span>
                             ${quest.dungeonRoomCount} salles
                         </span>
-                        ${quest.requiredSecret ? `
-                        <span class="quest-meta-tag">
-                            <span class="material-symbols-outlined">lock</span>
-                            ${escHtml(quest.requiredSecret)} Niv.${quest.requiredSecretLevel}
-                        </span>` : ''}
+                        ${renderSecretMetaTag(quest)}
                     </div>
                     <div class="quest-reward-box weekly-reward">
                         <div class="quest-reward-title">
@@ -206,6 +215,7 @@ async function loadWeekly() {
                             <strong>Anomalie Niv.${quest.requiredSecretLevel || 2}</strong> liée au secret <strong>${escHtml(quest.requiredSecret || '?')}</strong>.
                         </div>
                     </div>
+                    ${renderDungeonAccessButton(quest, 'weekly')}
                     ${renderClaimButton(quest, myEntry, 'weekly', data.rewardAnomalie)}
                 </div>
                 <div class="quest-leaderboard">
@@ -268,6 +278,54 @@ async function loadWeekly() {
 // ═══════════════════════════════════════════════════════════════════════
 // RENDERING HELPERS
 // ═══════════════════════════════════════════════════════════════════════
+
+function hasUserUnlockedSecret(secretName, reqLevel = 1) {
+    if (!secretName || !secretName.trim()) return true;
+    const userSecrets = window.currentUser?.unlockedSecrets || {};
+    if (userSecrets[secretName] !== undefined) {
+        return userSecrets[secretName] >= (reqLevel || 1);
+    }
+    const lowerName = secretName.trim().toLowerCase();
+    for (const [key, val] of Object.entries(userSecrets)) {
+        if (key.trim().toLowerCase() === lowerName) {
+            return val >= (reqLevel || 1);
+        }
+    }
+    return false;
+}
+
+function renderSecretMetaTag(quest) {
+    if (!quest.requiredSecret || !quest.requiredSecret.trim()) return '';
+    const unlocked = hasUserUnlockedSecret(quest.requiredSecret, quest.requiredSecretLevel);
+    const icon = unlocked ? 'lock_open' : 'lock';
+    const statusClass = unlocked ? 'unlocked' : 'locked';
+    const statusText = unlocked ? 'Débloqué' : 'Verrouillé';
+    return `
+        <span class="quest-meta-tag secret-tag ${statusClass}" title="${escHtml(quest.requiredSecret)} (Niv. ${quest.requiredSecretLevel || 1}) — ${statusText}">
+            <span class="material-symbols-outlined">${icon}</span>
+            ${escHtml(quest.requiredSecret)} Niv.${quest.requiredSecretLevel || 1}
+        </span>
+    `;
+}
+
+function renderDungeonAccessButton(quest, type) {
+    if (!quest.dungeonId) return '';
+    const unlocked = hasUserUnlockedSecret(quest.requiredSecret, quest.requiredSecretLevel);
+    if (!unlocked) {
+        return `
+            <button class="btn-dungeon-access locked" disabled title="Débloquez le ${escHtml(quest.requiredSecret)} pour accéder à ce donjon">
+                <span class="material-symbols-outlined">lock</span>
+                <span>Donjon verrouillé (${escHtml(quest.requiredSecret)})</span>
+            </button>
+        `;
+    }
+    return `
+        <a href="/dungeons.html?dungeonId=${quest.dungeonId}" class="btn-dungeon-access ${type}">
+            <span class="material-symbols-outlined">swords</span>
+            <span>Accéder au donjon</span>
+        </a>
+    `;
+}
 
 function renderLeaderboard(entries, type) {
     if (!entries || entries.length === 0) {

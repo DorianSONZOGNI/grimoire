@@ -188,16 +188,16 @@ class CombatSimulationTest {
         System.out.println("\n--- TOUR 4 ---");
         triggerTurnStartForAll();
         // Elara gagne +10 points de sûreté passifs -> 90 + 10 = 100 points !
-        // Le buff de Sûreté (25% crit) devrait s'activer et les points retomber à 0.
-        assertThat(ally2.getPassiveState("surete_points", -1)).isEqualTo(0);
-        assertThat(ally2.getActiveBuffs()).hasSize(1);
-        assertThat(ally2.getActiveBuffs().get(0).getStatAffected()).isEqualTo(StatType.CRIT);
+        assertThat(ally2.getPassiveState("surete_points", -1)).isEqualTo(100);
 
         // Zane frappe, le boss n'a plus de débuff, juste le bonus de base (10%) ou Low HP si < 500 hp
         trahisonEffect.onPhysicalHit(ally1, boss, 50);
 
-        // Elara cast avec son buff critique actif
+        // Elara cast : consomme les 100 points de Sûreté et applique les débuffs (+20% dégâts magiques & physiques) sur le boss
         spellService.castSpell(attackSpellAlly2, ally2, boss, null);
+        // 100 consommés + 20 pts gagnés de ce sort = 20 pts
+        assertThat(ally2.getPassiveState("surete_points", -1)).isEqualTo(20);
+        assertThat(boss.hasDebuff()).isTrue();
 
         // Boss frappe
         spellService.castSpell(bossAttack, boss, ally1, null);
@@ -231,7 +231,7 @@ class CombatSimulationTest {
         // Zane a pris des dégâts (boss attack T1 et T4 = 100 dégâts avant armure)
         assertThat(ally1.getHealthCurrent()).isLessThan(150);
 
-        assertThat(ally2.getManaCurrent()).isEqualTo(258);
+        assertThat(ally2.getManaCurrent()).isEqualTo(215);
         
         // La mécanique de heal de Trahison (Zane se soigne sur ses frappes physiques) a fait remonter sa vie
         // Sans le heal, il serait plus bas. On peut juste s'assurer que tout a tourné sans erreur.
