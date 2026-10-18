@@ -70,8 +70,25 @@
 
 .vault-card-actions {
     display: flex;
-    gap: 0.4rem;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.2rem;
     flex-shrink: 0;
+}
+
+.vault-action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.vault-action-buttons:empty {
+    display: none;
+}
+
+.shop-admin-row .vault-card-actions {
+    flex-direction: row;
+    align-items: center;
 }
 
 .vault-btn-delete {

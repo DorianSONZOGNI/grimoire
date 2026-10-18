@@ -537,13 +537,15 @@ function renderGrid(equipments) {
                         ${adminOwnerHtml ? `<div>${adminOwnerHtml}</div>` : ''}
                     </div>
                     <div class="vault-card-actions">
+                        <div class="vault-action-buttons">
+                            ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editAnomalie(${eq.id})" title="Modifier l'anomalie">
+                                <span class="material-symbols-outlined">edit</span>
+                            </button>` : ''}
+                            ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteAnomalie('${eq.stackIds ? eq.stackIds.join(',') : eq.id}')" title="Détruire l'anomalie">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>` : ''}
+                        </div>
                         ${getDungeonLootButtonHtml(eq)}
-                        ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editAnomalie(${eq.id})" title="Modifier l'anomalie">
-                            <span class="material-symbols-outlined">edit</span>
-                        </button>` : ''}
-                        ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteAnomalie('${eq.stackIds ? eq.stackIds.join(',') : eq.id}')" title="Détruire l'anomalie">
-                            <span class="material-symbols-outlined">delete</span>
-                        </button>` : ''}
                     </div>
                 </div>
                 <div class="vault-card-stats text-sm font-italic text-center rounded-lg p-4" style="color: ${spColor}; background: ${spColor}10; border: 1px dashed ${spColor}30;">
@@ -641,13 +643,15 @@ function renderGrid(equipments) {
                         ${adminOwnerHtml ? `<div class="mt-1">${adminOwnerHtml}</div>` : ''}
                     </div>
                     <div class="vault-card-actions">
+                        <div class="vault-action-buttons">
+                            ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editEquipment(${eq.id})" title="Modifier l'objet">
+                                <span class="material-symbols-outlined">edit</span>
+                            </button>` : ''}
+                            ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteEquipment('${eq.stackIds ? eq.stackIds.join(',') : eq.id}')" title="Détruire l'objet">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>` : ''}
+                        </div>
                         ${getDungeonLootButtonHtml(eq)}
-                        ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editEquipment(${eq.id})" title="Modifier l'objet">
-                            <span class="material-symbols-outlined">edit</span>
-                        </button>` : ''}
-                        ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteEquipment('${eq.stackIds ? eq.stackIds.join(',') : eq.id}')" title="Détruire l'objet">
-                            <span class="material-symbols-outlined">delete</span>
-                        </button>` : ''}
                     </div>
                 </div>
                 
@@ -730,12 +734,6 @@ window.addEventListener('authLoaded', async () => {
     if (filterNonLootableContainer) {
         if (window.isAdmin) filterNonLootableContainer.classList.remove('hidden');
         else filterNonLootableContainer.classList.add('hidden');
-    }
-
-    const filterCraftableContainer = document.getElementById('filterCraftableContainer');
-    if (filterCraftableContainer) {
-        if (window.isAdmin) filterCraftableContainer.classList.remove('hidden');
-        else filterCraftableContainer.classList.add('hidden');
     }
 
     await loadEquipments();
