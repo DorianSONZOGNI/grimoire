@@ -26,6 +26,7 @@ public class DungeonLootTrackerService {
     private final DonjonRepository donjonRepository;
     private final EquipmentRepository equipmentRepository;
     private final AnomalieRepository anomalieRepository;
+    private final generation.grimoire.repository.AlchemyRecipeRepository recipeRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public Map<String, List<DungeonDropSourceDTO>> buildEquipmentDungeonSourcesMap() {
@@ -118,6 +119,38 @@ public class DungeonLootTrackerService {
             finalMap.put(entry.getKey(), list);
         }
         return finalMap;
+    }
+
+    public Map<String, List<String>> buildEquipmentAlchemyRecipesMap() {
+        List<generation.grimoire.entity.AlchemyRecipe> recipes = recipeRepository.findAll();
+        Map<String, List<String>> map = new HashMap<>();
+        for (generation.grimoire.entity.AlchemyRecipe r : recipes) {
+            if (r.getRewardType() == generation.grimoire.enumeration.RecipeRewardType.GIVE_EQUIPMENT
+                    || r.getRewardType() == generation.grimoire.enumeration.RecipeRewardType.GIVE_CONSUMABLE) {
+                if (r.getRewardName() != null && !r.getRewardName().trim().isEmpty()) {
+                    String key = r.getRewardName().trim().toLowerCase();
+                    String recipeName = (r.getName() != null && !r.getName().trim().isEmpty()) ? r.getName() : ("Recette #" + r.getId());
+                    map.computeIfAbsent(key, k -> new ArrayList<>()).add(recipeName);
+                }
+            }
+        }
+        return map;
+    }
+
+    public Map<String, List<String>> buildAnomalieAlchemyRecipesMap() {
+        List<generation.grimoire.entity.AlchemyRecipe> recipes = recipeRepository.findAll();
+        Map<String, List<String>> map = new HashMap<>();
+        for (generation.grimoire.entity.AlchemyRecipe r : recipes) {
+            if (r.getRewardType() == generation.grimoire.enumeration.RecipeRewardType.GIVE_ANOMALY
+                    || r.getRewardType() == generation.grimoire.enumeration.RecipeRewardType.UPGRADE_ANOMALY) {
+                if (r.getRewardName() != null && !r.getRewardName().trim().isEmpty()) {
+                    String key = r.getRewardName().trim().toLowerCase();
+                    String recipeName = (r.getName() != null && !r.getName().trim().isEmpty()) ? r.getName() : ("Recette #" + r.getId());
+                    map.computeIfAbsent(key, k -> new ArrayList<>()).add(recipeName);
+                }
+            }
+        }
+        return map;
     }
 
     private String determineLootTableSourceType(Salle s) {

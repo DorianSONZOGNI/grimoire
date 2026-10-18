@@ -73,9 +73,12 @@ public class AnomalieController {
     private void enrichAnomalies(List<Anomalie> list) {
         if (list == null || list.isEmpty()) return;
         var sources = dungeonLootTrackerService.buildAnomalieDungeonSourcesMap();
+        var alchemySources = dungeonLootTrackerService.buildAnomalieAlchemyRecipesMap();
         for (Anomalie a : list) {
             if (a.getName() != null) {
-                a.setDungeonSources(sources.getOrDefault(a.getName().trim().toLowerCase(), java.util.Collections.emptyList()));
+                String key = a.getName().trim().toLowerCase();
+                a.setDungeonSources(sources.getOrDefault(key, java.util.Collections.emptyList()));
+                a.setAlchemyRecipes(alchemySources.getOrDefault(key, java.util.Collections.emptyList()));
             }
         }
     }

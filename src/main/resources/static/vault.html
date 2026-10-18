@@ -184,6 +184,10 @@
                                 class="material-symbols-outlined cs-icon text-warning">explore_off</span> Jamais lootables d'abord</div>
                         <div class="custom-option" data-value="lootable_first"><span
                                 class="material-symbols-outlined cs-icon text-mana">explore</span> Lootables d'abord</div>
+                        <div class="custom-option" data-value="craftable_first"><span
+                                class="material-symbols-outlined cs-icon text-info">science</span> Craftables d'abord</div>
+                        <div class="custom-option" data-value="not_craftable_first"><span
+                                class="material-symbols-outlined cs-icon text-muted">science_off</span> Non craftables d'abord</div>
                     </div>
                     <input type="hidden" id="sortVault" value="rarity_desc">
                 </div>
@@ -211,6 +215,13 @@
                         <span class="toggle-btn non-loot">
                             <span class="material-symbols-outlined text-warning text-lg">explore_off</span>
                             Non lootables
+                        </span>
+                    </label>
+                    <label class="type-toggle hidden" id="filterCraftableContainer" title="Afficher uniquement les objets craftables en Alchimie (Admin)">
+                        <input type="checkbox" id="filterCraftableOnly" onchange="filterVault();">
+                        <span class="toggle-btn craft">
+                            <span class="material-symbols-outlined text-info text-lg">science</span>
+                            Craftables
                         </span>
                     </label>
                 </div>

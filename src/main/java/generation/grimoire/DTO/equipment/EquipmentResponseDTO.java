@@ -42,6 +42,7 @@ public class EquipmentResponseDTO {
     private String ownerUsername;
     private PersonnageRef personnage;
     private java.util.List<DungeonDropSourceDTO> dungeonSources = new java.util.ArrayList<>();
+    private java.util.List<String> alchemyRecipes = new java.util.ArrayList<>();
 
     @Data
     public static class PersonnageRef {

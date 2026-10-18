@@ -241,16 +241,20 @@ function groupEquipments(list) {
 function getDungeonLootButtonHtml(eq) {
     const sources = eq.dungeonSources || [];
     const isLootable = sources.length > 0;
+    const recipes = eq.alchemyRecipes || [];
+    const isCraftable = recipes.length > 0;
 
-    let tooltipContent = '';
+    let dungeonTooltipHtml = '';
     if (!isLootable) {
-        tooltipContent = `
-            <div class="tooltip-title font-bold text-sm mb-1 pb-1 flex items-center gap-1" style="color: #94a3b8; border-bottom: 1px solid rgba(148, 163, 184, 0.3);">
-                <span class="material-symbols-outlined text-sm">explore_off</span>
-                <span>Obtention en donjon</span>
-            </div>
-            <div class="text-xs text-slate-300 italic mt-1">
-                Jamais lootable dans un donjon
+        dungeonTooltipHtml = `
+            <div>
+                <div class="tooltip-title font-bold text-sm mb-1 pb-1 flex items-center gap-1 text-muted" style="border-bottom: 1px solid rgba(148, 163, 184, 0.3);">
+                    <span class="material-symbols-outlined text-sm">explore_off</span>
+                    <span>Obtention en donjon</span>
+                </div>
+                <div class="text-xs text-muted italic mt-1">
+                    Jamais lootable dans un donjon
+                </div>
             </div>
         `;
     } else {
@@ -258,28 +262,72 @@ function getDungeonLootButtonHtml(eq) {
             const types = (s.sourceTypes || []).join(', ');
             return `
                 <div class="flex items-start gap-1 py-0.5">
-                    <span class="text-amber-400 font-semibold shrink-0">• ${s.dungeonName} :</span>
+                    <span class="text-warning font-semibold shrink-0">• ${s.dungeonName} :</span>
                     <span class="text-slate-200">${types}</span>
                 </div>
             `;
         }).join('');
 
-        tooltipContent = `
-            <div class="tooltip-title font-bold text-sm mb-1 pb-1 flex items-center gap-1" style="color: #f59e0b; border-bottom: 1px solid rgba(245, 158, 11, 0.4);">
-                <span class="material-symbols-outlined text-sm">explore</span>
-                <span>Lootable dans :</span>
-            </div>
-            <div class="text-xs text-slate-200 mt-1 flex flex-col">
-                ${rows}
+        dungeonTooltipHtml = `
+            <div>
+                <div class="tooltip-title font-bold text-sm mb-1 pb-1 flex items-center gap-1 text-warning" style="border-bottom: 1px solid rgba(245, 158, 11, 0.4);">
+                    <span class="material-symbols-outlined text-sm">explore</span>
+                    <span>Lootable dans :</span>
+                </div>
+                <div class="text-xs text-slate-200 mt-1 flex flex-col">
+                    ${rows}
+                </div>
             </div>
         `;
     }
 
+    let alchemyTooltipHtml = '';
+    if (!isCraftable) {
+        alchemyTooltipHtml = `
+            <div class="mt-2">
+                <div class="tooltip-title font-bold text-sm mb-1 pb-1 flex items-center gap-1 text-muted" style="border-bottom: 1px solid rgba(148, 163, 184, 0.3);">
+                    <span class="material-symbols-outlined text-sm">science_off</span>
+                    <span>Alchimie</span>
+                </div>
+                <div class="text-xs text-muted italic mt-1">
+                    Non craftable en alchimie
+                </div>
+            </div>
+        `;
+    } else {
+        const recipeRows = recipes.map(r => `
+            <div class="flex items-start gap-1 py-0.5">
+                <span class="text-mana font-semibold shrink-0">•</span>
+                <span class="text-slate-200">${r}</span>
+            </div>
+        `).join('');
+
+        alchemyTooltipHtml = `
+            <div class="mt-2">
+                <div class="tooltip-title font-bold text-sm mb-1 pb-1 flex items-center gap-1 text-mana" style="border-bottom: 1px solid rgba(56, 189, 248, 0.4);">
+                    <span class="material-symbols-outlined text-sm">science</span>
+                    <span>Craftable en alchimie :</span>
+                </div>
+                <div class="text-xs text-slate-200 mt-1 flex flex-col">
+                    ${recipeRows}
+                </div>
+            </div>
+        `;
+    }
+
+    const tooltipContent = `
+        <div class="flex flex-col min-w-[220px]">
+            ${dungeonTooltipHtml}
+            ${alchemyTooltipHtml}
+        </div>
+    `;
+
     return `
-        <button type="button" class="vault-btn-dungeon ${isLootable ? 'is-lootable' : 'not-lootable'}"
+        <button type="button" class="vault-btn-dungeon"
             onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()"
-            aria-label="${isLootable ? 'Lootable en donjon' : 'Jamais lootable en donjon'}">
-            <span class="material-symbols-outlined text-base">${isLootable ? 'explore' : 'explore_off'}</span>
+            aria-label="Obtention donjon et alchimie">
+            <span class="material-symbols-outlined text-base ${isLootable ? 'text-warning' : 'text-muted opacity-40'}">${isLootable ? 'explore' : 'explore_off'}</span>
+            <span class="material-symbols-outlined text-base ${isCraftable ? 'text-mana' : 'text-muted opacity-40'}">${isCraftable ? 'science' : 'science_off'}</span>
             <div class="tooltip-data hidden">${tooltipContent}</div>
         </button>
     `;
@@ -295,11 +343,16 @@ function filterVault() {
     const filterConsommable = document.getElementById('filterConsommableOnly')?.checked;
     const filterAnomalie = document.getElementById('filterAnomalieOnly')?.checked;
     const filterNonLootable = document.getElementById('filterNonLootableOnly')?.checked;
+    const filterCraftable = document.getElementById('filterCraftableOnly')?.checked;
 
     let filtered = pageState.allEquipments.filter(eq => {
         if (filterNonLootable) {
             const isLootable = eq.dungeonSources && eq.dungeonSources.length > 0;
             if (isLootable) return false;
+        }
+        if (filterCraftable) {
+            const isCraftable = eq.alchemyRecipes && eq.alchemyRecipes.length > 0;
+            if (!isCraftable) return false;
         }
 
         let matchMainType = false;
@@ -359,6 +412,18 @@ function filterVault() {
             const aLoot = (a.dungeonSources && a.dungeonSources.length > 0) ? 1 : 0;
             const bLoot = (b.dungeonSources && b.dungeonSources.length > 0) ? 1 : 0;
             if (aLoot !== bLoot) return bLoot - aLoot; // 1 first
+            return a.name.localeCompare(b.name);
+        }
+        if (sortVault === 'craftable_first') {
+            const aCraft = (a.alchemyRecipes && a.alchemyRecipes.length > 0) ? 1 : 0;
+            const bCraft = (b.alchemyRecipes && b.alchemyRecipes.length > 0) ? 1 : 0;
+            if (aCraft !== bCraft) return bCraft - aCraft; // 1 first
+            return a.name.localeCompare(b.name);
+        }
+        if (sortVault === 'not_craftable_first') {
+            const aCraft = (a.alchemyRecipes && a.alchemyRecipes.length > 0) ? 1 : 0;
+            const bCraft = (b.alchemyRecipes && b.alchemyRecipes.length > 0) ? 1 : 0;
+            if (aCraft !== bCraft) return aCraft - bCraft; // 0 first
             return a.name.localeCompare(b.name);
         }
 
@@ -665,6 +730,12 @@ window.addEventListener('authLoaded', async () => {
     if (filterNonLootableContainer) {
         if (window.isAdmin) filterNonLootableContainer.classList.remove('hidden');
         else filterNonLootableContainer.classList.add('hidden');
+    }
+
+    const filterCraftableContainer = document.getElementById('filterCraftableContainer');
+    if (filterCraftableContainer) {
+        if (window.isAdmin) filterCraftableContainer.classList.remove('hidden');
+        else filterCraftableContainer.classList.add('hidden');
     }
 
     await loadEquipments();
