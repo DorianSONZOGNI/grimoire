@@ -43,6 +43,9 @@ public class ShopController {
     @Autowired
     private generation.grimoire.repository.ShopUpgradeConfigRepository shopUpgradeConfigRepository;
 
+    @Autowired
+    private generation.grimoire.service.AchievementService achievementService;
+
     // ============================================================
     // NIVEAUX BOUTIQUE — lecture depuis BDD
     // ============================================================
@@ -124,6 +127,7 @@ public class ShopController {
         user.setMonnaie(user.getMonnaie() - config.getGoldCost());
         user.setShopLevel(nextLevel);
         userRepository.save(user);
+        achievementService.onShopUpgraded(user, nextLevel);
         if (!toConsume.isEmpty()) anomalieRepository.deleteAll(toConsume);
 
         return ResponseEntity.ok(Map.of("message", "Boutique améliorée au niveau " + nextLevel + " !", "newLevel", nextLevel));
@@ -480,6 +484,9 @@ public class ShopController {
         // Deductions
         user.setMonnaie(user.getMonnaie() - totalGoldPrice);
         userRepository.save(user);
+        if (totalGoldPrice > 0) {
+            achievementService.onGoldSpentInShop(user, totalGoldPrice);
+        }
 
         if (!toConsumeList.isEmpty()) {
             anomalieRepository.deleteAll(toConsumeList);

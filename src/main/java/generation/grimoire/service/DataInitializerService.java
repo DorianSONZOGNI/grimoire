@@ -38,10 +38,18 @@ public class DataInitializerService {
         private final generation.grimoire.repository.EquipmentRepository equipmentRepository;
         private final generation.grimoire.repository.AlchemyRecipeRepository alchemyRecipeRepository;
         private final generation.grimoire.repository.PersonnageRepository personnageRepository;
+        private final jakarta.persistence.EntityManager entityManager;
 
         @EventListener(ApplicationReadyEvent.class)
         @Transactional
         public void initStandardEntities() {
+                try {
+                    entityManager.createNativeQuery("UPDATE user_achievement SET achievement_code = 'MALEDICTION' WHERE achievement_code = 'CURIEUX'").executeUpdate();
+                    entityManager.createNativeQuery("UPDATE app_user SET active_title = 'L''imprononçable' WHERE active_title = 'Le Curieux'").executeUpdate();
+                } catch (Exception e) {
+                    log.debug("Migration achievement CURIEUX -> MALEDICTION skipped: {}", e.getMessage());
+                }
+
                 log.info("Initialisation des entités de référence (Voies, Spiritualités)...");
 
                 // 1. Descriptions des Voies

@@ -40,6 +40,7 @@ class CombatTurnService {
     private final SpellService spellService;
     private final SpellAvailabilityService spellAvailabilityService;
     private final DungeonRunStatRepository dungeonRunStatRepository;
+    private final generation.grimoire.service.AchievementService achievementService;
 
     private void evaluateDynamicChallenges(CombatSession session) {
         if (session.getActiveChallenges() == null || session.getActiveChallenges().isEmpty()) return;
@@ -449,6 +450,13 @@ class CombatTurnService {
             session.setFinished(true);
             session.setPlayerWon(false);
             session.addLog("Toute l'équipe a été vaincue...");
+            if (session.getTurnNumber() == 1) {
+                for (Personnage p : session.getPlayers()) {
+                    if (p.getUser() != null) {
+                        achievementService.onCombatDefeatTurn1(p.getUser());
+                    }
+                }
+            }
             recordOutcome(session, DungeonOutcome.DEFEAT);
 
             // Defeat penalty: 4 gold per room (half of flee penalty)
@@ -501,6 +509,7 @@ class CombatTurnService {
 
             if (playerKilled) {
                 session.addLog("Le joueur " + username + " a pris la fuite. Ses personnages tombent au combat !");
+                userRepository.findByUsername(username).ifPresent(achievementService::onFlee);
 
                 boolean anyAlive = session.getPlayers().stream().anyMatch(p -> p.getHealthCurrent() > 0);
 
@@ -560,6 +569,7 @@ class CombatTurnService {
                     processedUserIds.add(user.getId());
                     user.setMonnaie(Math.max(0, user.getMonnaie() - penaltyGold));
                     userRepository.save(user);
+                    achievementService.onFlee(user);
                 }
 
                 p.setExperience(dbPersonnage.getExperience());
@@ -647,10 +657,13 @@ class CombatTurnService {
         int xpDrop = 0;
         int goldDrop = 0;
         int killsThisCheck = 0;
-        // Challenge Surgeon 2
+        // Challenge Surgeon 2 & Achievement Point faible, trop fort
         for (Personnage p : session.getPlayers()) {
             if (p.getHealthCurrent() < p.getTotalHealthMax() * 0.8) {
                 session.setSurgeonChall2Failed(true);
+            }
+            if (p.getTotalHealthMax() > 0 && (double) p.getHealthCurrent() / p.getTotalHealthMax() < 0.95) {
+                session.setLostMoreThan5PercentHp(true);
             }
         }
 
@@ -697,6 +710,11 @@ class CombatTurnService {
 
         if (!allAlreadyProcessed && allNowProcessed) {
             session.addLog("Combat terminé, vous avez vaincu tous les monstres !");
+            for (Personnage p : session.getPlayers()) {
+                if (p.getUser() != null) {
+                    achievementService.onCombatRoomVictory(p.getUser(), session.getPlayers());
+                }
+            }
             
             // Daily Challenges Room checks
             if (session.getCurrentRoomDeathTurns().size() > 1) {
