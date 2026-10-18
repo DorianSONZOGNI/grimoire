@@ -33,6 +33,8 @@ class EpicRelicEffectTest {
         enemy.setName("Enemy");
         enemy.setHealthMax(100);
         enemy.setHealthCurrent(100);
+        enemy.setManaMax(100);
+        enemy.setManaCurrent(100);
         enemy.setEquipments(new ArrayList<>());
     }
 
@@ -242,5 +244,114 @@ class EpicRelicEffectTest {
         // Verify shield by checking current shield amount if a getter exists, or we trust the compile fix.
         // The health being maxed out is verified.
         assertThat(hero.getHealthCurrent()).isEqualTo(200);
+    }
+
+    @Test
+    void testCapillarity_Standard() {
+        Equipment capillarityEq = new Equipment();
+        capillarityEq.setSpecialEffect(EquipmentEffectType.CAPILLARITY);
+        capillarityEq.setSpecialEffectValue(20); // 20% capillarity
+        hero.getEquipments().add(capillarityEq);
+
+        hero.setManaMax(100);
+        hero.setManaCurrent(50);
+
+        enemy.setHealthMax(100);
+        enemy.setHealthCurrent(100);
+        enemy.setManaMax(100);
+        enemy.setManaCurrent(50);
+
+        // Hero attacks Enemy for 50 physical damage
+        enemy.takeDamage(50, DamageType.PHYSIC, hero);
+
+        // 20% of 50 = 10 converted to mana steal
+        // Enemy mana: 50 - 10 = 40
+        assertThat(enemy.getManaCurrent()).isEqualTo(40);
+
+        // Hero mana: 50 + 10 = 60
+        assertThat(hero.getManaCurrent()).isEqualTo(60);
+
+        // Enemy damage: 50 - 10 = 40 damage taken -> 100 - 40 = 60 HP
+        assertThat(enemy.getHealthCurrent()).isEqualTo(60);
+    }
+
+    @Test
+    void testCapillarity_TargetHasLowMana() {
+        Equipment capillarityEq = new Equipment();
+        capillarityEq.setSpecialEffect(EquipmentEffectType.CAPILLARITY);
+        capillarityEq.setSpecialEffectValue(20); // 20% capillarity
+        hero.getEquipments().add(capillarityEq);
+
+        hero.setManaMax(100);
+        hero.setManaCurrent(50);
+
+        enemy.setHealthMax(100);
+        enemy.setHealthCurrent(100);
+        enemy.setManaMax(100);
+        enemy.setManaCurrent(6); // Only 6 mana available
+
+        // Hero attacks Enemy for 50 physical damage
+        enemy.takeDamage(50, DamageType.PHYSIC, hero);
+
+        // 20% of 50 is 10, but enemy only has 6 mana -> drains 6 mana
+        assertThat(enemy.getManaCurrent()).isEqualTo(0);
+
+        // Hero gains 6 mana -> 50 + 6 = 56
+        assertThat(hero.getManaCurrent()).isEqualTo(56);
+
+        // Damage converted is 6 -> 50 - 6 = 44 damage taken -> 100 - 44 = 56 HP
+        assertThat(enemy.getHealthCurrent()).isEqualTo(56);
+    }
+
+    @Test
+    void testCapillarity_TargetHasZeroMana() {
+        Equipment capillarityEq = new Equipment();
+        capillarityEq.setSpecialEffect(EquipmentEffectType.CAPILLARITY);
+        capillarityEq.setSpecialEffectValue(20); // 20% capillarity
+        hero.getEquipments().add(capillarityEq);
+
+        hero.setManaMax(100);
+        hero.setManaCurrent(50);
+
+        enemy.setHealthMax(100);
+        enemy.setHealthCurrent(100);
+        enemy.setManaMax(100);
+        enemy.setManaCurrent(0); // 0 mana
+
+        // Hero attacks Enemy for 50 physical damage
+        enemy.takeDamage(50, DamageType.PHYSIC, hero);
+
+        // Enemy loses 0 mana
+        assertThat(enemy.getManaCurrent()).isEqualTo(0);
+
+        // Hero gains 0 mana
+        assertThat(hero.getManaCurrent()).isEqualTo(50);
+
+        // Full 50 damage taken -> 100 - 50 = 50 HP
+        assertThat(enemy.getHealthCurrent()).isEqualTo(50);
+    }
+
+    @Test
+    void testCapillarity_MagicDamage() {
+        Equipment capillarityEq = new Equipment();
+        capillarityEq.setSpecialEffect(EquipmentEffectType.CAPILLARITY);
+        capillarityEq.setSpecialEffectValue(30); // 30% capillarity
+        hero.getEquipments().add(capillarityEq);
+
+        hero.setManaMax(100);
+        hero.setManaCurrent(20);
+
+        enemy.setHealthMax(100);
+        enemy.setHealthCurrent(100);
+        enemy.setManaMax(100);
+        enemy.setManaCurrent(50);
+
+        // Hero attacks Enemy with magic damage
+        enemy.takeDamage(40, DamageType.MAGIC, hero);
+
+        // 30% of 40 = 12 mana drained
+        assertThat(enemy.getManaCurrent()).isEqualTo(38);
+        assertThat(hero.getManaCurrent()).isEqualTo(32);
+        assertThat(enemy.getHealthCurrent()).isEqualTo(72); // 100 - (40 - 12) = 72
     }
 }

@@ -17,6 +17,7 @@ public enum EquipmentEffectType {
     MAGIC_OVERLOAD,
     VITAL_ARCANE,
     OVERHEAL_SHIELD,
-    CURSED_MANA_TAX
+    CURSED_MANA_TAX,
+    CAPILLARITY
 }
 

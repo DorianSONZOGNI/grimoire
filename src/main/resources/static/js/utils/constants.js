@@ -24,7 +24,8 @@ window.EFFECT_LABELS = {
     'MAGIC_OVERLOAD': 'Surcharge (% Mana Act. en Dégâts)',
     'VITAL_ARCANE': 'Arcane Vitale (Soin % Mana dépensé)',
     'OVERHEAL_SHIELD': 'Bouclier vital (% Surplus Soin en Bouclier)',
-    'CURSED_MANA_TAX': 'Incantations Lourdes (Coût Mana % +)'
+    'CURSED_MANA_TAX': 'Incantations Lourdes (Coût Mana % +)',
+    'CAPILLARITY': 'Capillarité (% Vol Mana)'
 };
 
 window.EFFECT_DESCRIPTIONS = {
@@ -43,7 +44,8 @@ window.EFFECT_DESCRIPTIONS = {
     'MAGIC_OVERLOAD': 'Surcharge : ajoute des dégâts supplémentaires proportionnels au mana actuel du porteur.',
     'VITAL_ARCANE': 'Arcane Vitale : soigne le porteur d\'un montant proportionnel au mana dépensé lors du lancement d\'un sort.',
     'OVERHEAL_SHIELD': 'Bouclier vital : Si un soin dépasse vos PV max, X% du surplus est converti en Bouclier pendant 2 tours.',
-    'CURSED_MANA_TAX': '[Malédiction] Le coût en mana de tous vos sorts et compétences est augmenté de X%.'
+    'CURSED_MANA_TAX': '[Malédiction] Le coût en mana de tous vos sorts et compétences est augmenté de X%.',
+    'CAPILLARITY': 'X% des dégâts infligés sont convertis en mana volé à la cible.'
 };
 
 export const STAT_DEFS = [

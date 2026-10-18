@@ -152,6 +152,20 @@ public class PersonnageCombatHelper {
             effectiveDamage = 1;
         }
 
+        if (caster != null && caster != p && (damageType == DamageType.PHYSIC || damageType == DamageType.MAGIC)) {
+            int capillarityPct = caster.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CAPILLARITY);
+            if (capillarityPct > 0 && p.getManaCurrent() > 0 && effectiveDamage > 0) {
+                int desiredDrain = (int) Math.ceil(effectiveDamage * (capillarityPct / 100.0));
+                int manaDrained = Math.min(effectiveDamage, Math.min(p.getManaCurrent(), desiredDrain));
+                if (manaDrained > 0) {
+                    p.setManaCurrent(p.getManaCurrent() - manaDrained);
+                    effectiveDamage -= manaDrained;
+                    caster.setManaCurrent(caster.getManaCurrent() + manaDrained);
+                    System.out.println("💧 Capillarité : " + caster.getName() + " vole " + manaDrained + " Mana à " + p.getName() + " (dégâts réduits de " + manaDrained + ").");
+                }
+            }
+        }
+
         double casterPenetrationPct = 0.0;
         if (caster != null) {
             boolean hasPenBuff = caster.getActiveBuffs().stream()
