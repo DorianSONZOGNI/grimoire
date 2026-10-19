@@ -128,14 +128,16 @@ class AchievementServiceDungeonTest {
     }
 
     @Test
-    void testSecretLevel1AndLevel2_WhenCompleted_UnlocksBoth() {
+    void testSecretLevel1AndLevel2AndLevel3_WhenCompleted_UnlocksAllThree() {
         Donjon chaosLvl1 = createDonjon(10L, "Chaos 1", "Secret du Chaos", 1);
         Donjon chaosLvl2 = createDonjon(11L, "Chaos 2", "Secret du Chaos", 2);
+        Donjon chaosLvl3 = createDonjon(12L, "Chaos 3", "Secret du Chaos", 3);
 
-        when(donjonRepository.findAll()).thenReturn(List.of(chaosLvl1, chaosLvl2));
+        when(donjonRepository.findAll()).thenReturn(List.of(chaosLvl1, chaosLvl2, chaosLvl3));
 
         user.getCompletedDungeons().add(10L);
         user.getCompletedDungeons().add(11L);
+        user.getCompletedDungeons().add(12L);
 
         achievementService.syncDungeonProgression(user);
 
@@ -143,13 +145,19 @@ class AchievementServiceDungeonTest {
         assertNotNull(ua1);
         assertTrue(ua1.isUnlocked());
         assertEquals(1, ua1.getCurrentProgress());
-        assertTrue(user.getUnlockedTitles().contains("Étincelle du Chaos"));
+        assertTrue(user.getUnlockedTitles().contains(AchievementType.SECRET_CHAOS_1.getRewardTitle()));
 
         UserAchievement ua2 = userAchievementMap.get(AchievementType.SECRET_CHAOS_2);
         assertNotNull(ua2);
         assertTrue(ua2.isUnlocked());
         assertEquals(1, ua2.getCurrentProgress());
-        assertTrue(user.getUnlockedTitles().contains("Seigneur du Chaos"));
+        assertTrue(user.getUnlockedTitles().contains(AchievementType.SECRET_CHAOS_2.getRewardTitle()));
+
+        UserAchievement ua3 = userAchievementMap.get(AchievementType.SECRET_CHAOS_3);
+        assertNotNull(ua3);
+        assertTrue(ua3.isUnlocked());
+        assertEquals(1, ua3.getCurrentProgress());
+        assertTrue(user.getUnlockedTitles().contains(AchievementType.SECRET_CHAOS_3.getRewardTitle()));
     }
 
     @Test
@@ -158,10 +166,12 @@ class AchievementServiceDungeonTest {
 
         achievementService.syncDungeonProgression(user);
 
-        UserAchievement ua = userAchievementMap.get(AchievementType.SECRET_CHAOS_1);
-        if (ua != null) {
-            assertFalse(ua.isUnlocked());
-            assertEquals(0, ua.getCurrentProgress());
+        for (AchievementType t : List.of(AchievementType.SECRET_CHAOS_1, AchievementType.SECRET_CHAOS_2, AchievementType.SECRET_CHAOS_3)) {
+            UserAchievement ua = userAchievementMap.get(t);
+            if (ua != null) {
+                assertFalse(ua.isUnlocked());
+                assertEquals(0, ua.getCurrentProgress());
+            }
         }
     }
 
@@ -178,7 +188,7 @@ class AchievementServiceDungeonTest {
         assertNotNull(ua);
         assertTrue(ua.isUnlocked());
         assertEquals(1, ua.getCurrentProgress());
-        assertTrue(user.getUnlockedTitles().contains("Vaporeux"));
+        assertTrue(user.getUnlockedTitles().contains(AchievementType.SECRET_ETHER_1.getRewardTitle()));
     }
 
     @Test
