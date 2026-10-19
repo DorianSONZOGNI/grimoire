@@ -131,10 +131,13 @@ function ai {
     )
     & "C:\Users\doson\IdeaProjects\grimoire\route.ps1" -Prompt ($Words -join " ") -Level $Level -DryRun:$DryRun
 }
+```
 
 Après ça vous pouvez lancer directement dans le terminal powershell :
 
+```powershell
 ai "requete à insérer ici"
+```
 
 Après ça vous pouvez lancer directement dans le terminal powershell :
 
