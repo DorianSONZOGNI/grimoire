@@ -90,6 +90,19 @@ public enum AchievementType {
         2,
         false
     ),
+    SECRET_CHAOS_3(
+        "SECRET_CHAOS_3",
+        "Apocalypse",
+        "Terminer tous les donjons du Secret du Chaos (Niveau 3).",
+        "local_fire_department",
+        AchievementCategory.COMBAT,
+        "Avatar du Chaos",
+        0,
+        false,
+        "Secret du Chaos",
+        3,
+        false
+    ),
 
     // 2. Secret de l'Abondance
     SECRET_ABONDANCE_1(
@@ -116,6 +129,19 @@ public enum AchievementType {
         false,
         "Secret de l'Abondance",
         2,
+        false
+    ),
+    SECRET_ABONDANCE_3(
+        "SECRET_ABONDANCE_3",
+        "Apogée Sylvestre",
+        "Terminer tous les donjons du Secret de l'Abondance (Niveau 3).",
+        "eco",
+        AchievementCategory.COMBAT,
+        "Gardien Primordial",
+        0,
+        false,
+        "Secret de l'Abondance",
+        3,
         false
     ),
 
@@ -146,6 +172,19 @@ public enum AchievementType {
         2,
         false
     ),
+    SECRET_PRESERVATION_3(
+        "SECRET_PRESERVATION_3",
+        "Bastion Inébranlable",
+        "Terminer tous les donjons du Secret de la Préservation (Niveau 3).",
+        "foundation",
+        AchievementCategory.COMBAT,
+        "Dwayne Johnson",
+        0,
+        false,
+        "Secret de la Préservation",
+        3,
+        false
+    ),
 
     // 4. Secret de la Sérénité
     SECRET_SERENITE_1(
@@ -172,6 +211,19 @@ public enum AchievementType {
         false,
         "Secret de la Sérénité",
         2,
+        false
+    ),
+    SECRET_SERENITE_3(
+        "SECRET_SERENITE_3",
+        "Plénitude",
+        "Terminer tous les donjons du Secret de la Sérénité (Niveau 3).",
+        "water_drop",
+        AchievementCategory.COMBAT,
+        "Bouddha",
+        0,
+        false,
+        "Secret de la Sérénité",
+        3,
         false
     ),
 
@@ -202,6 +254,19 @@ public enum AchievementType {
         2,
         false
     ),
+    SECRET_CHASSE_3(
+        "SECRET_CHASSE_3",
+        "Dans l'ombre",
+        "Terminer tous les donjons du Secret de la Chasse (Niveau 3).",
+        "visibility_off",
+        AchievementCategory.COMBAT,
+        "Prédateur méthodique",
+        0,
+        false,
+        "Secret de la Chasse",
+        3,
+        false
+    ),
 
     // 6. Secret du Carnage
     SECRET_CARNAGE_1(
@@ -228,6 +293,19 @@ public enum AchievementType {
         false,
         "Secret du Carnage",
         2,
+        false
+    ),
+    SECRET_CARNAGE_3(
+        "SECRET_CARNAGE_3",
+        "Massacre sanglant",
+        "Terminer tous les donjons du Secret du Carnage (Niveau 3).",
+        "explosion",
+        AchievementCategory.COMBAT,
+        "Seigneur de Guerre",
+        0,
+        false,
+        "Secret du Carnage",
+        3,
         false
     ),
 
@@ -258,6 +336,19 @@ public enum AchievementType {
         2,
         false
     ),
+    SECRET_JOIE_3(
+        "SECRET_JOIE_3",
+        "Inarrêtable",
+        "Terminer tous les donjons du Secret de la Joie (Niveau 3).",
+        "volcano",
+        AchievementCategory.COMBAT,
+        "L'être suprême",
+        0,
+        false,
+        "Secret de la Joie",
+        3,
+        false
+    ),
 
     // 8. Secret du Savoir
     SECRET_SAVOIR_1(
@@ -284,6 +375,19 @@ public enum AchievementType {
         false,
         "Secret du Savoir",
         2,
+        false
+    ),
+    SECRET_SAVOIR_3(
+        "SECRET_SAVOIR_3",
+        "Prophétie des Anciens",
+        "Terminer tous les donjons du Secret du Savoir (Niveau 3).",
+        "psychology",
+        AchievementCategory.COMBAT,
+        "Maîtrise des arcanes",
+        0,
+        false,
+        "Secret du Savoir",
+        3,
         false
     ),
 
@@ -314,6 +418,19 @@ public enum AchievementType {
         2,
         false
     ),
+    SECRET_DESTIN_3(
+        "SECRET_DESTIN_3",
+        "Déni divin",
+        "Terminer tous les donjons du Secret du Destin (Niveau 3).",
+        "all_inclusive",
+        AchievementCategory.COMBAT,
+        "Oracle des Âges",
+        0,
+        false,
+        "Secret du Destin",
+        3,
+        false
+    ),
 
     // 10. Secret de l'Éther
     SECRET_ETHER_1(
@@ -342,6 +459,19 @@ public enum AchievementType {
         2,
         false
     ),
+    SECRET_ETHER_3(
+        "SECRET_ETHER_3",
+        "Nirvana",
+        "Terminer tous les donjons du Secret de l'Éther (Niveau 3).",
+        "blur_on",
+        AchievementCategory.COMBAT,
+        "Transcendant",
+        0,
+        false,
+        "Secret de l'Éther",
+        3,
+        false
+    ),
 
     // 11. Secret des Abysses
     SECRET_ABYSSES_1(
@@ -368,6 +498,19 @@ public enum AchievementType {
         false,
         "Secret des Abysses",
         2,
+        false
+    ),
+    SECRET_ABYSSES_3(
+        "SECRET_ABYSSES_3",
+        "Gouffre sans fond",
+        "Terminer tous les donjons du Secret des Abysses (Niveau 3).",
+        "dark_mode",
+        AchievementCategory.COMBAT,
+        "Terreur Abyssale",
+        0,
+        false,
+        "Secret des Abysses",
+        3,
         false
     ),
 
