@@ -278,4 +278,30 @@ class AchievementServiceDungeonTest {
         assertTrue(session.getCombatLog().stream().anyMatch(l -> l.contains("Abomination Vaincue")));
         assertTrue(session.getCombatLog().stream().anyMatch(l -> l.contains("Boucher")));
     }
+
+    @Test
+    void testGetPendingNotifications_ReturnsStandardAndCustomUnnotified() {
+        UserAchievement ua = new UserAchievement(user, AchievementType.MIRACULE);
+        ua.setUnlocked(true);
+        ua.setNotified(false);
+        when(userAchievementRepository.findByUserIdAndUnlockedTrueAndNotifiedFalse(1L)).thenReturn(List.of(ua));
+
+        generation.grimoire.entity.achievement.UserCustomAchievement uca =
+                new generation.grimoire.entity.achievement.UserCustomAchievement(user, "Boss Secret", "Vaincu", "skull", "Tueur");
+        when(userCustomAchievementRepository.findByUser_IdAndNotifiedFalse(1L)).thenReturn(List.of(uca));
+
+        var pending = achievementService.getPendingNotifications(user);
+
+        assertEquals(2, pending.size());
+        assertEquals("MIRACULE", pending.get(0).code());
+        assertEquals("Boss Secret", pending.get(1).label());
+    }
+
+    @Test
+    void testAcknowledgeAllNotifications_MarksBothRepositories() {
+        achievementService.acknowledgeAllNotifications(user);
+
+        verify(userAchievementRepository).markAllAsNotified(1L);
+        verify(userCustomAchievementRepository).markAllAsNotified(1L);
+    }
 }
