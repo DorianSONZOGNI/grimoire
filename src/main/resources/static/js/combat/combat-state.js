@@ -1216,7 +1216,14 @@ window.showHeroEquipmentTooltip = function (el, characterId) {
     const hero = pageState.currentSessionData?.players?.find(p => p.id === characterId);
     const heroName = hero ? hero.name || hero.nom || 'Héros' : 'Héros';
     const heroLevel = hero ? hero.voieLevel || 1 : 1;
-    const headerHtml = `<div style="text-align:center; font-weight:bold; font-size: 1.1rem; color:#f8fafc; margin-bottom: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom:0.5rem;">${heroName} <span class="text-sky-300" style="font-size: 0.9em;">(Niv. ${heroLevel})</span></div>`;
+    const heroTitle = hero ? (hero.ownerActiveTitle || (hero.ownerUsername && window.currentUser && hero.ownerUsername === window.currentUser.username ? window.currentUser.activeTitle : null)) : null;
+
+    let titleHtml = '';
+    if (heroTitle && heroTitle.trim() !== '') {
+        titleHtml = `<div class="hero-modal-title">« ${heroTitle} »</div>`;
+    }
+
+    const headerHtml = `<div style="text-align:center; margin-bottom: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom:0.5rem;"><div style="font-weight:bold; font-size: 1.1rem; color:#f8fafc;">${heroName} <span class="text-sky-300" style="font-size: 0.9em;">(Niv. ${heroLevel})</span></div>${titleHtml}</div>`;
 
     let eqs = pageState.combatEquipments[characterId];
     if (!eqs || eqs.length === 0) {

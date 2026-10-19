@@ -50,6 +50,7 @@ public class CombatRoomService {
     private final CombatTurnService combatTurnService;
     private final SpellAvailabilityService spellAvailabilityService;
     private final HuntingQuestService huntingQuestService;
+    private final generation.grimoire.service.AchievementService achievementService;
 
     void handleRoomStart(CombatSession session) {
         if (session.getCurrentRoom() == null)
@@ -339,6 +340,8 @@ public class CombatRoomService {
             // Give Gold
             u.setMonnaie(u.getMonnaie() + baseGold);
             userRepository.save(u);
+            achievementService.onGoldChanged(u);
+            achievementService.onChestOpened(u);
             session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + baseGold);
 
             session.logInteractionResult(username, "Vous trouvez " + baseGold + " Or et gagnez " + totalActualExp + " XP.");
@@ -359,6 +362,12 @@ public class CombatRoomService {
                             clone.setOwnerUsername(username);
                             equipmentRepository.save(clone);
                             u.getDiscoveredItems().add(clone.getName());
+                            if (clone.getRarity() == generation.grimoire.enumeration.EquipmentRarity.MYTHIQUE) {
+                                achievementService.onMythicDrop(u);
+                            }
+                            if (clone.getRarity() == generation.grimoire.enumeration.EquipmentRarity.MAUDIT) {
+                                achievementService.onCursedDrop(u);
+                            }
                             
                             if (clone.getSlot() == generation.grimoire.enumeration.EquipmentSlot.CONSOMMABLE) {
                                 // Add to session consumables
@@ -1389,6 +1398,7 @@ target.getActiveBuffs().add(effect);
 
                 boolean anyFirstClear = false;
                 for (AppUser user : uniqueUsers) {
+                    achievementService.onDungeonVictory(user, session);
                     if (!user.getCompletedDungeons().contains(session.getDungeonId())) {
                         user.getCompletedDungeons().add(session.getDungeonId());
                         anyFirstClear = true;

@@ -21,6 +21,8 @@ class AppNavbar extends HTMLElement {
             'alchemy': { icon: 'science', cls: 'logo-alchemy', title: 'Alchimie', subtitle: 'Mélangez vos ingrédients...' },
             'hunting': { icon: 'trophy', cls: 'logo-hunting', title: 'Tableau de Chasse', subtitle: 'Relevez les défis…' },
             'secret': { icon: 'key', cls: 'logo-secret', title: 'Mes Secrets', subtitle: 'Savoir mystique...' },
+            'dungeon-stats': { icon: 'insights', cls: 'logo-dungeon', title: 'Statistiques PvE', subtitle: 'Analyse des performances...' },
+            'achievements': { icon: 'emoji_events', cls: 'logo-achievements', title: 'Succès', subtitle: 'Vos trophées et titres glorieux...' },
             'admin': { icon: 'admin_panel_settings', cls: 'logo-admin', title: 'Administration', subtitle: 'Section restreinte.' },
             'shop-admin': { icon: 'settings', cls: 'logo-admin', title: 'Admin Boutique', subtitle: 'Gestion de la boutique' },
             'pve-admin': { icon: 'admin_panel_settings', cls: 'logo-admin', title: 'Admin PvE', subtitle: 'Gestion des donjons' },
@@ -32,12 +34,14 @@ class AppNavbar extends HTMLElement {
         // On n'utilise PAS le Shadow DOM ici exprès, pour que auth.js et les CSS globaux s'appliquent !
         this.innerHTML = `
         <header class="top-header">
-            <div class="page-logo">
-                <span class="material-symbols-outlined logo-icon-gradient ${config.cls}">${config.icon}</span>
-                <span class="logo-text-gradient ${config.cls}">${config.title}</span>
+            <div class="page-logo-container">
+                <div class="page-logo">
+                    <span class="material-symbols-outlined logo-icon-gradient ${config.cls}">${config.icon}</span>
+                    <span class="logo-text-gradient ${config.cls}">${config.title}</span>
+                </div>
+                <div class="page-subtitle">${config.subtitle}</div>
             </div>
             <div class="header-actions">
-                <div style="font-size: 0.9rem; color: var(--text-muted);">${config.subtitle}</div>
                 
                 <a href="/" class="top-nav-link nav-grimoire ${activePage === 'grimoire' ? 'active' : ''}">
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">auto_awesome</span> Grimoire
@@ -75,7 +79,7 @@ class AppNavbar extends HTMLElement {
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">science</span> Admin Alchimie
                 </a>
 
-                <div id="authNavContainer" style="display: flex; align-items: center; justify-content: flex-end; min-width: 260px; gap: 0.5rem; margin-left: 1rem; padding-left: 1rem; border-left: 1px solid var(--glass-border);">
+                <div id="authNavContainer" class="nav-auth-container">
                     <span style="font-size: 0.85rem; color: var(--text-muted);">Chargement...</span>
                 </div>
             </div>

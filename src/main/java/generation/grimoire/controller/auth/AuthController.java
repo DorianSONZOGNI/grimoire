@@ -146,6 +146,8 @@ public class AuthController {
             
             res.put("unlockedVoieLevels", u.getUnlockedVoieLevels());
             res.put("unlockedSpiritualiteLevels", u.getUnlockedSpiritualiteLevels());
+            res.put("activeTitle", u.getActiveTitle());
+            res.put("unlockedTitles", u.getUnlockedTitles());
         });
 
         return ResponseEntity.ok()

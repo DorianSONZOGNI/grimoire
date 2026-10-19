@@ -180,6 +180,14 @@
                         <div class="custom-option" data-value="weight_asc"><span
                                 class="material-symbols-outlined cs-icon text-success">scale</span> Poids
                             (Légers)</div>
+                        <div class="custom-option" data-value="not_lootable_first"><span
+                                class="material-symbols-outlined cs-icon text-warning">explore_off</span> Jamais lootables d'abord</div>
+                        <div class="custom-option" data-value="lootable_first"><span
+                                class="material-symbols-outlined cs-icon text-mana">explore</span> Lootables d'abord</div>
+                        <div class="custom-option" data-value="craftable_first"><span
+                                class="material-symbols-outlined cs-icon text-info">science</span> Craftables d'abord</div>
+                        <div class="custom-option" data-value="not_craftable_first"><span
+                                class="material-symbols-outlined cs-icon text-muted">science_off</span> Non craftables d'abord</div>
                     </div>
                     <input type="hidden" id="sortVault" value="rarity_desc">
                 </div>
@@ -200,6 +208,20 @@
                             onchange="if(this.checked) document.getElementById('filterConsommableOnly').checked = false; filterVault();">
                         <span class="toggle-btn ano">
                             <span class="material-symbols-outlined text-lg text-pv">star</span> Anomalies
+                        </span>
+                    </label>
+                    <label class="type-toggle hidden" id="filterNonLootableContainer" title="Afficher uniquement les objets jamais lootables en donjon (Admin)">
+                        <input type="checkbox" id="filterNonLootableOnly" onchange="filterVault();">
+                        <span class="toggle-btn non-loot">
+                            <span class="material-symbols-outlined text-warning text-lg">explore_off</span>
+                            Non lootables
+                        </span>
+                    </label>
+                    <label class="type-toggle" id="filterCraftableContainer" title="Afficher uniquement les objets craftables en Alchimie">
+                        <input type="checkbox" id="filterCraftableOnly" onchange="filterVault();">
+                        <span class="toggle-btn craft">
+                            <span class="material-symbols-outlined text-info text-lg">science</span>
+                            Craftables
                         </span>
                     </label>
                 </div>
@@ -393,9 +415,21 @@
                                             class="material-symbols-outlined cs-icon text-success">security</span>
                                         Bouclier vital (% Surplus Soin en Bouclier)
                                     </div>
+                                    <div class="custom-option effect-CAPILLARITY" data-value="CAPILLARITY"><span
+                                            class="material-symbols-outlined cs-icon text-mana">water_drop</span>
+                                        Capillarité (% Vol Mana)
+                                    </div>
                                     <div class="custom-option effect-CURSED_MANA_TAX" data-value="CURSED_MANA_TAX"><span
                                             class="material-symbols-outlined cs-icon text-dark">weight</span>
                                         Incantations Lourdes (Coût Mana % +)
+                                    </div>
+                                    <div class="custom-option effect-CURSED_DEFAILANCE" data-value="CURSED_DEFAILANCE"><span
+                                            class="material-symbols-outlined cs-icon text-dark">shield</span>
+                                        Défaillance (% Malus Rés/Arm)
+                                    </div>
+                                    <div class="custom-option effect-CURSED_BURNING_BLOOD" data-value="CURSED_BURNING_BLOOD"><span
+                                            class="material-symbols-outlined cs-icon text-dark">local_fire_department</span>
+                                        Sang Brûlant (Brûlure X dégâts)
                                     </div>
                                 </div>
                                 <input type="hidden" id="eqSpecialEffect" value="NONE">
