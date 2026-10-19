@@ -1398,12 +1398,14 @@ target.getActiveBuffs().add(effect);
 
                 boolean anyFirstClear = false;
                 for (AppUser user : uniqueUsers) {
-                    achievementService.onDungeonVictory(user, session);
                     if (!user.getCompletedDungeons().contains(session.getDungeonId())) {
                         user.getCompletedDungeons().add(session.getDungeonId());
                         anyFirstClear = true;
                     }
                     userRepository.save(user);
+                    if (achievementService != null) {
+                        achievementService.onDungeonVictory(user, session);
+                    }
                 }
 
                 if (anyFirstClear) {
