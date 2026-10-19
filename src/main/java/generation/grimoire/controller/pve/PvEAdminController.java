@@ -247,6 +247,10 @@ public class PvEAdminController {
                 s.setChallenges(sDto.getChallenges());
                 s.setBossRewardSpiritualXp(sDto.getBossRewardSpiritualXp());
                 s.setBossRewardGold(sDto.getBossRewardGold());
+                s.setCustomAchievementTitle(sDto.getCustomAchievementTitle());
+                s.setCustomAchievementDesc(sDto.getCustomAchievementDesc());
+                s.setCustomAchievementIcon(sDto.getCustomAchievementIcon());
+                s.setCustomAchievementRewardTitle(sDto.getCustomAchievementRewardTitle());
 
                 if (sDto.getMonsters() != null) {
                     List<Monstre> monsters = sDto.getMonsters().stream()

@@ -1405,6 +1405,7 @@ target.getActiveBuffs().add(effect);
                     userRepository.save(user);
                     if (achievementService != null) {
                         achievementService.onDungeonVictory(user, session);
+                        achievementService.checkAndUnlockCustomAchievement(user, session.getCurrentRoom(), session);
                     }
                 }
 
@@ -1485,6 +1486,12 @@ target.getActiveBuffs().add(effect);
                 room.setEventSubType(null);
                 room.setBossRewardGold(selectedOutcome.path("bossRewardGold").asInt(0));
                 room.setBossRewardSpiritualXp(selectedOutcome.path("bossRewardSpiritualXp").asInt(0));
+                if (selectedOutcome.hasNonNull("customAchievementTitle") && !selectedOutcome.path("customAchievementTitle").asText().isBlank()) {
+                    room.setCustomAchievementTitle(selectedOutcome.path("customAchievementTitle").asText());
+                    room.setCustomAchievementDesc(selectedOutcome.path("customAchievementDesc").asText(null));
+                    room.setCustomAchievementIcon(selectedOutcome.path("customAchievementIcon").asText("emoji_events"));
+                    room.setCustomAchievementRewardTitle(selectedOutcome.path("customAchievementRewardTitle").asText(null));
+                }
 
                 JsonNode challengesNode = selectedOutcome.path("challenges");
                 if (!challengesNode.isMissingNode() && challengesNode.isArray() && challengesNode.size() > 0) {
