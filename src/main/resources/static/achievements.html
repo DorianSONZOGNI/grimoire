@@ -76,7 +76,9 @@
 
             <!-- Grille de cartes de succès -->
             <div class="achievements-grid" id="achievementsGrid">
-                <p class="text-muted text-center col-span-full">Chargement de vos succès...</p>
+                <div class="col-span-full">
+                    <app-loader message="Chargement de vos succès..."></app-loader>
+                </div>
             </div>
         </div>
 
@@ -101,6 +103,7 @@
     </main>
  
      <script src="/js/services/auth.js?v=1786180000010"></script>
+     <script defer src="/js/components/loader.js"></script>
      <script defer src="/js/utils/utils.js"></script>
      <script type="module" src="/js/pages/achievements.js?v=1786180000040"></script>
 </body>
