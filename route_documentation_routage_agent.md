@@ -116,10 +116,12 @@ agy mcp list
 
 En powershell : 
 
+```powershell
 if (!(Test-Path $PROFILE)) { New-Item -Path $PROFILE -ItemType File -Force } notepad $PROFILE
-
+```
 Puis dans le fichier coller :
 
+```powershell
 function ai {
     [CmdletBinding(PositionalBinding = $false)]
     param(
@@ -129,10 +131,13 @@ function ai {
     )
     & "C:\Users\doson\IdeaProjects\grimoire\route.ps1" -Prompt ($Words -join " ") -Level $Level -DryRun:$DryRun
 }
+```
 
 Après ça vous pouvez lancer directement dans le terminal powershell :
 
+```powershell
 ai "requete à insérer ici"
+```
 
 ---
 
