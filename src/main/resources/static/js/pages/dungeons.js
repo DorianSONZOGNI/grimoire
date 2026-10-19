@@ -52,6 +52,7 @@ pageState.userCharacters = [];
 pageState.availableConsumables = [];
 pageState.activeConsumableFilters = { hp: false, mana: false, dmg: false, def: false, xp: false, util: false };
 pageState.allAnomalies = [];
+pageState.allEquipments = [];
 pageState.inspectedCharacterId = null;
 
 function collectDungeonAnomaliesLocal(salles) {
@@ -75,6 +76,30 @@ function collectDungeonAnomaliesLocal(salles) {
 
 function collectDungeonLootItemsLocal(salles) {
     const itemsMap = new Map();
+
+    const registerAltarEquipment = (eqOrId) => {
+        let eq = null;
+        if (eqOrId && typeof eqOrId === 'object') {
+            eq = eqOrId;
+        } else if (eqOrId) {
+            eq = (pageState.allEquipments || []).find(e => e.id == eqOrId || e.name === eqOrId);
+        }
+        if (!eq || !eq.name) return;
+
+        if (!itemsMap.has(eq.name)) {
+            itemsMap.set(eq.name, {
+                equipment: eq,
+                isAltar: true
+            });
+        } else {
+            const entry = itemsMap.get(eq.name);
+            entry.isAltar = true;
+            if (!entry.equipment.slot && eq.slot) {
+                entry.equipment = Object.assign({}, eq, entry.equipment);
+            }
+        }
+    };
+
     (salles || []).forEach(s => {
         if (s.lootTable) {
             s.lootTable.forEach(e => {
@@ -87,7 +112,47 @@ function collectDungeonLootItemsLocal(salles) {
                         });
                     } else {
                         const entry = itemsMap.get(e.equipment.name);
-                        entry.notDropProb *= (1 - prob);
+                        entry.notDropProb = (entry.notDropProb !== undefined ? entry.notDropProb : 1) * (1 - prob);
+                    }
+                }
+            });
+        }
+
+        // Autel direct dans la salle
+        if (s.alterationType === 'AUTEL') {
+            if (s.altarRewardType === 'ITEM') {
+                if (s.altarRewardEquipment) {
+                    registerAltarEquipment(s.altarRewardEquipment);
+                } else if (s.altarRewardValue) {
+                    registerAltarEquipment(s.altarRewardValue);
+                }
+            } else if (s.altarRewardEquipment) {
+                registerAltarEquipment(s.altarRewardEquipment);
+            }
+        } else if (s.altarRewardType === 'ITEM') {
+            if (s.altarRewardEquipment) {
+                registerAltarEquipment(s.altarRewardEquipment);
+            } else if (s.altarRewardValue) {
+                registerAltarEquipment(s.altarRewardValue);
+            }
+        }
+
+        // Portes étranges avec issue autel sacrificiel
+        if (s.eventSubType === 'PORTE_ETRANGE' && s.doorOutcomes) {
+            let outcomes = s.doorOutcomes;
+            if (typeof outcomes === 'string') {
+                try { outcomes = JSON.parse(outcomes); } catch (_) { outcomes = []; }
+            }
+            (outcomes || []).forEach(o => {
+                if (o && (o.type === 'AUTEL' || o.alterationType === 'AUTEL')) {
+                    if (o.altarRewardType === 'ITEM') {
+                        if (o.altarRewardEquipment) {
+                            registerAltarEquipment(o.altarRewardEquipment);
+                        } else if (o.altarRewardValue) {
+                            registerAltarEquipment(o.altarRewardValue);
+                        }
+                    } else if (o.altarRewardEquipment) {
+                        registerAltarEquipment(o.altarRewardEquipment);
                     }
                 }
             });
@@ -100,7 +165,12 @@ function collectDungeonLootItemsLocal(salles) {
     const lootItems = [];
     itemsMap.forEach((val) => {
         const eq = Object.assign({}, val.equipment);
-        eq.effectiveDropRate = (1 - val.notDropProb);
+        if (val.notDropProb !== undefined) {
+            eq.effectiveDropRate = (1 - val.notDropProb);
+        }
+        if (val.isAltar) {
+            eq.isAltar = true;
+        }
         lootItems.push(eq);
     });
 
@@ -169,11 +239,17 @@ function buildLootDropdownHtml(lootItems) {
                 }
             }
 
-            let dropPctStr = '';
-            if (eq.effectiveDropRate !== undefined) {
+            let dropIndicatorHtml = '';
+            if (eq.isAltar && eq.effectiveDropRate !== undefined) {
                 const pct = (eq.effectiveDropRate * 100);
                 const pctStr = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(1);
-                dropPctStr = `<span style="color:#facc15; font-size:0.8rem; margin-right:4px;">[${pctStr}%]</span>`;
+                dropIndicatorHtml = `<span style="color:#facc15; font-size:0.8rem; margin-right:4px;">[${pctStr}%]</span><span class="material-symbols-outlined" style="color:#f97316; font-size:0.95rem; vertical-align:middle; margin-right:4px;" title="Autel Sacrificiel">hand_bones</span>`;
+            } else if (eq.isAltar) {
+                dropIndicatorHtml = `<span class="material-symbols-outlined" style="color:#f97316; font-size:0.95rem; vertical-align:middle; margin-right:4px;" title="Autel Sacrificiel">hand_bones</span>`;
+            } else if (eq.effectiveDropRate !== undefined) {
+                const pct = (eq.effectiveDropRate * 100);
+                const pctStr = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(1);
+                dropIndicatorHtml = `<span style="color:#facc15; font-size:0.8rem; margin-right:4px;">[${pctStr}%]</span>`;
             }
 
             return `<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem; cursor:help;"
@@ -181,7 +257,7 @@ function buildLootDropdownHtml(lootItems) {
                          onmouseleave="window.hideGlobalTooltip && window.hideGlobalTooltip()"
                          data-tooltip-html="${(window.getEquipmentTooltipHTML ? window.getEquipmentTooltipHTML(eq) : '').replace(/"/g, '&quot;')}">
                 <span class="material-symbols-outlined text-[1.1rem] ${slotInfo.extraClass || ''}" style="color:${slotInfo.color || rarityColor};">${slotInfo.icon}</span>
-                <span style="color:${rarityColor}; font-weight:500; font-size:0.9rem;">${dropPctStr}${eq.name}</span>
+                <span style="color:${rarityColor}; font-weight:500; font-size:0.9rem;">${dropIndicatorHtml}${eq.name}</span>
             </div>`;
         }).join('');
     };
@@ -266,6 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('dungeonsContent').style.display = 'block';
         await loadCharacters();
         await loadAnomalies();
+        await loadEquipments();
         await loadConsumables();
         await loadDungeons();
     };
@@ -811,6 +888,13 @@ async function loadAnomalies() {
     try {
         const res = await globalFetch('/api/anomalies/all-templates');
         if (res.ok) pageState.allAnomalies = await res.json();
+    } catch (e) { console.error(e); }
+}
+
+async function loadEquipments() {
+    try {
+        const res = await globalFetch('/api/equipments/templates/public');
+        if (res.ok) pageState.allEquipments = await res.json();
     } catch (e) { console.error(e); }
 }
 
