@@ -7,6 +7,7 @@ import generation.grimoire.entity.achievement.UserAchievement;
 import generation.grimoire.entity.achievement.UserStatistics;
 import generation.grimoire.entity.auth.AppUser;
 import generation.grimoire.entity.personnage.Personnage;
+import generation.grimoire.entity.pve.Donjon;
 import generation.grimoire.enumeration.AchievementType;
 import generation.grimoire.enumeration.EquipmentRarity;
 import generation.grimoire.enumeration.RecipeRewardType;
@@ -17,6 +18,7 @@ import generation.grimoire.repository.ShopUpgradeConfigRepository;
 import generation.grimoire.repository.UserAchievementRepository;
 import generation.grimoire.repository.UserStatisticsRepository;
 import generation.grimoire.repository.auth.UserRepository;
+import generation.grimoire.repository.pve.DonjonRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,19 +34,22 @@ public class AchievementService {
     private final AlchemyRecipeRepository alchemyRecipeRepository;
     private final ShopUpgradeConfigRepository shopUpgradeConfigRepository;
     private final EquipmentRepository equipmentRepository;
+    private final DonjonRepository donjonRepository;
 
     public AchievementService(UserAchievementRepository userAchievementRepository,
                               UserStatisticsRepository userStatisticsRepository,
                               UserRepository userRepository,
                               AlchemyRecipeRepository alchemyRecipeRepository,
                               ShopUpgradeConfigRepository shopUpgradeConfigRepository,
-                              EquipmentRepository equipmentRepository) {
+                              EquipmentRepository equipmentRepository,
+                              DonjonRepository donjonRepository) {
         this.userAchievementRepository = userAchievementRepository;
         this.userStatisticsRepository = userStatisticsRepository;
         this.userRepository = userRepository;
         this.alchemyRecipeRepository = alchemyRecipeRepository;
         this.shopUpgradeConfigRepository = shopUpgradeConfigRepository;
         this.equipmentRepository = equipmentRepository;
+        this.donjonRepository = donjonRepository;
     }
 
     @Transactional
@@ -69,7 +74,7 @@ public class AchievementService {
         ua.setUnlockedAt(Instant.now());
         if (type.getGoalValue() > 0) {
             ua.setCurrentProgress(Math.max(ua.getCurrentProgress(), type.getGoalValue()));
-        } else {
+        } else if (ua.getCurrentProgress() <= 0) {
             ua.setCurrentProgress(1);
         }
         userAchievementRepository.save(ua);
@@ -171,6 +176,75 @@ public class AchievementService {
         if (hasCursedItem) {
             unlock(user, AchievementType.MALEDICTION);
         }
+
+        // 5. PROGRESSION DES DONJONS (Donjons libres & Secrets)
+        syncDungeonProgression(user);
+    }
+
+    private String normalizeSecretName(String s) {
+        if (s == null) return "";
+        String normalized = java.text.Normalizer.normalize(s, java.text.Normalizer.Form.NFD);
+        normalized = normalized.replaceAll("\\p{M}", "");
+        normalized = normalized.replace('’', '\'');
+        return normalized.trim().toLowerCase(java.util.Locale.ROOT);
+    }
+
+    private boolean isSameSecret(String s1, String s2) {
+        if (s1 == null || s2 == null) return false;
+        return normalizeSecretName(s1).equals(normalizeSecretName(s2));
+    }
+
+    @Transactional
+    public void syncDungeonProgression(AppUser user) {
+        if (user == null) return;
+        List<Donjon> allDonjons = donjonRepository.findAll();
+        Set<Long> completedIds = user.getCompletedDungeons() != null ? user.getCompletedDungeons() : Collections.emptySet();
+
+        for (AchievementType type : AchievementType.values()) {
+            if (type.isFreeDungeons()) {
+                List<Donjon> freeDonjons = allDonjons.stream()
+                        .filter(d -> d.getRequiredSecret() == null || d.getRequiredSecret().trim().isEmpty())
+                        .toList();
+                int total = freeDonjons.size();
+                int progress = (int) freeDonjons.stream()
+                        .filter(d -> completedIds.contains(d.getId()))
+                        .count();
+                UserAchievement ua = getOrCreateAchievement(user, type);
+                if (total > 0 && progress >= total) {
+                    ua.setCurrentProgress(progress);
+                    if (!ua.isUnlocked()) {
+                        unlock(user, type);
+                    } else {
+                        userAchievementRepository.save(ua);
+                    }
+                } else if (!ua.isUnlocked()) {
+                    ua.setCurrentProgress(progress);
+                    userAchievementRepository.save(ua);
+                }
+            } else if (type.getRequiredSecret() != null && !type.getRequiredSecret().isBlank()) {
+                int reqLevel = type.getRequiredSecretLevel();
+                List<Donjon> secretDonjons = allDonjons.stream()
+                        .filter(d -> isSameSecret(d.getRequiredSecret(), type.getRequiredSecret())
+                                && (d.getRequiredSecretLevel() <= 0 ? 1 : d.getRequiredSecretLevel()) == reqLevel)
+                        .toList();
+                int total = secretDonjons.size();
+                int progress = (int) secretDonjons.stream()
+                        .filter(d -> completedIds.contains(d.getId()))
+                        .count();
+                UserAchievement ua = getOrCreateAchievement(user, type);
+                if (total > 0 && progress >= total) {
+                    ua.setCurrentProgress(progress);
+                    if (!ua.isUnlocked()) {
+                        unlock(user, type);
+                    } else {
+                        userAchievementRepository.save(ua);
+                    }
+                } else if (!ua.isUnlocked()) {
+                    ua.setCurrentProgress(progress);
+                    userAchievementRepository.save(ua);
+                }
+            }
+        }
     }
 
     @Transactional
@@ -190,6 +264,7 @@ public class AchievementService {
         int totalConsumables = (int) allRecipes.stream().filter(r -> r.getRewardType() == RecipeRewardType.GIVE_CONSUMABLE).count();
         int totalEquipments = (int) allRecipes.stream().filter(r -> r.getRewardType() == RecipeRewardType.GIVE_EQUIPMENT).count();
         int totalAnomalies = (int) allRecipes.stream().filter(r -> r.getRewardType() == RecipeRewardType.GIVE_ANOMALY || r.getRewardType() == RecipeRewardType.UPGRADE_ANOMALY).count();
+        List<Donjon> allDonjons = donjonRepository.findAll();
 
         for (AchievementType type : AchievementType.values()) {
             UserAchievement ua = map.get(type);
@@ -203,6 +278,19 @@ public class AchievementService {
             if (type == AchievementType.GRAND_GOURMET) effectiveGoal = Math.max(1, totalConsumables);
             if (type == AchievementType.COLLECTIONNEUR) effectiveGoal = Math.max(1, totalEquipments);
             if (type == AchievementType.MYSTICISME) effectiveGoal = Math.max(1, totalAnomalies);
+            if (type.isFreeDungeons()) {
+                long count = allDonjons.stream()
+                        .filter(d -> d.getRequiredSecret() == null || d.getRequiredSecret().trim().isEmpty())
+                        .count();
+                effectiveGoal = (int) Math.max(1, count);
+            } else if (type.getRequiredSecret() != null && !type.getRequiredSecret().isBlank()) {
+                int reqLevel = type.getRequiredSecretLevel();
+                long count = allDonjons.stream()
+                        .filter(d -> isSameSecret(d.getRequiredSecret(), type.getRequiredSecret())
+                                && (d.getRequiredSecretLevel() <= 0 ? 1 : d.getRequiredSecretLevel()) == reqLevel)
+                        .count();
+                effectiveGoal = (int) Math.max(1, count);
+            }
 
             if (type.isHidden() && !isUnlocked) {
                 dtoList.add(new AchievementDTO(
@@ -386,6 +474,9 @@ public class AchievementService {
                 }
             }
         }
+
+        // 4. Progression des donjons (Libres & Secrets)
+        syncDungeonProgression(user);
     }
 
     @Transactional
