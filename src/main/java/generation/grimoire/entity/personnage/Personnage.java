@@ -25,10 +25,10 @@ import java.util.HashMap;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(exclude = { "user", "equipments", "activeBuffs", "activeShields", "activeHealOverTimeEffects",
-        "activeManaOverTimeEffects", "activeDamageOverTimeEffects", "activeHeatOverTimeEffects", "consumableSpellBuffs",
+        "activeManaOverTimeEffects", "activeDamageOverTimeEffects", "activeHeatOverTimeEffects",
         "channelingTarget", "channelingAlly", "channeledSpell" })
 @ToString(exclude = { "user", "equipments", "activeBuffs", "activeShields", "activeHealOverTimeEffects",
-        "activeManaOverTimeEffects", "activeDamageOverTimeEffects", "activeHeatOverTimeEffects", "consumableSpellBuffs",
+        "activeManaOverTimeEffects", "activeDamageOverTimeEffects", "activeHeatOverTimeEffects",
         "channelingTarget", "channelingAlly", "channeledSpell" })
 @Entity
 @Table(name = "Personnage")

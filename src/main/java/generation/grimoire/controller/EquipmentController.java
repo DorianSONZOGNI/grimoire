@@ -633,10 +633,6 @@ public class EquipmentController {
         return toResponseDto(e, null, null);
     }
 
-    private EquipmentResponseDTO toResponseDto(Equipment e, java.util.Map<String, java.util.List<generation.grimoire.dto.equipment.DungeonDropSourceDTO>> sourcesMap) {
-        return toResponseDto(e, sourcesMap, null);
-    }
-
     private EquipmentResponseDTO toResponseDto(Equipment e,
             java.util.Map<String, java.util.List<generation.grimoire.dto.equipment.DungeonDropSourceDTO>> sourcesMap,
             java.util.Map<String, java.util.List<String>> alchemyMap) {
