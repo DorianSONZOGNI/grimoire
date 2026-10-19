@@ -49,6 +49,10 @@ public class DonjonDTO {
         private String challenges;
         private int bossRewardSpiritualXp;
         private int bossRewardGold;
+        private String customAchievementTitle;
+        private String customAchievementDesc;
+        private String customAchievementIcon;
+        private String customAchievementRewardTitle;
         private List<MonsterRefDTO> monsters;
         private List<LootEntryDTO> lootTable;
     }

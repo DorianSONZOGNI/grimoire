@@ -99,6 +99,19 @@ public class Salle {
     @Column(columnDefinition = "TEXT")
     private String doorOutcomes; // JSON: [{"type":"BOSS","probability":20},{"type":"ITEM","probability":50}]
 
+    // Succès caché configurable (optionnel, pour Boss ou salle spéciale)
+    @Column(name = "custom_achievement_title", length = 120)
+    private String customAchievementTitle;
+
+    @Column(name = "custom_achievement_desc", columnDefinition = "TEXT")
+    private String customAchievementDesc;
+
+    @Column(name = "custom_achievement_icon", length = 60)
+    private String customAchievementIcon;
+
+    @Column(name = "custom_achievement_reward_title", length = 100)
+    private String customAchievementRewardTitle;
+
     @OneToMany(mappedBy = "salle", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
     private List<LootEntry> lootTable = new ArrayList<>();

@@ -4,10 +4,12 @@ import generation.grimoire.dto.achievement.AchievementDTO;
 import generation.grimoire.dto.achievement.UserAchievementsResponseDTO;
 import generation.grimoire.entity.AlchemyRecipe;
 import generation.grimoire.entity.achievement.UserAchievement;
+import generation.grimoire.entity.achievement.UserCustomAchievement;
 import generation.grimoire.entity.achievement.UserStatistics;
 import generation.grimoire.entity.auth.AppUser;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.pve.Donjon;
+import generation.grimoire.entity.pve.Salle;
 import generation.grimoire.enumeration.AchievementType;
 import generation.grimoire.enumeration.EquipmentRarity;
 import generation.grimoire.enumeration.RecipeRewardType;
@@ -16,6 +18,7 @@ import generation.grimoire.repository.AlchemyRecipeRepository;
 import generation.grimoire.repository.EquipmentRepository;
 import generation.grimoire.repository.ShopUpgradeConfigRepository;
 import generation.grimoire.repository.UserAchievementRepository;
+import generation.grimoire.repository.UserCustomAchievementRepository;
 import generation.grimoire.repository.UserStatisticsRepository;
 import generation.grimoire.repository.auth.UserRepository;
 import generation.grimoire.repository.pve.DonjonRepository;
@@ -35,6 +38,7 @@ public class AchievementService {
     private final ShopUpgradeConfigRepository shopUpgradeConfigRepository;
     private final EquipmentRepository equipmentRepository;
     private final DonjonRepository donjonRepository;
+    private final UserCustomAchievementRepository userCustomAchievementRepository;
 
     public AchievementService(UserAchievementRepository userAchievementRepository,
                               UserStatisticsRepository userStatisticsRepository,
@@ -42,7 +46,8 @@ public class AchievementService {
                               AlchemyRecipeRepository alchemyRecipeRepository,
                               ShopUpgradeConfigRepository shopUpgradeConfigRepository,
                               EquipmentRepository equipmentRepository,
-                              DonjonRepository donjonRepository) {
+                              DonjonRepository donjonRepository,
+                              generation.grimoire.repository.UserCustomAchievementRepository userCustomAchievementRepository) {
         this.userAchievementRepository = userAchievementRepository;
         this.userStatisticsRepository = userStatisticsRepository;
         this.userRepository = userRepository;
@@ -50,6 +55,7 @@ public class AchievementService {
         this.shopUpgradeConfigRepository = shopUpgradeConfigRepository;
         this.equipmentRepository = equipmentRepository;
         this.donjonRepository = donjonRepository;
+        this.userCustomAchievementRepository = userCustomAchievementRepository;
     }
 
     @Transactional
@@ -327,12 +333,99 @@ public class AchievementService {
             }
         }
 
+        // === SUCCÈS PERSONNALISÉS (PVE ADMIN / SALLES & BOSS SECRETS) ===
+        record CustomAchieveMeta(String title, String description, String icon, String rewardTitle) {}
+        Map<String, CustomAchieveMeta> configuredCustoms = new LinkedHashMap<>();
+
+        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        for (Donjon d : allDonjons) {
+            if (d.getSalles() == null) continue;
+            for (generation.grimoire.entity.pve.Salle s : d.getSalles()) {
+                if (s.getCustomAchievementTitle() != null && !s.getCustomAchievementTitle().isBlank()) {
+                    String title = s.getCustomAchievementTitle().trim();
+                    configuredCustoms.putIfAbsent(title, new CustomAchieveMeta(
+                            title,
+                            s.getCustomAchievementDesc(),
+                            s.getCustomAchievementIcon(),
+                            s.getCustomAchievementRewardTitle()
+                    ));
+                }
+                if (s.getEventSubType() == generation.grimoire.enumeration.EventSubType.PORTE_ETRANGE && s.getDoorOutcomes() != null) {
+                    try {
+                        com.fasterxml.jackson.databind.JsonNode outcomes = mapper.readTree(s.getDoorOutcomes());
+                        if (outcomes.isArray()) {
+                            for (com.fasterxml.jackson.databind.JsonNode outcome : outcomes) {
+                                if (outcome.hasNonNull("customAchievementTitle") && !outcome.path("customAchievementTitle").asText().isBlank()) {
+                                    String title = outcome.path("customAchievementTitle").asText().trim();
+                                    configuredCustoms.putIfAbsent(title, new CustomAchieveMeta(
+                                            title,
+                                            outcome.path("customAchievementDesc").asText(null),
+                                            outcome.path("customAchievementIcon").asText("emoji_events"),
+                                            outcome.path("customAchievementRewardTitle").asText(null)
+                                    ));
+                                }
+                            }
+                        }
+                    } catch (Exception ignored) {}
+                }
+            }
+        }
+
+        List<generation.grimoire.entity.achievement.UserCustomAchievement> userCustoms = userCustomAchievementRepository.findByUser_Id(user.getId());
+        Set<String> unlockedCustomTitles = new HashSet<>();
+        for (generation.grimoire.entity.achievement.UserCustomAchievement uca : userCustoms) {
+            unlockedCustomTitles.add(uca.getTitle());
+            dtoList.add(new AchievementDTO(
+                    "CUSTOM_" + uca.getId(),
+                    uca.getTitle(),
+                    uca.getDescription(),
+                    uca.getIcon() != null && !uca.getIcon().isBlank() ? uca.getIcon() : "emoji_events",
+                    "COMBAT",
+                    "Combat & Donjons",
+                    "swords",
+                    uca.getRewardTitle(),
+                    1,
+                    1,
+                    true,
+                    uca.getUnlockedAt() != null ? uca.getUnlockedAt().toString() : null,
+                    true
+            ));
+            totalUnlocked++;
+        }
+
+        for (CustomAchieveMeta meta : configuredCustoms.values()) {
+            if (!unlockedCustomTitles.contains(meta.title())) {
+                dtoList.add(new AchievementDTO(
+                        "CUSTOM_LOCKED_" + Math.abs(meta.title().hashCode()),
+                        "???",
+                        "Ce haut-fait est un mystère scellé...",
+                        "lock",
+                        "COMBAT",
+                        "Combat & Donjons",
+                        "swords",
+                        "???",
+                        0,
+                        1,
+                        false,
+                        null,
+                        true
+                ));
+            }
+        }
+
+        int totalCustomsCount = configuredCustoms.size();
+        for (String unlockedTitle : unlockedCustomTitles) {
+            if (!configuredCustoms.containsKey(unlockedTitle)) {
+                totalCustomsCount++;
+            }
+        }
+
         return new UserAchievementsResponseDTO(
                 dtoList,
                 user.getActiveTitle(),
                 user.getUnlockedTitles() != null ? user.getUnlockedTitles() : Collections.emptySet(),
                 totalUnlocked,
-                AchievementType.values().length
+                AchievementType.values().length + totalCustomsCount
         );
     }
 
@@ -477,6 +570,59 @@ public class AchievementService {
 
         // 4. Progression des donjons (Libres & Secrets)
         syncDungeonProgression(user);
+    }
+
+    @Transactional
+    public boolean unlockCustomAchievement(AppUser user, String title, String description, String icon, String rewardTitle) {
+        if (user == null || title == null || title.isBlank()) return false;
+        String cleanTitle = title.trim();
+        if (userCustomAchievementRepository.existsByUser_IdAndTitle(user.getId(), cleanTitle)) {
+            return false;
+        }
+
+        UserCustomAchievement uca = new UserCustomAchievement(
+                user,
+                cleanTitle,
+                description,
+                (icon != null && !icon.isBlank()) ? icon.trim() : "emoji_events",
+                (rewardTitle != null && !rewardTitle.isBlank()) ? rewardTitle.trim() : null
+        );
+        userCustomAchievementRepository.save(uca);
+
+        if (rewardTitle != null && !rewardTitle.isBlank()) {
+            String cleanReward = rewardTitle.trim();
+            if (user.getUnlockedTitles() == null) {
+                user.setUnlockedTitles(new HashSet<>());
+            }
+            user.getUnlockedTitles().add(cleanReward);
+            if (user.getActiveTitle() == null || user.getActiveTitle().isBlank()) {
+                user.setActiveTitle(cleanReward);
+            }
+            userRepository.save(user);
+        }
+        return true;
+    }
+
+    @Transactional
+    public void checkAndUnlockCustomAchievement(AppUser user, Salle room, CombatSession session) {
+        if (user == null || room == null) return;
+        String title = room.getCustomAchievementTitle();
+        if (title == null || title.isBlank()) return;
+
+        boolean unlocked = unlockCustomAchievement(
+                user,
+                title,
+                room.getCustomAchievementDesc(),
+                room.getCustomAchievementIcon(),
+                room.getCustomAchievementRewardTitle()
+        );
+
+        if (unlocked && session != null) {
+            session.addLog("🏆 Succès secret débloqué : " + title.trim() + " !");
+            if (room.getCustomAchievementRewardTitle() != null && !room.getCustomAchievementRewardTitle().isBlank()) {
+                session.addLog("👑 Titre débloqué : « " + room.getCustomAchievementRewardTitle().trim() + " » !");
+            }
+        }
     }
 
     @Transactional

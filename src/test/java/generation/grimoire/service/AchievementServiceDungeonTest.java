@@ -44,6 +44,8 @@ class AchievementServiceDungeonTest {
     private EquipmentRepository equipmentRepository;
     @Mock
     private DonjonRepository donjonRepository;
+    @Mock
+    private generation.grimoire.repository.UserCustomAchievementRepository userCustomAchievementRepository;
 
     @InjectMocks
     private AchievementService achievementService;
@@ -220,5 +222,60 @@ class AchievementServiceDungeonTest {
         UserAchievement ua = userAchievementMap.get(AchievementType.DONJONS_LIBRES);
         assertNotNull(ua);
         assertTrue(ua.isUnlocked());
+    }
+
+    @Test
+    void testUnlockCustomAchievement_WhenNew_SavesAndGrantsTitle() {
+        when(userCustomAchievementRepository.existsByUser_IdAndTitle(1L, "Chasseur d'Abomination")).thenReturn(false);
+
+        boolean unlocked = achievementService.unlockCustomAchievement(
+                user,
+                "Chasseur d'Abomination",
+                "Vaincre l'abomination régénérante",
+                "skull",
+                "Terreur des Ténèbres"
+        );
+
+        assertTrue(unlocked);
+        verify(userCustomAchievementRepository).save(any(generation.grimoire.entity.achievement.UserCustomAchievement.class));
+        assertTrue(user.getUnlockedTitles().contains("Terreur des Ténèbres"));
+        assertEquals("Terreur des Ténèbres", user.getActiveTitle());
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void testUnlockCustomAchievement_WhenAlreadyUnlocked_ReturnsFalse() {
+        when(userCustomAchievementRepository.existsByUser_IdAndTitle(1L, "Chasseur d'Abomination")).thenReturn(true);
+
+        boolean unlocked = achievementService.unlockCustomAchievement(
+                user,
+                "Chasseur d'Abomination",
+                "Vaincre l'abomination régénérante",
+                "skull",
+                "Terreur des Ténèbres"
+        );
+
+        assertFalse(unlocked);
+        verify(userCustomAchievementRepository, never()).save(any());
+    }
+
+    @Test
+    void testCheckAndUnlockCustomAchievement_FromRoom_UnlocksAndLogs() {
+        generation.grimoire.entity.pve.Salle room = new generation.grimoire.entity.pve.Salle();
+        room.setCustomAchievementTitle("Abomination Vaincue");
+        room.setCustomAchievementDesc("Terrasser le monstre du marché");
+        room.setCustomAchievementIcon("swords");
+        room.setCustomAchievementRewardTitle("Boucher");
+
+        when(userCustomAchievementRepository.existsByUser_IdAndTitle(1L, "Abomination Vaincue")).thenReturn(false);
+
+        Donjon d = createDonjon(1L, "Donjon Test", null, 1);
+        CombatSession session = new CombatSession("session-1", d, Collections.emptyList());
+
+        achievementService.checkAndUnlockCustomAchievement(user, room, session);
+
+        assertTrue(user.getUnlockedTitles().contains("Boucher"));
+        assertTrue(session.getCombatLog().stream().anyMatch(l -> l.contains("Abomination Vaincue")));
+        assertTrue(session.getCombatLog().stream().anyMatch(l -> l.contains("Boucher")));
     }
 }
