@@ -39,6 +39,9 @@ public class UserCustomAchievement {
     @Column(nullable = false)
     private Instant unlockedAt;
 
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private boolean notified = false;
+
     public UserCustomAchievement(AppUser user, String title, String description, String icon, String rewardTitle) {
         this.user = user;
         this.title = title;
@@ -46,5 +49,6 @@ public class UserCustomAchievement {
         this.icon = (icon != null && !icon.isBlank()) ? icon : "emoji_events";
         this.rewardTitle = rewardTitle;
         this.unlockedAt = Instant.now();
+        this.notified = false;
     }
 }

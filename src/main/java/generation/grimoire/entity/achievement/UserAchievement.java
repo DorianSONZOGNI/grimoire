@@ -35,6 +35,9 @@ public class UserAchievement {
     @Column(nullable = false)
     private boolean unlocked = false;
 
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private boolean notified = true;
+
     private Instant unlockedAt;
 
     public UserAchievement(AppUser user, AchievementType achievement) {
@@ -42,5 +45,6 @@ public class UserAchievement {
         this.achievement = achievement;
         this.currentProgress = 0;
         this.unlocked = false;
+        this.notified = true;
     }
 }

@@ -78,6 +78,7 @@ public class AchievementService {
 
         ua.setUnlocked(true);
         ua.setUnlockedAt(Instant.now());
+        ua.setNotified(false);
         if (type.getGoalValue() > 0) {
             ua.setCurrentProgress(Math.max(ua.getCurrentProgress(), type.getGoalValue()));
         } else if (ua.getCurrentProgress() <= 0) {
@@ -639,5 +640,60 @@ public class AchievementService {
         } else {
             throw new IllegalArgumentException("Titre non débloqué ou invalide : " + title);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<AchievementDTO> getPendingNotifications(AppUser user) {
+        if (user == null) return Collections.emptyList();
+        List<AchievementDTO> list = new ArrayList<>();
+
+        List<UserAchievement> pendingStandard = userAchievementRepository.findByUserIdAndUnlockedTrueAndNotifiedFalse(user.getId());
+        for (UserAchievement ua : pendingStandard) {
+            AchievementType type = ua.getAchievement();
+            if (type == null) continue;
+            list.add(new AchievementDTO(
+                    type.getCode(),
+                    type.getLabel(),
+                    type.getDescription(),
+                    type.getIcon(),
+                    type.getCategory().name(),
+                    type.getCategory().getLabel(),
+                    type.getCategory().getIcon(),
+                    type.getRewardTitle(),
+                    ua.getCurrentProgress(),
+                    type.getGoalValue(),
+                    true,
+                    ua.getUnlockedAt() != null ? ua.getUnlockedAt().toString() : null,
+                    type.isHidden()
+            ));
+        }
+
+        List<UserCustomAchievement> pendingCustom = userCustomAchievementRepository.findByUser_IdAndNotifiedFalse(user.getId());
+        for (UserCustomAchievement uca : pendingCustom) {
+            list.add(new AchievementDTO(
+                    "CUSTOM_" + uca.getId(),
+                    uca.getTitle(),
+                    uca.getDescription(),
+                    uca.getIcon(),
+                    "COMBAT",
+                    "Combat & Donjons",
+                    "swords",
+                    uca.getRewardTitle(),
+                    1,
+                    1,
+                    true,
+                    uca.getUnlockedAt() != null ? uca.getUnlockedAt().toString() : null,
+                    true
+            ));
+        }
+
+        return list;
+    }
+
+    @Transactional
+    public void acknowledgeAllNotifications(AppUser user) {
+        if (user == null) return;
+        userAchievementRepository.markAllAsNotified(user.getId());
+        userCustomAchievementRepository.markAllAsNotified(user.getId());
     }
 }
