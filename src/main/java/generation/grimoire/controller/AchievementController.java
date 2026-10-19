@@ -55,4 +55,29 @@ public class AchievementController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @GetMapping("/pending-notifications")
+    public ResponseEntity<?> getPendingNotifications(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.ok(java.util.Collections.emptyList());
+        }
+        AppUser user = userRepository.findByUsername(principal.getName()).orElse(null);
+        if (user == null) {
+            return ResponseEntity.ok(java.util.Collections.emptyList());
+        }
+        return ResponseEntity.ok(achievementService.getPendingNotifications(user));
+    }
+
+    @PostMapping("/acknowledge")
+    public ResponseEntity<?> acknowledgeNotifications(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.ok(Map.of("message", "Ignoré (non authentifié)."));
+        }
+        AppUser user = userRepository.findByUsername(principal.getName()).orElse(null);
+        if (user == null) {
+            return ResponseEntity.ok(Map.of("message", "Ignoré (utilisateur introuvable)."));
+        }
+        achievementService.acknowledgeAllNotifications(user);
+        return ResponseEntity.ok(Map.of("message", "Notifications acquittées."));
+    }
 }

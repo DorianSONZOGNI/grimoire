@@ -39,6 +39,8 @@ class AlchemyServiceTest {
     private EquipmentRepository equipmentRepository;
     @Mock
     private LootEntryRepository lootEntryRepository;
+    @Mock
+    private AchievementService achievementService;
 
     @InjectMocks
     private AlchemyService alchemyService;

@@ -3,7 +3,6 @@ package generation.grimoire.entity.spiritualite.passif;
 import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.Spiritualite;
 import generation.grimoire.entity.personnage.Personnage;
-import generation.grimoire.enumeration.StatType;
 import generation.grimoire.event.*;
 import generation.grimoire.passif.PassiveEffect;
 import jakarta.persistence.*;
@@ -27,8 +26,6 @@ public abstract class SpiritualitePassiveEffect implements PassiveEffect {
     @JoinColumn(name = "spiritualite_id", nullable = false)
     private Spiritualite spiritualite;
 
-    @Enumerated(EnumType.STRING)
-    private StatType statAffected;
 
     /**
      * Méthode appelée lorsqu'un sort est lancé par le personnage ou lorsqu'un sort de cette spiritualité est lancé.

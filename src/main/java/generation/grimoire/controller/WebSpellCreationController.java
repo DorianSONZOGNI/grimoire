@@ -89,7 +89,6 @@ public class WebSpellCreationController {
             @org.springframework.cache.annotation.CacheEvict(value = "allSpells", allEntries = true),
             @org.springframework.cache.annotation.CacheEvict(value = "spells", allEntries = true),
             @org.springframework.cache.annotation.CacheEvict(value = "spellById", allEntries = true),
-            @org.springframework.cache.annotation.CacheEvict(value = "spellsByVariant", allEntries = true),
             @org.springframework.cache.annotation.CacheEvict(value = "spellsByMutation", allEntries = true)
     })
     @DeleteMapping("/{id}")
@@ -105,7 +104,6 @@ public class WebSpellCreationController {
             @org.springframework.cache.annotation.CacheEvict(value = "allSpells", allEntries = true),
             @org.springframework.cache.annotation.CacheEvict(value = "spells", allEntries = true),
             @org.springframework.cache.annotation.CacheEvict(value = "spellById", allEntries = true),
-            @org.springframework.cache.annotation.CacheEvict(value = "spellsByVariant", allEntries = true),
             @org.springframework.cache.annotation.CacheEvict(value = "spellsByMutation", allEntries = true)
     })
     @PostMapping

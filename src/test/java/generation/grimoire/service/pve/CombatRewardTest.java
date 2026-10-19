@@ -43,6 +43,8 @@ class CombatRewardTest {
     private AnomalieRepository anomalieRepository;
     @Mock
     private generation.grimoire.service.PersonnageService personnageService;
+    @Mock
+    private generation.grimoire.service.AchievementService achievementService;
 
     @InjectMocks
     private CombatTurnService combatTurnService;

@@ -1061,11 +1061,12 @@ window.addEventListener('DOMContentLoaded', async () => {
         cvInput.addEventListener('change', (e) => {
             const vId = e.target.value;
             const iconEl = document.getElementById('charVoieInfoIcon');
+            const currentSpirit = document.getElementById('charSpirit')?.value;
 
             if (!vId) {
                 if (iconEl) iconEl.classList.add('hidden');
                 applyVoieBaseStats(null);
-                if (window.updateArmoryVoieSpider) window.updateArmoryVoieSpider(null);
+                if (window.updateArmoryVoieSpider) window.updateArmoryVoieSpider(null, currentSpirit, false);
                 return;
             }
             const v = pageState.voies.find(x => x.id == vId);
@@ -1087,14 +1088,14 @@ window.addEventListener('DOMContentLoaded', async () => {
                 }
                 iconEl.classList.remove('hidden');
                 applyVoieBaseStats(v.nom);
-                if (window.updateArmoryVoieSpider) window.updateArmoryVoieSpider(vId);
+                if (window.updateArmoryVoieSpider) window.updateArmoryVoieSpider(vId, currentSpirit, true);
             } else if (iconEl) {
                 iconEl.classList.add('hidden');
                 applyVoieBaseStats(null);
-                if (window.updateArmoryVoieSpider) window.updateArmoryVoieSpider(null);
+                if (window.updateArmoryVoieSpider) window.updateArmoryVoieSpider(null, currentSpirit, false);
             } else {
                 applyVoieBaseStats(null);
-                if (window.updateArmoryVoieSpider) window.updateArmoryVoieSpider(null);
+                if (window.updateArmoryVoieSpider) window.updateArmoryVoieSpider(null, currentSpirit, false);
             }
         });
     }
@@ -1104,10 +1105,14 @@ window.addEventListener('DOMContentLoaded', async () => {
         csInput.addEventListener('change', (e) => {
             const sId = e.target.value;
             const iconEl = document.getElementById('charSpiritInfoIcon');
+            const currentVoie = document.getElementById('charVoie')?.value;
 
             if (!sId) {
                 if (iconEl) iconEl.classList.add('hidden');
                 if (window.updateArmorySpiritSpider) window.updateArmorySpiritSpider(null);
+                if (currentVoie && window.updateArmoryVoieSpider) {
+                    window.updateArmoryVoieSpider(currentVoie, null, true);
+                }
                 return;
             }
             const s = pageState.spiritualites.find(x => x.id == sId);
@@ -1134,6 +1139,10 @@ window.addEventListener('DOMContentLoaded', async () => {
                 if (window.updateArmorySpiritSpider) window.updateArmorySpiritSpider(null);
             } else {
                 if (window.updateArmorySpiritSpider) window.updateArmorySpiritSpider(null);
+            }
+
+            if (currentVoie && window.updateArmoryVoieSpider) {
+                window.updateArmoryVoieSpider(currentVoie, s || sId, true);
             }
         });
     }

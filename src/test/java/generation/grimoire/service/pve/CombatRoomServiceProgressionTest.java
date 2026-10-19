@@ -56,6 +56,10 @@ class CombatRoomServiceProgressionTest {
     private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
     @Mock
     private generation.grimoire.service.PersonnageService personnageService;
+    @Mock
+    private generation.grimoire.service.AchievementService achievementService;
+    @Mock
+    private HuntingQuestService huntingQuestService;
 
     @InjectMocks
     private CombatRoomService combatRoomService;

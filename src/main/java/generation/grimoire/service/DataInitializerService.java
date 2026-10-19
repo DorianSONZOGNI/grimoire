@@ -46,8 +46,10 @@ public class DataInitializerService {
                 try {
                     entityManager.createNativeQuery("UPDATE user_achievement SET achievement_code = 'MALEDICTION' WHERE achievement_code = 'CURIEUX'").executeUpdate();
                     entityManager.createNativeQuery("UPDATE app_user SET active_title = 'L''imprononçable' WHERE active_title = 'Le Curieux'").executeUpdate();
+                    entityManager.createNativeQuery("UPDATE user_achievement SET notified = true WHERE notified IS NULL").executeUpdate();
+                    entityManager.createNativeQuery("UPDATE user_custom_achievement SET notified = true WHERE notified IS NULL").executeUpdate();
                 } catch (Exception e) {
-                    log.debug("Migration achievement CURIEUX -> MALEDICTION skipped: {}", e.getMessage());
+                    log.debug("Migration achievement updates skipped: {}", e.getMessage());
                 }
 
                 log.info("Initialisation des entités de référence (Voies, Spiritualités)...");

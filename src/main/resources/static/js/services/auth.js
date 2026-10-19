@@ -60,7 +60,10 @@ window.animateGoldValue = function(element, start, end, duration) {
 
 window.globalFetch = async function (url, options = {}) {
     if (!options.headers) options.headers = {};
-    if (accessToken) {
+    if (!accessToken) {
+        accessToken = localStorage.getItem('accessToken');
+    }
+    if (accessToken && !options.headers['Authorization']) {
         options.headers['Authorization'] = `Bearer ${accessToken}`;
     }
 
@@ -96,7 +99,7 @@ window.globalFetch = async function (url, options = {}) {
                 options.headers['Authorization'] = `Bearer ${accessToken}`;
                 res = await fetch(url, options);
             } else {
-                if (!url.includes('/api/auth/me') && !url.includes('/api/alchemy/recipes') && !url.includes('/api/meta/all')) {
+                if (!url.includes('/api/auth/me') && !url.includes('/api/alchemy/recipes') && !url.includes('/api/meta/all') && !url.includes('/api/achievements/')) {
                     localStorage.removeItem('accessToken');
                     localStorage.removeItem('refreshToken');
                     localStorage.removeItem('isLikelyLoggedIn');
@@ -131,7 +134,7 @@ window.globalFetch = async function (url, options = {}) {
         }
 
         if (!res.ok) {
-            if (res.status === 401 && !url.includes('/api/auth/me') && !url.includes('/api/alchemy/recipes') && !url.includes('/api/meta/all')) {
+            if (res.status === 401 && !url.includes('/api/auth/me') && !url.includes('/api/alchemy/recipes') && !url.includes('/api/meta/all') && !url.includes('/api/achievements/')) {
                 console.warn('Redirecting to login due to 401', url);
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
@@ -154,13 +157,28 @@ window.globalFetch = async function (url, options = {}) {
             } catch (e2) { }
             throw new Error(errorMsg);
         }
+
+        const method = (options.method || 'GET').toUpperCase();
+        if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method) &&
+            !url.includes('/api/achievements/acknowledge') &&
+            !url.includes('/api/achievements/pending-notifications')) {
+            if (window._achievementDebounceTimer) clearTimeout(window._achievementDebounceTimer);
+            window._achievementDebounceTimer = setTimeout(() => {
+                if (typeof window.checkAchievementNotifications === 'function') {
+                    window.checkAchievementNotifications();
+                }
+            }, 600);
+        }
+
         return res;
     } catch (error) {
-        if (typeof showNotif !== 'undefined') {
-            showNotif(error.message, true);
-        } else if (typeof alert !== 'undefined') {
-            if (window.ui) ui.showNotif(error.message, true);
-            else console.error(error.message);
+        if (!options.silent) {
+            if (typeof showNotif !== 'undefined') {
+                showNotif(error.message, true);
+            } else if (typeof alert !== 'undefined') {
+                if (window.ui) ui.showNotif(error.message, true);
+                else console.error(error.message);
+            }
         }
         throw error;
     }

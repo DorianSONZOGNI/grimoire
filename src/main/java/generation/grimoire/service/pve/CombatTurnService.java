@@ -713,6 +713,7 @@ class CombatTurnService {
             for (Personnage p : session.getPlayers()) {
                 if (p.getUser() != null) {
                     achievementService.onCombatRoomVictory(p.getUser(), session.getPlayers());
+                    achievementService.checkAndUnlockCustomAchievement(p.getUser(), session.getCurrentRoom(), session);
                 }
             }
             
