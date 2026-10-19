@@ -27,8 +27,6 @@ public abstract class SpiritualitePassiveEffect implements PassiveEffect {
     @JoinColumn(name = "spiritualite_id", nullable = false)
     private Spiritualite spiritualite;
 
-    @Enumerated(EnumType.STRING)
-    private StatType statAffected;
 
     /**
      * Méthode appelée lorsqu'un sort est lancé par le personnage ou lorsqu'un sort de cette spiritualité est lancé.

@@ -23,10 +23,6 @@ public interface SpellRepository extends JpaRepository<Spell, Long> {
     @EntityGraph(attributePaths = {"effects", "effects.channelingTurns", "voie", "voie.rankNames", "spiritualite", "spiritualite.rankNames", "mutation"})
     Optional<Spell> findById(@NonNull Long id);
 
-    @Cacheable("spellsByVariant")
-    @EntityGraph(attributePaths = {"effects", "effects.channelingTurns", "voie", "voie.rankNames", "spiritualite", "spiritualite.rankNames", "mutation"})
-    List<Spell> findByVariantId(Integer variantId);
-
     @Cacheable("spellsByMutation")
     @EntityGraph(attributePaths = {"effects", "effects.channelingTurns", "voie", "voie.rankNames", "spiritualite", "spiritualite.rankNames", "mutation"})
     List<Spell> findByMutationId(Long mutationId);

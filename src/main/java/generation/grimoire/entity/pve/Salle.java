@@ -57,8 +57,11 @@ public class Salle {
     private String alterationRequiredItem;
 
     // IF AUTEL (Altar)
+    @jakarta.persistence.Transient
     private String altarRequiredSpirituality; // e.g. "TENEBRES", "ESPRIT", "KARMA"
+    @jakarta.persistence.Transient
     private String altarRewardType; // "GOLD", "ITEM", "XP"
+    @jakarta.persistence.Transient
     private int altarRewardValue; // Value of Gold/XP, or Equipment ID
     @jakarta.persistence.Transient
     private generation.grimoire.entity.Equipment altarRewardEquipment;
