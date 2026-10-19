@@ -1088,7 +1088,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 }
                 iconEl.classList.remove('hidden');
                 applyVoieBaseStats(v.nom);
-                if (window.updateArmoryVoieSpider) window.updateArmoryVoieSpider(vId, currentSpirit, false);
+                if (window.updateArmoryVoieSpider) window.updateArmoryVoieSpider(vId, currentSpirit, true);
             } else if (iconEl) {
                 iconEl.classList.add('hidden');
                 applyVoieBaseStats(null);
