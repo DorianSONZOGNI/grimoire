@@ -3,7 +3,6 @@ package generation.grimoire.service.pve;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import generation.grimoire.dto.equipment.DungeonDropSourceDTO;
-import generation.grimoire.entity.Equipment;
 import generation.grimoire.entity.pve.Donjon;
 import generation.grimoire.entity.pve.LootEntry;
 import generation.grimoire.entity.pve.Salle;
@@ -74,7 +73,7 @@ public class DungeonLootTrackerService {
         Map<String, List<DungeonDropSourceDTO>> finalMap = new HashMap<>();
         for (Map.Entry<String, Map<Long, DungeonSourceAccumulator>> entry : resultMap.entrySet()) {
             List<DungeonDropSourceDTO> list = entry.getValue().values().stream()
-                    .map(DungeonSourceAccumulator::toDTO)
+                    .map(acc -> acc.toDTO())
                     .toList();
             finalMap.put(entry.getKey(), list);
         }
@@ -114,7 +113,7 @@ public class DungeonLootTrackerService {
         Map<String, List<DungeonDropSourceDTO>> finalMap = new HashMap<>();
         for (Map.Entry<String, Map<Long, DungeonSourceAccumulator>> entry : resultMap.entrySet()) {
             List<DungeonDropSourceDTO> list = entry.getValue().values().stream()
-                    .map(DungeonSourceAccumulator::toDTO)
+                    .map(acc -> acc.toDTO())
                     .toList();
             finalMap.put(entry.getKey(), list);
         }

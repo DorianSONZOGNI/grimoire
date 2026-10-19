@@ -51,6 +51,7 @@ public class SecurityConfig {
 
                 // --- Lecture publique (GET sur les API de consultation) ---
                 .requestMatchers(HttpMethod.GET, "/api/**").permitAll().requestMatchers("/api/pve/combat/debug/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/achievements/acknowledge").permitAll()
 
                 // --- Tout le reste nécessite une authentification ---
                 .anyRequest().authenticated()

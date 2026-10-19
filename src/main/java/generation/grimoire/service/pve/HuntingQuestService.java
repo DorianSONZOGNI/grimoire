@@ -591,14 +591,14 @@ public class HuntingQuestService {
         }
 
         List<String> usernames = entries.stream()
-                .map(HuntingQuestEntry::getAccountName)
+                .map(e -> e.getAccountName())
                 .filter(Objects::nonNull)
                 .distinct()
                 .collect(Collectors.toList());
         Map<String, String> titlesByUsername = usernames.isEmpty() ? Map.of() :
                 userRepository.findByUsernameIn(usernames).stream()
                         .filter(u -> u.getActiveTitle() != null && !u.getActiveTitle().trim().isEmpty())
-                        .collect(Collectors.toMap(AppUser::getUsername, AppUser::getActiveTitle, (t1, t2) -> t1));
+                        .collect(Collectors.toMap(u -> u.getUsername(), u -> u.getActiveTitle(), (t1, t2) -> t1));
 
         return entries.stream()
                 .map(e -> entryToMap(e, titlesByUsername.get(e.getAccountName())))
@@ -626,7 +626,7 @@ public class HuntingQuestService {
         String activeTitle = null;
         if (e.getAccountName() != null) {
             activeTitle = userRepository.findByUsername(e.getAccountName())
-                    .map(AppUser::getActiveTitle)
+                    .map(u -> u.getActiveTitle())
                     .orElse(null);
         }
         return entryToMap(e, activeTitle);

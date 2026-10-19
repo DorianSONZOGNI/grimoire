@@ -4,7 +4,6 @@ import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.Voie;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.enumeration.SpellCastingType;
-import generation.grimoire.enumeration.StatType;
 import generation.grimoire.event.*;
 import generation.grimoire.passif.PassiveEffect;
 import jakarta.persistence.*;
@@ -28,8 +27,6 @@ public abstract class VoiePassiveEffect implements PassiveEffect {
     @JoinColumn(name = "voie_id", nullable = false)
     private Voie voie;
 
-    @Enumerated(EnumType.STRING)
-    private StatType statAffected;
 
     /**
      * Méthode appelée lorsqu'un sort est lancé par le personnage.

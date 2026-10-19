@@ -383,6 +383,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                         s.lootTable = r.lootTable;
                     }
                 }
+                s.customAchievementTitle = r.customAchievementTitle || null;
+                s.customAchievementDesc = r.customAchievementDesc || null;
+                s.customAchievementIcon = r.customAchievementIcon || null;
+                s.customAchievementRewardTitle = r.customAchievementRewardTitle || null;
                 return s;
             })
         };
@@ -958,6 +962,42 @@ function renderRooms() {
                             </label>
                             <input class="form-control" type="number" min="0" value="${room.bossRewardGold || 0}" onchange="updateRoomField(${rIndex}, 'bossRewardGold', parseInt(this.value) || 0)">
                         </div>
+                    </div>
+                </div>
+                <div class="section-divider mt-4 pt-4 border-t-dashed" >
+                    <label class="flex-center text-xs text-amber-400 gap-1 mb-2" >
+                        <span class="material-symbols-outlined icon-sm" >military_tech</span>
+                        Succès secret & Titre (Optionnel)
+                    </label>
+                    <div class="flex gap-4 mb-3" >
+                        <div class="flex-1" >
+                            <label class="flex-center text-xs text-muted gap-1 mb-1" >
+                                <span class="material-symbols-outlined text-sm" >label</span>
+                                Nom du succès
+                            </label>
+                            <input class="form-control" type="text" placeholder="Ex: Cauchemar Vivant" value="${room.customAchievementTitle || ''}" onchange="updateRoomField(${rIndex}, 'customAchievementTitle', this.value.trim())">
+                        </div>
+                        <div class="flex-1" >
+                            <label class="flex-center text-xs text-muted gap-1 mb-1" >
+                                <span class="material-symbols-outlined text-sm" >stars</span>
+                                Icône (Material Symbol)
+                            </label>
+                            <input class="form-control" type="text" placeholder="emoji_events" value="${room.customAchievementIcon || ''}" onchange="updateRoomField(${rIndex}, 'customAchievementIcon', this.value.trim())">
+                        </div>
+                    </div>
+                    <div class="mb-3" >
+                        <label class="flex-center text-xs text-muted gap-1 mb-1" >
+                            <span class="material-symbols-outlined text-sm" >description</span>
+                            Description du succès
+                        </label>
+                        <input class="form-control" type="text" placeholder="Ex: Vaincre le boss caché sans périr." value="${room.customAchievementDesc || ''}" onchange="updateRoomField(${rIndex}, 'customAchievementDesc', this.value.trim())">
+                    </div>
+                    <div>
+                        <label class="flex-center text-xs text-muted gap-1 mb-1" >
+                            <span class="material-symbols-outlined text-sm" >badge</span>
+                            Titre honorifique joueur (Optionnel)
+                        </label>
+                        <input class="form-control" type="text" placeholder="Ex: Fléau des Ombres" value="${room.customAchievementRewardTitle || ''}" onchange="updateRoomField(${rIndex}, 'customAchievementRewardTitle', this.value.trim())">
                     </div>
                 </div>
             `;
@@ -1848,6 +1888,27 @@ function renderRooms() {
                                             <label class="text-muted text-xs" ><span class="material-symbols-outlined text-sm align-middle text-violet-500" >blur_on</span> XP Spirit. bonus</label>
                                             <input class="form-control" type="number" id="room_door_boss_xp_${rIndex}_${oIndex}" value="${outcome.bossRewardSpiritualXp || 0}" min="0" onchange="updateDoorBossField(${rIndex}, ${oIndex}, 'bossRewardSpiritualXp', this.value)">
                                         </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3 p-3 bg-black/20 rounded-lg border border-dashed border-white/15 w-full" >
+                                    <label class="text-xs text-amber-400 block mb-2" ><span class="material-symbols-outlined icon-sm align-middle">military_tech</span> Succès secret & Titre (Optionnel)</label>
+                                    <div class="flex gap-2 mt-2" >
+                                        <div class="flex-1" >
+                                            <label class="text-muted text-xs" >Nom du succès</label>
+                                            <input class="form-control" type="text" placeholder="Ex: Cauchemar Vivant" value="${outcome.customAchievementTitle || ''}" onchange="updateDoorBossField(${rIndex}, ${oIndex}, 'customAchievementTitle', this.value.trim())">
+                                        </div>
+                                        <div class="flex-1" >
+                                            <label class="text-muted text-xs" >Icône (Material Symbol)</label>
+                                            <input class="form-control" type="text" placeholder="emoji_events" value="${outcome.customAchievementIcon || ''}" onchange="updateDoorBossField(${rIndex}, ${oIndex}, 'customAchievementIcon', this.value.trim())">
+                                        </div>
+                                    </div>
+                                    <div class="mt-2" >
+                                        <label class="text-muted text-xs" >Description</label>
+                                        <input class="form-control" type="text" placeholder="Ex: Vaincre le boss régénérant secret." value="${outcome.customAchievementDesc || ''}" onchange="updateDoorBossField(${rIndex}, ${oIndex}, 'customAchievementDesc', this.value.trim())">
+                                    </div>
+                                    <div class="mt-2" >
+                                        <label class="text-muted text-xs" >Titre joueur débloqué</label>
+                                        <input class="form-control" type="text" placeholder="Ex: Fléau des Ombres" value="${outcome.customAchievementRewardTitle || ''}" onchange="updateDoorBossField(${rIndex}, ${oIndex}, 'customAchievementRewardTitle', this.value.trim())">
                                     </div>
                                 </div>
                             `;
@@ -2899,6 +2960,10 @@ async function editDungeon(id) {
                         room.lootTable = [];
                     }
                 }
+                room.customAchievementTitle = s.customAchievementTitle || '';
+                room.customAchievementDesc = s.customAchievementDesc || '';
+                room.customAchievementIcon = s.customAchievementIcon || '';
+                room.customAchievementRewardTitle = s.customAchievementRewardTitle || '';
                 return room;
             });
             renderRooms();
@@ -3366,7 +3431,11 @@ window.removeGlobalBuffFromBoss = function (rIndex, oIndex, bIndex) {
 window.updateDoorBossField = function (rIndex, oIndex, fieldName, value) {
     const outcome = pageState.selectedRooms[rIndex].doorOutcomes[oIndex];
     if (outcome) {
-        outcome[fieldName] = parseInt(value) || 0;
+        if (fieldName === 'bossRewardGold' || fieldName === 'bossRewardSpiritualXp') {
+            outcome[fieldName] = parseInt(value) || 0;
+        } else {
+            outcome[fieldName] = value;
+        }
     }
 };
 

@@ -57,8 +57,11 @@ public class Salle {
     private String alterationRequiredItem;
 
     // IF AUTEL (Altar)
+    @jakarta.persistence.Transient
     private String altarRequiredSpirituality; // e.g. "TENEBRES", "ESPRIT", "KARMA"
+    @jakarta.persistence.Transient
     private String altarRewardType; // "GOLD", "ITEM", "XP"
+    @jakarta.persistence.Transient
     private int altarRewardValue; // Value of Gold/XP, or Equipment ID
     @jakarta.persistence.Transient
     private generation.grimoire.entity.Equipment altarRewardEquipment;
@@ -95,6 +98,19 @@ public class Salle {
     // IF PORTE_ETRANGE — outcomes as JSON string
     @Column(columnDefinition = "TEXT")
     private String doorOutcomes; // JSON: [{"type":"BOSS","probability":20},{"type":"ITEM","probability":50}]
+
+    // Succès caché configurable (optionnel, pour Boss ou salle spéciale)
+    @Column(name = "custom_achievement_title", length = 120)
+    private String customAchievementTitle;
+
+    @Column(name = "custom_achievement_desc", columnDefinition = "TEXT")
+    private String customAchievementDesc;
+
+    @Column(name = "custom_achievement_icon", length = 60)
+    private String customAchievementIcon;
+
+    @Column(name = "custom_achievement_reward_title", length = 100)
+    private String customAchievementRewardTitle;
 
     @OneToMany(mappedBy = "salle", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)

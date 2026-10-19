@@ -294,7 +294,7 @@ Le système de sorts utilise le pattern **Single Table Inheritance** de JPA :
 | **Soin** | `HealEffect`, `HealFixedEffect`, `HealPercentageEffect`, `HealOverTimeEffect` |
 | **Mana** | `ManaEffect`, `ManaFixedEffect`, `ManaPercentageEffect`, `ManaOverTimeEffect` |
 | **Chaleur** | `HeatFixedEffect`, `HeatPercentageEffect`, `HeatOverTimeEffect` |
-| **Buff/Debuff** | `BuffDebuffEffect`, `ConsumableSpellBuffDebuffEffect` |
+| **Buff/Debuff** | `BuffDebuffEffect` |
 | **Utilitaires** | `ShieldEffect`, `DispelEffect`, `PurgeEffect`, `BudEffect` |
 
 **Pourquoi SINGLE_TABLE ?** Performance (pas de JOIN pour charger les effets d'un sort), simplicité des requêtes polymorphiques, et la table reste lisible car les sous-types partagent beaucoup de colonnes.
