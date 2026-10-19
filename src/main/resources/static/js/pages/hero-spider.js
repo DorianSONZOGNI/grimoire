@@ -383,9 +383,10 @@
             isExtendedList.push(isExt);
         }
 
+        const isFirstSelection = !canvas._spiderState || !canvas._spiderState.currentNorms;
         if (!canvas._spiderState) {
             canvas._spiderState = {
-                currentNorms: [...targetNorms],
+                currentNorms: new Array(N).fill(0),
                 animId: null
             };
         }
@@ -395,16 +396,20 @@
             canvas._spiderState.animId = null;
         }
 
-        if (!animate || !canvas._spiderState.currentNorms) {
+        if (!animate) {
             canvas._spiderState.currentNorms = [...targetNorms];
             renderSpiderFrame(canvas, targetNorms, isExtendedList, spiritType);
             return;
         }
 
-        // Animation fluide lors du changement dynamique de spiritualité
-        const startNorms = [...canvas._spiderState.currentNorms];
+        // Animation fluide : départ du centre (0) lors de la première sélection de voie,
+        // ou transition douce depuis la forme actuelle en cas de changement de voie / spiritualité
+        const startNorms = isFirstSelection ? new Array(N).fill(0) : [...canvas._spiderState.currentNorms];
         const startTime = performance.now();
-        const duration = 280;
+        const duration = isFirstSelection ? 360 : 280;
+
+        // Afficher immédiatement l'état initial (centre ou forme précédente)
+        renderSpiderFrame(canvas, startNorms, isExtendedList, spiritType);
 
         function step(now) {
             const elapsed = now - startTime;
@@ -572,7 +577,7 @@
     };
 
     // Exposer l'API globale pour l'armurerie
-    window.updateArmoryVoieSpider = async function (voieId, spiritId, animate = false) {
+    window.updateArmoryVoieSpider = async function (voieId, spiritId, animate = true) {
         const section = document.getElementById('armorySpiderSection');
         const canvas = document.getElementById('armorySpiderCanvas');
         const badges = document.getElementById('armorySpecBadges');
@@ -588,6 +593,10 @@
             if (spiderSpiritIconEl) spiderSpiritIconEl.classList.add('hidden');
             section.classList.add('is-hidden');
             section.classList.remove('is-visible');
+            if (canvas._spiderState) {
+                if (canvas._spiderState.animId) cancelAnimationFrame(canvas._spiderState.animId);
+                canvas._spiderState = null;
+            }
             return;
         }
 
@@ -664,6 +673,11 @@
 
     window.closeSpecModal = function () {
         const overlay = document.getElementById('specModalOverlay');
+        const canvas = document.getElementById('specModalCanvas');
+        if (canvas && canvas._spiderState) {
+            if (canvas._spiderState.animId) cancelAnimationFrame(canvas._spiderState.animId);
+            canvas._spiderState = null;
+        }
         if (overlay) overlay.classList.remove('active');
     };
 
