@@ -3,7 +3,6 @@ package generation.grimoire.service;
 import generation.grimoire.dto.achievement.AchievementDTO;
 import generation.grimoire.dto.achievement.UserAchievementsResponseDTO;
 import generation.grimoire.entity.AlchemyRecipe;
-import generation.grimoire.entity.Equipment;
 import generation.grimoire.entity.achievement.UserAchievement;
 import generation.grimoire.entity.achievement.UserStatistics;
 import generation.grimoire.entity.auth.AppUser;

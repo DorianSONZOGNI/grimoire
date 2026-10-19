@@ -4,7 +4,6 @@ import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.Voie;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.enumeration.SpellCastingType;
-import generation.grimoire.enumeration.StatType;
 import generation.grimoire.event.*;
 import generation.grimoire.passif.PassiveEffect;
 import jakarta.persistence.*;

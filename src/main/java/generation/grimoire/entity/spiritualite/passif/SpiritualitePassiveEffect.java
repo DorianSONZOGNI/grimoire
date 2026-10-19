@@ -3,7 +3,6 @@ package generation.grimoire.entity.spiritualite.passif;
 import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.Spiritualite;
 import generation.grimoire.entity.personnage.Personnage;
-import generation.grimoire.enumeration.StatType;
 import generation.grimoire.event.*;
 import generation.grimoire.passif.PassiveEffect;
 import jakarta.persistence.*;
