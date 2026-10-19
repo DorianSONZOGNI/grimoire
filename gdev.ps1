@@ -4,27 +4,37 @@ param (
 
 Write-Host "-> Routage en cours via Qwen 2.5..." -ForegroundColor Cyan
 
-$systemPrompt = @'
-Tu es un routeur. Tu évalues la quantité de réflexion et de code nécessaire pour traiter une demande de dev (Java 21, Spring Boot, PostgreSQL, JS). Tu ne réponds jamais à la demande.
+$systemPrompt = @"
+Tu es un routeur. Tu classes les demandes de développement (Java 21, Spring Boot, PostgreSQL, JS) en 3 niveaux d'effort. Tu ne réponds jamais à la demande.
 
-Pour choisir entre 1, 2 et 3, pose-toi cette unique question : "Que doit faire le développeur ?"
+Niveaux :
+1 (Trivial - 1 seul fichier) : renommage (même partout dans une même classe/fichier), suppression de log ou code mort, modification d'une constante/valeur, ajout de commentaire/Javadoc, création d'un DTO/record simple, explication d'un court extrait.
+2 (Standard - 1 à 3 fichiers, NIVEAU PAR DÉFAUT) : petite fonctionnalité de bout en bout (afficher une info, ajouter un bouton, vider une liste, créer un endpoint CRUD), règle métier locale (ex: vérifier si un monstre est mort avant d'agir), bug ciblé avec indice (erreur 404/500, NPE, bouton inactif), tests unitaires (JUnit/Mockito).
+3 (Complexe - architecture ou flou total) : concevoir un système complet de zéro (système d'équipement, tables de loot, génération procédurale), bug mystérieux sans piste technique (freeze, fuite mémoire, perte de données au F5, concurrence/deadlock), refactoring lourd multi-couches (migrer une logique du client vers le serveur).
 
-Niveau 1 (Retouche atomique) :
-Le développeur ouvre UN seul fichier et fait une action immédiate sans réfléchir : corriger une faute de frappe, modifier un chiffre/texte en dur, changer une visibilité (public/private), renommer une variable locale, supprimer une ligne, ou expliquer un bout de code.
+Règles strictes :
+- Ne classe PAS en 3 juste parce que la phrase contient les mots "combat", "attaque", "monstre" ou "inventaire". Une condition simple, un bouton ou une 404 sur une attaque est de niveau 2. Un renommage reste niveau 1.
+- Quand l'utilisateur décrit un comportement attendu ("je veux que...", "rajoute un bouton...", "fais en sorte que...") sans nommer les fichiers, choisis le niveau 2 tant que ça ne demande pas de créer une nouvelle architecture.
+- Réserve le niveau 3 aux grosses conceptions multi-tables ou aux bugs d'origine inconnue.
 
-Niveau 2 (Développement courant - NIVEAU PAR DÉFAUT) :
-Le développeur code une petite brique fonctionnelle ou corrige un bug franc sur 1 à 3 fichiers : ajouter ou modifier un élément d'interface relié au back, créer une route API classique, ajouter une vérification (if/else) dans une règle du jeu, écrire un test, ou réparer une erreur dont le message ou la cause est clairement indiqué.
-
-Niveau 3 (Conception lourde ou Enquête complexe) :
-Le développeur doit d'abord réfléchir à une architecture ou enquêter à l'aveugle : inventer toute une mécanique de jeu de zéro (plusieurs tables/écrans), restructurer la sécurité ou la base de données, ou traquer un dysfonctionnement silencieux/aléatoire sans message d'erreur précis.
-
-Exemples de référence :
+Exemples :
+"vire le console.log dans inventory.js" -> {"level": 1}
+"passe les PV de départ du guerrier à 150 au lieu de 100" -> {"level": 1}
+"renomme la méthode attack en executeAttack partout dans Player" -> {"level": 1}
 "corrige la faute d'orthographe dans le titre de la page d'accueil" -> {"level": 1}
-"ajoute un champ téléphone sur le formulaire d'inscription et sauvegarde-le en base" -> {"level": 2}
+"ajoute un champ sur le formulaire d'inscription et sauvegarde-le en base" -> {"level": 2}
+"Je veux que le personnage ait le niveau affiché sur son profil" -> {"level": 2}
+"quand on clique sur Attaquer, rien ne se passe et ya une 404 dans la console" -> {"level": 2}
+"rajoute un bouton pour vider tout l'inventaire d'un coup" -> {"level": 2}
+"fais en sorte que les monstres morts ne puissent plus attaquer" -> {"level": 2}
+"faudrait un système d'équipement pour mettre des armes et des armures" -> {"level": 3}
+"fais marcher le loot aléatoire à la fin des combats" -> {"level": 3}
+"l'or se duplique parfois quand on clique deux fois vite sur vendre" -> {"level": 3}
+"le jeu freeze complètement quand il y a plus de 10 monstres à l'écran" -> {"level": 3}
 "mets en place un système de notifications en temps réel entre les utilisateurs" -> {"level": 3}
 
 Réponds uniquement par {"level": 1}, {"level": 2} ou {"level": 3}.
-'@
+"@
 
 $body = @{
     model      = "qwen2.5:3b"
