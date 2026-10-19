@@ -112,31 +112,27 @@ Vérifie l'enregistrement :
 agy mcp list
 ```
 
-### Étape 3 : Débloquer l'automatisation dans `.gemini/settings.json`
+### Étape 3 : Set IA function
 
-Pour exécuter les commandes hors sandbox et appliquer les créations/modifications de code sans invite interactive (`Allow creation of this file?`), applique la configuration suivante dans `.gemini/settings.json` (à la racine de Grimoire ou dans `~/.gemini/settings.json`) :
+En powershell : 
 
-```json
-{
-  "gcp": {
-    "project": "gemini-enterprise-507909",
-    "location": "eu"
-  },
-  "model": "Gemini 3.1 Pro (High)",
-  "agentMode": "accept-edits",
-  "permissions": {
-    "allow": [
-      "command(*)",
-      "unsandboxed(*)",
-      "mcp(*)"
-    ]
-  },
-  "trustedWorkspaces": [
-    "C:\\Users\\doson",
-    "C:\\Users\\doson\\IdeaProjects\\grimoire"
-  ]
+if (!(Test-Path $PROFILE)) { New-Item -Path $PROFILE -ItemType File -Force } notepad $PROFILE
+
+Puis dans le fichier coller :
+
+function ai {
+    [CmdletBinding(PositionalBinding = $false)]
+    param(
+        [ValidateRange(0,5)] [int]$Level = 0,
+        [switch]$DryRun,
+        [Parameter(Mandatory = $true, Position = 0, ValueFromRemainingArguments = $true)] [string[]]$Words
+    )
+    & "C:\Users\doson\IdeaProjects\grimoire\route.ps1" -Prompt ($Words -join " ") -Level $Level -DryRun:$DryRun
 }
-```
+
+Après ça vous pouvez lancer directement dans le terminal powershell :
+
+ai "requete à insérer ici"
 
 ---
 
