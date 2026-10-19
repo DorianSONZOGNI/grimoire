@@ -3,7 +3,6 @@ package generation.grimoire.service;
 import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.SpellEffect;
 import generation.grimoire.entity.personnage.Personnage;
-import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffDebuffEffect;
 import generation.grimoire.entity.spell.type.effect.HeatFixedEffect;
 import generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect;
 import generation.grimoire.entity.spell.type.effect.HeatPercentageEffect;
@@ -13,7 +12,6 @@ import generation.grimoire.enumeration.EffectTarget;
 import generation.grimoire.enumeration.EquipmentEffectType;
 import generation.grimoire.enumeration.Source;
 import generation.grimoire.enumeration.SpellCastingType;
-import generation.grimoire.enumeration.SpellCondition;
 import generation.grimoire.enumeration.StatType;
 import generation.grimoire.event.*;
 import generation.grimoire.repository.SpellRepository;
@@ -69,7 +67,6 @@ public class SpellService {
         SpellCastingType cType = cTypeOut[0];
 
         updateCastingState(caster, target, null, toCast, cType, choiceKey);
-        applyConsumableBuffs(toCast, caster, target);
 
         for (SpellEffect effect : toCast.getEffects()) {
             List<Personnage> recipients = resolveRecipients(effect.getEffectTarget(), caster, target);
@@ -96,7 +93,6 @@ public class SpellService {
         SpellCastingType cType = cTypeOut[0];
 
         updateCastingState(caster, target, ally, toCast, cType, choiceKey);
-        applyConsumableBuffs(toCast, caster, target);
 
         for (SpellEffect effect : toCast.getEffects()) {
             List<Personnage> recipients = resolveRecipientsGroup(effect.getEffectTarget(), caster, target, ally, allAllies, allEnemies);
@@ -113,7 +109,7 @@ public class SpellService {
     private Spell prepareAndPayCosts(Spell spell, Personnage caster, Personnage target,
                                     List<Personnage> allAllies, List<Personnage> allEnemies,
                                     Integer choiceKey, SpellCastingType[] cTypeOut) {
-        Spell toCast = selectVariant(spell, caster, target, choiceKey);
+        Spell toCast = spell;
 
         String castError = caster.canCast(toCast);
         if (castError != null) {
@@ -180,112 +176,7 @@ public class SpellService {
         return recipients.stream().distinct().toList();
     }
 
-    /**
-     * Sélectionne une variante du sort de base donné en fonction de conditions
-     * spécifiques, de paramètres d'incantation
-     * et de ciblage, ou d'une clé de variante choisie manuellement. La méthode
-     * tente d'abord de sélectionner une
-     * variante à l'aide d'une clé de choix fournie, puis évalue les conditions de
-     * sélection automatique si aucune
-     * correspondance n'est trouvée, et revient finalement à une sélection par
-     * défaut si nécessaire.
-     *
-     * @param baseSpell the base spell being cast
-     * @param caster    the character casting the spell
-     * @param target    the target of the spell
-     * @param choiceKey an optional key for explicitly selecting a spell variant
-     * @return la variante de sort sélectionnée, ou le sort de base si aucune
-     *         variante applicable n'est trouvée
-     */
-    private Spell selectVariant(Spell baseSpell,
-            Personnage caster,
-            Personnage target,
-            Integer choiceKey) {
 
-        // Charger les variantes une seule fois pour éviter des requêtes DB multiples
-        List<Spell> variants = baseSpell.getVariantId() != null
-                ? spellRepository.findByVariantId(baseSpell.getVariantId())
-                : List.of();
-
-        // 1) Variante forcée par choiceKey si présent
-        if (choiceKey != null && baseSpell.getVariantId() != null) {
-            for (Spell v : variants) {
-                if (choiceKey.equals(v.getChoiceKey())) {
-                    return v;
-                }
-            }
-        }
-
-        // 2) Sélection automatique par conditionType
-        if (baseSpell.getVariantId() == null) {
-            return baseSpell;
-        }
-
-        for (Spell variant : variants) {
-            SpellCondition cond = variant.getConditionType();
-            if (cond == null)
-                continue;
-
-            switch (cond) {
-                case IS_ALLY:
-                    if (caster.isAlly(target))
-                        return variant;
-                    break;
-                case IS_ENNEMY:
-                    if (!caster.isAlly(target))
-                        return variant;
-                    break;
-                case IS_SPELLCASTER:
-                    if (target.equals(caster))
-                        return variant;
-                    break;
-                case IS_NOT_SPELLCASTER:
-                    if (!target.equals(caster))
-                        return variant;
-                    break;
-                case LOW_LIFE:
-                    if (target.getHealthCurrent() < target.getTotalHealthMax() * 0.35)
-                        return variant;
-                    break;
-                case HIGH_LIFE:
-                    if (target.getHealthCurrent() > target.getTotalHealthMax() * 0.65)
-                        return variant;
-                    break;
-                case HIGHER_RESISTANCE:
-                    if (target.getResistance() > target.getArmor())
-                        return variant;
-                    break;
-                case HIGHER_ARMURE:
-                    if (target.getArmor() >= target.getResistance())
-                        return variant;
-                    break;
-            }
-        }
-
-        // fallback sur la première
-        return variants.isEmpty() ? baseSpell : variants.getFirst();
-    }
-
-    /**
-     * Parcourt la liste des buffs consommables du caster, applique chacun d'eux sur
-     * le sort,
-     * et consomme ceux qui ont épuisé leur nombre d'applications.
-     */
-    private void applyConsumableBuffs(Spell spell, Personnage caster, Personnage target) {
-        if (caster.getConsumableSpellBuffs() != null && !caster.getConsumableSpellBuffs().isEmpty()) {
-            Iterator<ConsumableSpellBuffDebuffEffect> iterator = caster.getConsumableSpellBuffs().iterator();
-            while (iterator.hasNext()) {
-                ConsumableSpellBuffDebuffEffect buff = iterator.next();
-                if (buff.isActive()) {
-                    buff.applyToSpell(spell, caster, target);
-                    if (!buff.isActive()) { // Consommé
-                        iterator.remove();
-                        log.debug("{} a consommé un buff consumable.", caster.getName());
-                    }
-                }
-            }
-        }
-    }
 
     public void tickChanneling(Personnage caster, Personnage target, Integer choiceKey) {
         Spell channeledSpell = processChannelingTurn(caster);

@@ -3,7 +3,6 @@ package generation.grimoire.entity;
 import generation.grimoire.enumeration.Source;
 import generation.grimoire.enumeration.SpellCategory;
 import generation.grimoire.enumeration.SpellCastingType;
-import generation.grimoire.enumeration.SpellCondition;
 import generation.grimoire.enumeration.KarmaAlignment;
 import generation.grimoire.entity.pve.Mutation;
 import jakarta.persistence.*;
@@ -35,10 +34,6 @@ public class Spell {
     private int heatGenerated;
     private int seedCost;
     private int action;
-    private Integer variantId; // Groupe de variantes de sorts
-    @Enumerated(EnumType.STRING)
-    private SpellCondition conditionType; // "ALLY", "HIGHER_RESISTANCE", LOW_LIFE etc. Permet les choix conditionnel
-    private Integer choiceKey; // La "clé" pour différencier les versions du sort, permet les choix manuel
 
     @Enumerated(EnumType.STRING)
     private SpellCategory category;

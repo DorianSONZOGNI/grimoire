@@ -4,7 +4,6 @@ import generation.grimoire.entity.Spiritualite;
 import generation.grimoire.entity.Voie;
 import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
-import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffDebuffEffect;
 import generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect;
 import generation.grimoire.entity.spell.type.effect.HealOverTimeEffect;
 import generation.grimoire.entity.spell.type.effect.ManaOverTimeEffect;
@@ -392,9 +391,6 @@ public class Personnage {
     private List<generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect> activeHeatOverTimeEffects = new ArrayList<>();
 
     @Transient
-    private List<ConsumableSpellBuffDebuffEffect> consumableSpellBuffs = new ArrayList<>();
-
-    @Transient
     private java.util.Map<String, Integer> passiveStates = new java.util.HashMap<>();
 
     public int getPassiveState(String key, int defaultValue) {
@@ -589,12 +585,6 @@ public class Personnage {
             return 0;
         return activeShields.stream().mapToInt(shield -> shield != null ? shield.getAmount() : 0)
                 .sum();
-    }
-
-    public void addConsumableSpellBuff(ConsumableSpellBuffDebuffEffect buff) {
-        consumableSpellBuffs.add(buff);
-        System.out.println(this.name + " reçoit un buff consommable pour " + buff.getRemainingApplications()
-                + " prochain(s) sort(s).");
     }
 
     /**
@@ -893,7 +883,6 @@ public class Personnage {
      */
     public void purgeAllBuffsAndDebuffs() {
         if (activeBuffs != null) activeBuffs.clear();
-        if (consumableSpellBuffs != null) consumableSpellBuffs.clear();
         if (activeHealOverTimeEffects != null) activeHealOverTimeEffects.clear();
         if (activeDamageOverTimeEffects != null) activeDamageOverTimeEffects.clear();
         if (activeManaOverTimeEffects != null) activeManaOverTimeEffects.clear();

@@ -28,8 +28,6 @@ public abstract class VoiePassiveEffect implements PassiveEffect {
     @JoinColumn(name = "voie_id", nullable = false)
     private Voie voie;
 
-    @Enumerated(EnumType.STRING)
-    private StatType statAffected;
 
     /**
      * Méthode appelée lorsqu'un sort est lancé par le personnage.
