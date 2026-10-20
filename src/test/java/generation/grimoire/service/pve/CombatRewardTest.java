@@ -147,6 +147,20 @@ class CombatRewardTest {
     }
 
     @Test
+    void testCalculateDeathPenalty_AllLevels() {
+        assertThat(CombatTurnService.calculateDeathPenalty(1)).isEqualTo(5);
+        assertThat(CombatTurnService.calculateDeathPenalty(2)).isEqualTo(20);
+        assertThat(CombatTurnService.calculateDeathPenalty(3)).isEqualTo(80);
+        assertThat(CombatTurnService.calculateDeathPenalty(4)).isEqualTo(350);
+        assertThat(CombatTurnService.calculateDeathPenalty(5)).isEqualTo(1500);
+        assertThat(CombatTurnService.calculateDeathPenalty(6)).isEqualTo(6000);
+        assertThat(CombatTurnService.calculateDeathPenalty(7)).isEqualTo(25000);
+        assertThat(CombatTurnService.calculateDeathPenalty(8)).isEqualTo(100000);
+        assertThat(CombatTurnService.calculateDeathPenalty(9)).isEqualTo(400000);
+        assertThat(CombatTurnService.calculateDeathPenalty(10)).isEqualTo(0);
+    }
+
+    @Test
     void testOpenChest_NoKey() {
         room.setType(RoomType.TREASURE);
         
