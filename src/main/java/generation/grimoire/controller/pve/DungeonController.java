@@ -2,6 +2,7 @@ package generation.grimoire.controller.pve;
 
 import generation.grimoire.entity.pve.Donjon;
 import generation.grimoire.service.pve.PvEAdminService;
+import generation.grimoire.service.pve.DungeonTutorialService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,19 +26,23 @@ public class DungeonController {
     private final PvEAdminService pvEAdminService;
     private final UserRepository userRepository;
     private final DonjonRepository donjonRepository;
+    private final DungeonTutorialService dungeonTutorialService;
 
     @GetMapping
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<List<generation.grimoire.dto.pve.DonjonSummaryDTO>> getAvailableDungeons(Principal principal) {
         List<generation.grimoire.dto.pve.DonjonSummaryDTO> summaries = pvEAdminService.getDungeonSummaries();
+        AppUser user = null;
         if (principal != null) {
-            userRepository.findByUsername(principal.getName()).ifPresent(user -> {
+            user = userRepository.findByUsername(principal.getName()).orElse(null);
+            if (user != null) {
                 for (generation.grimoire.dto.pve.DonjonSummaryDTO summary : summaries) {
                     summary.setCompleted(user.getCompletedDungeons().contains(summary.getId()));
                 }
-            });
+            }
         }
-        return ResponseEntity.ok(summaries);
+        List<generation.grimoire.dto.pve.DonjonSummaryDTO> filtered = dungeonTutorialService.applyTutorialRules(summaries, user);
+        return ResponseEntity.ok(filtered);
     }
 
     @PostMapping("/{id}/unlock")

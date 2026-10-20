@@ -22,4 +22,5 @@ public class DonjonSummaryDTO {
     private boolean weeklyQuest;
     private boolean completed;
     private String dailyChallengeDuo;
+    private boolean bypassLevelRequirement;
 }

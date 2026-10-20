@@ -395,7 +395,7 @@ async function loadDungeons() {
                 let catId, label, icon, color;
 
                 // Check hero levels
-                if (pageState.userCharacters.length > 0) {
+                if (!d.bypassLevelRequirement && pageState.userCharacters.length > 0) {
                     const hasMatchingHero = pageState.userCharacters.some(c => (c.voieLevel || 1) >= (d.recommendedLevel || 1));
                     if (!hasMatchingHero) return; // Skip if no hero has exactly this level or higher
                 }
@@ -626,7 +626,7 @@ async function loadDungeons() {
                     leftBadges += `</div>`;
 
                     allCardsHtml += `
-                        <div class="dungeon-card ${isLocked ? 'locked' : ''}" id="dungeon-card-${d.id}" style="position: relative;" ${isLocked ? '' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0}, ${d.recommendedLevel || 1}, ${d.dailyQuest ? 'true' : 'false'}, ${d.weeklyQuest ? 'true' : 'false'}, ${d.dailyChallengeDuo ? `'${d.dailyChallengeDuo}'` : 'null'})"`}>
+                        <div class="dungeon-card ${isLocked ? 'locked' : ''}" id="dungeon-card-${d.id}" style="position: relative;" ${isLocked ? '' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0}, ${d.bypassLevelRequirement ? 1 : (d.recommendedLevel || 1)}, ${d.dailyQuest ? 'true' : 'false'}, ${d.weeklyQuest ? 'true' : 'false'}, ${d.dailyChallengeDuo ? `'${d.dailyChallengeDuo}'` : 'null'})"`}>
                             ${lockedHtml}
                             ${leftBadges}
                             ${skullsHtml}
@@ -2228,7 +2228,7 @@ window.updateJoinCharAvailability = function (info) {
         }
     }
 
-    const minLevel = info ? info.recommendedLevel : 1;
+    const minLevel = (info && !info.bypassLevelRequirement) ? (info.recommendedLevel || 1) : 1;
     let anyCharMeetsLevel = false;
 
     pageState.userCharacters.forEach(c => {
