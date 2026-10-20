@@ -137,26 +137,26 @@ class CombatRewardTest {
         checkDeaths.setAccessible(true);
         checkDeaths.invoke(combatTurnService, session);
 
-        // Penalty for level 3 (500 xp) is 80.
-        assertThat(player.getExperience()).isEqualTo(420); // 500 - 80
+        // Penalty for level 3 (500 xp) is 60.
+        assertThat(player.getExperience()).isEqualTo(440); // 500 - 60
         assertThat(session.getPenalizedDeadPlayers()).contains(1L);
 
         // Test calling it twice does not apply penalty twice
         checkDeaths.invoke(combatTurnService, session);
-        assertThat(player.getExperience()).isEqualTo(420); 
+        assertThat(player.getExperience()).isEqualTo(440); 
     }
 
     @Test
     void testCalculateDeathPenalty_AllLevels() {
         assertThat(CombatTurnService.calculateDeathPenalty(1)).isEqualTo(5);
         assertThat(CombatTurnService.calculateDeathPenalty(2)).isEqualTo(20);
-        assertThat(CombatTurnService.calculateDeathPenalty(3)).isEqualTo(80);
-        assertThat(CombatTurnService.calculateDeathPenalty(4)).isEqualTo(350);
-        assertThat(CombatTurnService.calculateDeathPenalty(5)).isEqualTo(1500);
-        assertThat(CombatTurnService.calculateDeathPenalty(6)).isEqualTo(6000);
-        assertThat(CombatTurnService.calculateDeathPenalty(7)).isEqualTo(25000);
-        assertThat(CombatTurnService.calculateDeathPenalty(8)).isEqualTo(100000);
-        assertThat(CombatTurnService.calculateDeathPenalty(9)).isEqualTo(400000);
+        assertThat(CombatTurnService.calculateDeathPenalty(3)).isEqualTo(60);
+        assertThat(CombatTurnService.calculateDeathPenalty(4)).isEqualTo(150);
+        assertThat(CombatTurnService.calculateDeathPenalty(5)).isEqualTo(350);
+        assertThat(CombatTurnService.calculateDeathPenalty(6)).isEqualTo(800);
+        assertThat(CombatTurnService.calculateDeathPenalty(7)).isEqualTo(2000);
+        assertThat(CombatTurnService.calculateDeathPenalty(8)).isEqualTo(5000);
+        assertThat(CombatTurnService.calculateDeathPenalty(9)).isEqualTo(12500);
         assertThat(CombatTurnService.calculateDeathPenalty(10)).isEqualTo(0);
     }
 

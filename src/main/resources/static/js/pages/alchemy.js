@@ -331,7 +331,7 @@ function getItemStyle(name, defaultType) {
 
 
 
-function renderCauldron(r) {
+function renderCauldron(r, preserveInput = false) {
     const container = document.getElementById('cauldronPanel');
     pageState.customSelectSetups = [];
 
@@ -342,9 +342,9 @@ function renderCauldron(r) {
     if (r.costGold > 0) {
         const reqGold = r.costGold * craftQty;
         const hasEnough = (window.currentUser?.monnaie || 0) >= reqGold;
-        reqsHTML += `<div class="flex items-center gap-2 bg-black/40 p-2 rounded-lg border border-amber-500/30 mb-1">
-                        <span class="material-symbols-outlined text-amber-500 text-xl">monetization_on</span>
-                        <span class="text-amber-500 font-semibold text-sm">${reqGold} Or</span>
+        reqsHTML += `<div class="flex items-center gap-2.5 bg-black/40 py-2 px-4 rounded-lg border border-amber-500/30 mb-1">
+                        <span class="material-symbols-outlined text-amber-500 text-lg">monetization_on</span>
+                        <span class="text-amber-500 font-semibold text-xs">${reqGold} Or</span>
                         <span class="ml-auto text-xs font-semibold ${hasEnough ? 'text-green-500' : 'text-red-500'}">
                             ${hasEnough ? '✓' : '✗'}
                         </span>
@@ -377,16 +377,16 @@ function renderCauldron(r) {
 
             const aTemp = pageState.allAnomalyTemplates.find(a => a.name === name);
             const tooltipData = aTemp ? getAnomalyTooltipHTML(aTemp, name) : '';
-            const tooltipHTML = tooltipData ? `data-color="${style.color}" class="cursor-help bg-black/40 p-2 rounded-lg mb-1" style="border: 1px solid ${style.color}40;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"` : `class="bg-black/40 p-2 rounded-lg mb-1" style="border: 1px solid ${style.color}40;"`;
+            const tooltipHTML = tooltipData ? `data-color="${style.color}" class="cursor-help bg-black/40 py-2 px-4 rounded-lg mb-1" style="border: 1px solid ${style.color}40;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"` : `class="bg-black/40 py-2 px-4 rounded-lg mb-1" style="border: 1px solid ${style.color}40;"`;
 
             reqsHTML += `<div ${tooltipHTML}>
-                            <div class="flex items-center justify-between gap-2" style="margin-bottom: ${(!isIdentical && hasEnough) ? '0.5rem' : '0'};">
-                                <div class="flex items-center gap-2">
-                                    <span class="material-symbols-outlined text-xl" style="color: ${style.color};">${style.icon}</span>
-                                    <span class="font-semibold text-sm text-white">${qty}x ${name}</span>
+                            <div class="flex items-center justify-between gap-2.5" style="margin-bottom: ${(!isIdentical && hasEnough) ? '0.35rem' : '0'};">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="material-symbols-outlined text-lg" style="color: ${style.color};">${style.icon}</span>
+                                    <span class="font-semibold text-xs text-white">${qty}x ${name}</span>
                                 </div>
-                                <div class="flex items-center gap-1 text-sm font-semibold" style="color: ${statusColor};">
-                                    <span class="material-symbols-outlined text-lg">${hasEnough ? 'check_circle' : 'cancel'}</span>
+                                <div class="flex items-center gap-1.5 text-xs font-semibold" style="color: ${statusColor};">
+                                    <span class="material-symbols-outlined text-base">${hasEnough ? 'check_circle' : 'cancel'}</span>
                                     <span>${currentAmount} / ${qty}</span>
                                 </div>
                             </div>`;
@@ -452,17 +452,17 @@ function renderCauldron(r) {
                 </div>
                 <div style="display:flex; flex-direction:column; gap:4px;">${statsData}</div>
             `.replace(/"/g, '&quot;');
-            const tooltipAttrs = tooltipData ? `data-color="${style.color}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}" class="cursor-help bg-black/40 p-2 rounded-lg mb-1" style="border: 1px solid ${style.color}40;"` : `class="bg-black/40 p-2 rounded-lg mb-1" style="border: 1px solid ${style.color}40;"`;
+            const tooltipAttrs = tooltipData ? `data-color="${style.color}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}" class="cursor-help bg-black/40 py-2 px-4 rounded-lg mb-1" style="border: 1px solid ${style.color}40;"` : `class="bg-black/40 py-2 px-4 rounded-lg mb-1" style="border: 1px solid ${style.color}40;"`;
 
             reqsHTML += `<div ${tooltipAttrs}>
-                        <div class="flex items-center justify-between gap-2">
-                            <div class="flex items-center gap-2">
-                                <span class="material-symbols-outlined text-xl" style="color: ${style.color};">${style.icon}</span>
-                                <span class="font-semibold text-sm text-white">${qty}x ${name}</span>
+                        <div class="flex items-center justify-between gap-2.5">
+                            <div class="flex items-center gap-2.5">
+                                <span class="material-symbols-outlined text-lg" style="color: ${style.color};">${style.icon}</span>
+                                <span class="font-semibold text-xs text-white">${qty}x ${name}</span>
                             </div>
-                            <div class="flex items-center gap-1 text-sm font-semibold" style="color: ${statusColor};">
-                                <span class="material-symbols-outlined text-lg">${statusIcon}</span>
-                                ${matching.length}/${qty}
+                            <div class="flex items-center gap-1.5 text-xs font-semibold" style="color: ${statusColor};">
+                                <span class="material-symbols-outlined text-base">${statusIcon}</span>
+                                <span>${matching.length}/${qty}</span>
                             </div>
                         </div>`;
 
@@ -490,13 +490,13 @@ function renderCauldron(r) {
         }
 
         crafterSelectHTML = `
-                    <div class="mt-4 text-left w-full">
-                        <label class="text-emerald font-semibold text-sm">
-                            <span class="material-symbols-outlined text-base align-middle text-emerald">star</span>
+                    <div class="mt-2.5 pt-2 border-t border-white/10 text-left w-full">
+                        <label class="text-emerald font-semibold text-xs flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm text-emerald">star</span>
                             Sélectionnez le personnage canalisant ${actionText} :
                         </label>
                         <div id="crafterSelectContainer" class="mt-1">
-                            <div class="p-1 text-muted text-sm">Chargement...</div>
+                            <div class="p-1 text-muted text-xs">Chargement...</div>
                         </div>
                     </div>
                 `;
@@ -566,45 +566,82 @@ function renderCauldron(r) {
         }
     }
 
+    if (preserveInput) {
+        const reqsList = document.getElementById('cauldronReqsList');
+        const resultWrapper = document.getElementById('cauldronResultWrapper');
+        if (reqsList && resultWrapper) {
+            reqsList.innerHTML = reqsHTML || '<span class="text-muted text-xs">Aucun coût matériel.</span>';
+            resultWrapper.innerHTML = `
+                <span class="flex justify-center items-center gap-1 text-xs uppercase font-bold tracking-wider mb-0.5" style="color: ${resultColor};">
+                    <span class="material-symbols-outlined text-base">${resultIcon}</span>
+                    ${resultLabel}
+                </span>
+                <strong class="text-base" style="color: ${resultColor};">${quantityDisplay}</strong>
+            `;
+            const crafterWrapper = document.getElementById('crafterSelectWrapper');
+            if (crafterWrapper && (r.costSpiritXp > 0 || r.rewardType === 'GIVE_SPIRIT_XP')) {
+                const currentSel = document.getElementById('crafterSelect');
+                const prevVal = currentSel ? currentSel.value : null;
+                crafterWrapper.innerHTML = crafterSelectHTML;
+                if (prevVal && pageState.userCharacters) {
+                    const cContainer = document.getElementById('crafterSelectContainer');
+                    if (cContainer) {
+                        let options = [{ value: '', html: '-- Choisir un personnage --', selected: false }];
+                        pageState.userCharacters.forEach(c => {
+                            options.push({
+                                value: c.id,
+                                html: `<div class="flex justify-between items-center w-full"><span class="text-sky-400 font-medium">${c.name}</span> <span class="text-slate-400 text-xs bg-black/30 px-2 py-1 rounded border border-white/5">XP Spirit : <strong class="text-amber-500">${c.spiritualiteExperience || 0}</strong></span></div>`,
+                                selected: String(c.id) === String(prevVal)
+                            });
+                        });
+                        buildCustomSelect(cContainer, options, '', 'crafterSelect');
+                    }
+                }
+            }
+            pageState.customSelectSetups.forEach(setup => setup());
+            return;
+        }
+    }
+
     container.innerHTML = `
-                <div class="w-full flex flex-col items-center justify-start text-left">
-                    <div class="mb-4 text-center">
-                        <span class="material-symbols-outlined text-5xl text-cyan-400">experiment</span>
-                        <h2 class="m-0 mt-1 text-white text-2xl">${r.name}</h2>
-                        <p class="text-muted text-sm max-w-[500px] mx-auto mt-1">${r.description || ''}</p>
+                <div class="w-full flex flex-col items-center justify-start text-left my-auto">
+                    <div class="mb-2 text-center">
+                        <span class="material-symbols-outlined text-4xl text-cyan-400">experiment</span>
+                        <h2 class="m-0 mt-0.5 text-white text-xl font-bold">${r.name}</h2>
+                        ${r.description ? `<p class="text-muted text-xs max-w-[500px] mx-auto mt-0.5">${r.description}</p>` : ''}
                     </div>
 
-                    <div style="width: 100%; max-width: 500px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1rem;">
-                        <h3 style="margin-top: 0; color: #e2e8f0; font-size: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.4rem; margin-bottom: 0.75rem; text-align: left;">Ingrédients Requis</h3>
-                        <div class="flex flex-col gap-1 mt-2">
-                            ${reqsHTML || '<span class="text-muted text-sm">Aucun coût matériel.</span>'}
+                    <div style="width: 100%; max-width: 500px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--glass-border); border-radius: 12px; padding: 0.75rem 1rem;">
+                        <h3 style="margin-top: 0; color: #e2e8f0; font-size: 0.9rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.35rem; margin-bottom: 0.5rem; text-align: left;">Ingrédients Requis</h3>
+                        <div id="cauldronReqsList" class="custom-scrollbar flex flex-col gap-1 max-h-[180px] overflow-y-auto pr-1">
+                            ${reqsHTML || '<span class="text-muted text-xs">Aucun coût matériel.</span>'}
                         </div>
                         
-                        ${crafterSelectHTML}
+                        <div id="crafterSelectWrapper">${crafterSelectHTML}</div>
                     </div>
 
-                    <div class="my-2 flex items-center gap-4">
-                        <span class="material-symbols-outlined text-emerald text-3xl">arrow_downward</span>
+                    <div class="my-1 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-emerald text-2xl">arrow_downward</span>
                     </div>
 
-                    <div class="rounded-xl p-3 text-center ${resultTooltipAttr ? 'cursor-help' : ''}" style="width: 100%; max-width: 500px; background: linear-gradient(135deg, ${resultColor}15, rgba(0,0,0,0.2)); border: 1px solid ${resultColor}50;" ${resultTooltipAttr}>
-                        <span class="flex justify-center items-center gap-1 text-xs uppercase font-bold tracking-wider mb-1" style="color: ${resultColor};">
-                            <span class="material-symbols-outlined text-lg">${resultIcon}</span>
+                    <div id="cauldronResultWrapper" class="rounded-xl py-2 px-3 text-center ${resultTooltipAttr ? 'cursor-help' : ''}" style="width: 100%; max-width: 500px; background: linear-gradient(135deg, ${resultColor}15, rgba(0,0,0,0.2)); border: 1px solid ${resultColor}50;" ${resultTooltipAttr}>
+                        <span class="flex justify-center items-center gap-1 text-xs uppercase font-bold tracking-wider mb-0.5" style="color: ${resultColor};">
+                            <span class="material-symbols-outlined text-base">${resultIcon}</span>
                             ${resultLabel}
                         </span>
-                        <strong class="text-lg" style="color: ${resultColor};">${quantityDisplay}</strong>
+                        <strong class="text-base" style="color: ${resultColor};">${quantityDisplay}</strong>
                     </div>
 
                     
-                    ${!isSecret ? `<div class="flex items-center gap-2 mt-2 mb-2">
-                        <label class="text-sm font-semibold text-emerald" for="craftQuantityInput">Quantité :</label>
-                        <input type="number" id="craftQuantityInput" min="1" value="${craftQty}" oninput="window.updateCraftQuantity(this)" class="bg-black/50 border border-emerald-500/30 text-white p-1 rounded w-20 text-center" />
+                    ${!isSecret ? `<div class="flex items-center justify-center gap-2 mt-2 mb-1">
+                        <label class="text-xs font-semibold text-emerald whitespace-nowrap flex-shrink-0" for="craftQuantityInput">Quantité&nbsp;:</label>
+                        <input type="number" id="craftQuantityInput" min="1" max="100" value="${craftQty}" oninput="window.updateCraftQuantity(this)" onblur="window.normalizeCraftQuantity(this)" class="bg-black/50 border border-emerald-500/30 text-white px-2 py-0.5 rounded w-16 text-center text-sm" />
                     </div>` : ''}
-                    <button id="transmuteButton" class="btn-transmute" style="margin-top: 1.5rem;" onclick="craftSelected()">
+                    <button id="transmuteButton" class="btn-transmute mt-2" onclick="craftSelected()">
                         <span class="material-symbols-outlined">science</span>
                         Transmuter
                     </button>
-                    <div id="craftMessage" class="mt-2 text-sm font-semibold text-center"></div>
+                    <div id="craftMessage" class="mt-1 text-xs font-semibold text-center"></div>
                 </div>
             `;
 
@@ -705,7 +742,8 @@ async function craftSelected() {
         }
     });
 
-    const craftQty = (pageState.selectedRecipe.rewardType === 'UNLOCK_FEATURE' || pageState.selectedRecipe.rewardType === 'SECRET' || (pageState.selectedRecipe.rewardName && pageState.selectedRecipe.rewardName.toLowerCase().includes('secret'))) ? 1 : (pageState.craftQuantity || 1);
+    const rawQty = (pageState.selectedRecipe.rewardType === 'UNLOCK_FEATURE' || pageState.selectedRecipe.rewardType === 'SECRET' || (pageState.selectedRecipe.rewardName && pageState.selectedRecipe.rewardName.toLowerCase().includes('secret'))) ? 1 : (pageState.craftQuantity || 1);
+    const craftQty = Math.min(100, Math.max(1, rawQty));
 
     let anomalieGroups = [];
     let currentAnoIndex = 0;
@@ -889,16 +927,32 @@ function createMagicParticles() {
 }
 
 window.updateCraftQuantity = function (input) {
-    let val = parseInt(input.value);
-    if (isNaN(val)) return;
-    if (val < 1) val = 1;
-    pageState.craftQuantity = val;
-    renderCauldron(pageState.selectedRecipe);
-    const newInput = document.getElementById('craftQuantityInput');
-    if (newInput) {
-        newInput.focus();
-        if (newInput.type !== 'number') {
-            newInput.setSelectionRange(newInput.value.length, newInput.value.length);
-        }
+    if (!input) return;
+    let raw = input.value.trim();
+    if (raw === '') {
+        return;
     }
+    let val = parseInt(raw);
+    if (isNaN(val)) {
+        val = 1;
+        input.value = 1;
+    } else if (val > 100) {
+        val = 100;
+        input.value = 100;
+    } else if (val < 1) {
+        val = 1;
+        input.value = 1;
+    }
+    pageState.craftQuantity = val;
+    renderCauldron(pageState.selectedRecipe, true);
+};
+
+window.normalizeCraftQuantity = function (input) {
+    if (!input) return;
+    let val = parseInt(input.value);
+    if (isNaN(val) || val < 1) val = 1;
+    if (val > 100) val = 100;
+    input.value = val;
+    pageState.craftQuantity = val;
+    renderCauldron(pageState.selectedRecipe, true);
 };
