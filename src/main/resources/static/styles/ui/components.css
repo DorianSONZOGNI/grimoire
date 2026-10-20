@@ -629,6 +629,27 @@
     text-align: left;
     display: none;
     pointer-events: none;
+    backdrop-filter: blur(8px);
+    transition: opacity 0.15s ease;
+}
+
+.global-tooltip .tooltip-title {
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.global-tooltip .tooltip-desc {
+    color: #cbd5e1;
+    font-size: 0.75rem;
+    line-height: 1.45;
+    white-space: normal;
+    max-width: 270px;
 }
 
 .custom-option:hover {

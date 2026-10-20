@@ -8,6 +8,30 @@ export const javaClassToCode = {
     'DISPEL': 'PURGE'
 };
 
+window.CASTING_TYPES = {
+    INSTANTANE: {
+        name: 'INSTANTANE',
+        label: 'Instantané',
+        description: "Ne consomme pas le tour de jeu. Peut être lancé en complément d'une action banale si les ressources le permettent.",
+        icon: 'bolt',
+        color: '#fbbf24'
+    },
+    BANAL: {
+        name: 'BANAL',
+        label: 'Banal',
+        description: "Action classique qui consomme le tour de jeu. Termine votre phase d'action une fois lancée.",
+        icon: 'hourglass_empty',
+        color: '#60a5fa'
+    },
+    CANALISE: {
+        name: 'CANALISE',
+        label: 'Canalisé',
+        description: "Action puissante qui s'exécute sur plusieurs tours. Empêche généralement les actions banales durant sa canalisation.",
+        icon: 'cyclone',
+        color: '#a855f7'
+    }
+};
+
 window.EFFECT_LABELS = {
     'LIFESTEAL': 'Vol de Vie',
     'THORNS': 'Épines',
@@ -128,6 +152,19 @@ export async function initMeta() {
                     window.ANOMALIE_CATEGORIES[c.name] = {
                         label: c.label,
                         icon: c.icon
+                    };
+                });
+            }
+
+            if (allMeta.castingTypes) {
+                window.CASTING_TYPES = window.CASTING_TYPES || {};
+                allMeta.castingTypes.forEach(ct => {
+                    window.CASTING_TYPES[ct.name] = {
+                        name: ct.name,
+                        label: ct.label,
+                        description: ct.description,
+                        icon: ct.icon,
+                        color: ct.color
                     };
                 });
             }

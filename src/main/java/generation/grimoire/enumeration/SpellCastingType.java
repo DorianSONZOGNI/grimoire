@@ -6,9 +6,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum SpellCastingType {
-    INSTANTANE("Instantané", "Ne consomme pas le tour de jeu. Peut être lancé en complément d'une action banale si les ressources le permettent.", "bolt", "#fbbf24"),
-    BANAL("Banal", "Action classique qui consomme le tour de jeu. Termine votre phase d'action une fois lancée.", "hourglass_empty", "#60a5fa"),
-    CANALISE("Canalisé", "Action puissante qui s'exécute sur plusieurs tours. Empêche généralement les actions banales durant sa canalisation.", "cyclone", "#a855f7");
+    INSTANTANE("Instantané", "Ne consomme pas le tour de jeu. Peut être lancé avant une action banale ou pendant la plupart des canalisations.", "bolt", "#fbbf24"),
+    BANAL("Banal", "Action qui consomme le tour de jeu.", "hourglass_empty", "#60a5fa"),
+    CANALISE("Canalisé", "Action qui s'exécute sur plusieurs tours. Empêche les actions banales durant sa canalisation.", "cyclone", "#a855f7");
 
     private final String label;
     private final String description;

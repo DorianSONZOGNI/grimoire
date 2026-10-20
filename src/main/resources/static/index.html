@@ -67,7 +67,22 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="castingTypeSelect">Catégorie d'Action (Tour)</label>
+                    <label for="castingTypeSelect" class="flex items-center gap-1">
+                        Catégorie d'Action (Tour)
+                        <span class="material-symbols-outlined text-xs text-slate-400 cursor-help" data-prefer-top onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">help
+                            <template class="tooltip-data">
+                                <div class="tooltip-title text-amber-400">
+                                    <span class="material-symbols-outlined text-sm">info</span>
+                                    <span>Catégories d'action</span>
+                                </div>
+                                <div class="tooltip-desc flex flex-col gap-1">
+                                    <div><strong class="text-amber-400">⚡ Instantané :</strong> Ne consomme pas le tour de jeu.</div>
+                                    <div><strong class="text-blue-400">⏳ Banal :</strong> Consomme le tour (1 action / tour).</div>
+                                    <div><strong class="text-purple-400">🌀 Canalisé :</strong> S'exécute sur plusieurs tours consécutifs.</div>
+                                </div>
+                            </template>
+                        </span>
+                    </label>
                     <select id="castingTypeSelect">
                         <option value="INSTANTANE">Instantané (Action Libre)</option>
                         <option value="BANAL" selected="">Banal (1/tour)</option>
