@@ -4,6 +4,7 @@ import generation.grimoire.entity.achievement.UserAchievement;
 import generation.grimoire.entity.achievement.UserStatistics;
 import generation.grimoire.entity.auth.AppUser;
 import generation.grimoire.entity.pve.Donjon;
+import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.enumeration.AchievementType;
 import generation.grimoire.model.pve.CombatSession;
 import generation.grimoire.repository.AlchemyRecipeRepository;
@@ -222,6 +223,61 @@ class AchievementServiceDungeonTest {
         UserAchievement ua = userAchievementMap.get(AchievementType.DONJONS_LIBRES);
         assertNotNull(ua);
         assertTrue(ua.isUnlocked());
+    }
+
+    @Test
+    void testPointFaibleTropFort_WhenNoCombat_DoesNotUnlock() {
+        Donjon d = createDonjon(1L, "Donjon Sans Combat", null, 1);
+        Personnage hero = new Personnage();
+        hero.setId(10L);
+        hero.setHealthMax(100);
+        hero.setHealthCurrent(100);
+
+        CombatSession session = new CombatSession("session-no-combat", d, List.of(hero));
+        session.setHadCombat(false);
+        session.setLostMoreThan5PercentHp(false);
+
+        achievementService.onDungeonVictory(user, session);
+
+        UserAchievement ua = userAchievementMap.get(AchievementType.POINT_FAIBLE_TROP_FORT);
+        assertNull(ua);
+    }
+
+    @Test
+    void testPointFaibleTropFort_WhenHadCombatAndHpAbove95_Unlocks() {
+        Donjon d = createDonjon(1L, "Donjon Combat", null, 1);
+        Personnage hero = new Personnage();
+        hero.setId(10L);
+        hero.setHealthMax(100);
+        hero.setHealthCurrent(98);
+
+        CombatSession session = new CombatSession("session-combat", d, List.of(hero));
+        session.setHadCombat(true);
+        session.setLostMoreThan5PercentHp(false);
+
+        achievementService.onDungeonVictory(user, session);
+
+        UserAchievement ua = userAchievementMap.get(AchievementType.POINT_FAIBLE_TROP_FORT);
+        assertNotNull(ua);
+        assertTrue(ua.isUnlocked());
+    }
+
+    @Test
+    void testPointFaibleTropFort_WhenHadCombatButLostMoreThan5PercentHp_DoesNotUnlock() {
+        Donjon d = createDonjon(1L, "Donjon Combat", null, 1);
+        Personnage hero = new Personnage();
+        hero.setId(10L);
+        hero.setHealthMax(100);
+        hero.setHealthCurrent(90);
+
+        CombatSession session = new CombatSession("session-combat-loss", d, List.of(hero));
+        session.setHadCombat(true);
+        session.setLostMoreThan5PercentHp(true);
+
+        achievementService.onDungeonVictory(user, session);
+
+        UserAchievement ua = userAchievementMap.get(AchievementType.POINT_FAIBLE_TROP_FORT);
+        assertNull(ua);
     }
 
     @Test

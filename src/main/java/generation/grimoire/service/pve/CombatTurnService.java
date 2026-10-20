@@ -709,6 +709,7 @@ class CombatTurnService {
                 .allMatch(e -> e.getMaxHp() <= 0);
 
         if (!allAlreadyProcessed && allNowProcessed) {
+            session.setHadCombat(true);
             session.addLog("Combat terminé, vous avez vaincu tous les monstres !");
             for (Personnage p : session.getPlayers()) {
                 if (p.getUser() != null) {
@@ -880,6 +881,9 @@ class CombatTurnService {
     }
 
     void rollInitiative(CombatSession session) {
+        if (session.getEnemies() != null && !session.getEnemies().isEmpty()) {
+            session.setHadCombat(true);
+        }
         session.getTurnOrder().clear();
         session.setCurrentTurnIndex(0);
         java.util.Random rnd = new java.util.Random();

@@ -96,6 +96,9 @@ public class CombatRoomService {
                     session.getEnemies().add(am);
                 }
             }
+            if (!session.getEnemies().isEmpty()) {
+                session.setHadCombat(true);
+            }
             if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.BOSS) {
                 session.addLog("Vous entrez dans une salle de BOSS ! Préparez-vous à un affrontement mortel.");
             } else {
@@ -1522,6 +1525,9 @@ target.getActiveBuffs().add(effect);
                 for (generation.grimoire.entity.pve.Monstre m : room.getMonsters()) {
                     ActiveMonster am = new ActiveMonster(m);
                     session.getEnemies().add(am);
+                }
+                if (!session.getEnemies().isEmpty()) {
+                    session.setHadCombat(true);
                 }
 
                 session.setTurnNumber(1);
