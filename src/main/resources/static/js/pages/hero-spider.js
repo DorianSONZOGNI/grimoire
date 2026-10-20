@@ -9,25 +9,25 @@
 (function () {
     const SPIDER_AXES = [
         { key: 'puissance', label: 'Puissance', color: '#a855f7' },
-        { key: 'force',     label: 'Force',     color: '#ef4444' },
-        { key: 'mana',      label: 'Mana',      color: '#38bdf8' },
-        { key: 'tank',      label: 'Tank',      color: '#60a5fa' },
-        { key: 'soutien',   label: 'Soutien',   color: '#34d399' }
+        { key: 'force', label: 'Force', color: '#ef4444' },
+        { key: 'mana', label: 'Mana', color: '#38bdf8' },
+        { key: 'tank', label: 'Tank', color: '#60a5fa' },
+        { key: 'soutien', label: 'Soutien', color: '#34d399' }
     ];
 
     const SPEC_BADGES = [
-        { key: 'berserk',         label: 'Berserk',         icon: 'bloodtype',             cssClass: 'badge-berserk',         desc: 'Sorts basés sur les PV manquants',   score: s => s._berserkScore },
-        { key: 'puits_sans_fond', label: 'Puits sans fond', icon: 'cyclone',               cssClass: 'badge-puits-sans-fond', desc: 'Sorts basés sur le Mana manquant',  score: s => s._manaMissingScore },
-        { key: 'brulant',         label: 'Brûlant',         icon: 'local_fire_department', cssClass: 'badge-brulant',         desc: 'Inflige des brûlures',              score: s => s._burnCount * 2 },
-        { key: 'toxique',         label: 'Toxique',         icon: 'skull',                 cssClass: 'badge-toxique',         desc: 'Inflige du poison',                 score: s => s._poisonCount * 2 },
-        { key: 'tactique',        label: 'Tactique',        icon: 'gps_fixed',             cssClass: 'badge-tactique',        desc: 'Exploite ou augmente le Critique',  score: s => (s._critScore >= 4 ? s._critScore : 0) },
-        { key: 'arcane',          label: 'Arcane',          icon: 'auto_awesome',          cssClass: 'badge-arcane',          desc: 'Capacité régénérative ou utilitaire lié au Mana',      score: s => s._arcaneScore },
-        { key: 'tank',            label: 'Tank',            icon: 'shield',                cssClass: 'badge-tank',            desc: 'Boucliers et armure/résistance sur soi',       score: s => s._tankScore },
-        { key: 'vif',             label: 'Vif',             icon: 'bolt',                  cssClass: 'badge-vif',             desc: 'Vitesse et vivacité',               score: s => s._speedScore },
-        { key: 'erosion',         label: 'Érosion',         icon: 'heart_minus',           cssClass: 'badge-erosion',         desc: 'Pénétration et casse-bouclier',     score: s => s._erosionScore },
-        { key: 'guerisseur',      label: 'Guérisseur',      icon: 'healing',               cssClass: 'badge-guerisseur',      desc: 'Spécialiste du soin',        score: s => s._healScore },
-        { key: 'entrave',         label: 'Entrave',         icon: 'lock',                  cssClass: 'badge-entrave',         desc: 'Ralentit et affaiblit les ennemis', score: s => s._entraveScore },
-        { key: 'protecteur',      label: 'Protecteur',      icon: 'shield_person',         cssClass: 'badge-protecteur',      desc: 'Boucliers conférés aux alliés',     score: s => s._protecteurScore }
+        { key: 'berserk', label: 'Berserk', icon: 'bloodtype', cssClass: 'badge-berserk', desc: 'Sorts basés sur les PV manquants', score: s => s._berserkScore },
+        { key: 'puits_sans_fond', label: 'Puits sans fond', icon: 'cyclone', cssClass: 'badge-puits-sans-fond', desc: 'Sorts basés sur le Mana manquant', score: s => s._manaMissingScore },
+        { key: 'brulant', label: 'Brûlant', icon: 'local_fire_department', cssClass: 'badge-brulant', desc: 'Inflige des brûlures', score: s => s._burnCount * 2 },
+        { key: 'toxique', label: 'Toxique', icon: 'skull', cssClass: 'badge-toxique', desc: 'Inflige du poison', score: s => s._poisonCount * 2 },
+        { key: 'tactique', label: 'Tactique', icon: 'gps_fixed', cssClass: 'badge-tactique', desc: 'Exploite ou augmente le Critique', score: s => (s._critScore >= 4 ? s._critScore : 0) },
+        { key: 'arcane', label: 'Arcane', icon: 'auto_awesome', cssClass: 'badge-arcane', desc: 'Capacité régénérative ou utilitaire lié au Mana', score: s => s._arcaneScore },
+        { key: 'tank', label: 'Tank', icon: 'shield', cssClass: 'badge-tank', desc: 'Boucliers et armure/résistance sur soi', score: s => s._tankScore },
+        { key: 'vif', label: 'Vif', icon: 'bolt', cssClass: 'badge-vif', desc: 'Vitesse et vivacité', score: s => s._speedScore },
+        { key: 'erosion', label: 'Érosion', icon: 'heart_minus', cssClass: 'badge-erosion', desc: 'Pénétration et casse-bouclier', score: s => s._erosionScore },
+        { key: 'guerisseur', label: 'Guérisseur', icon: 'healing', cssClass: 'badge-guerisseur', desc: 'Spécialiste du soin', score: s => s._healScore },
+        { key: 'entrave', label: 'Entrave', icon: 'lock', cssClass: 'badge-entrave', desc: 'Ralentit et affaiblit les ennemis', score: s => s._entraveScore },
+        { key: 'protecteur', label: 'Protecteur', icon: 'shield_person', cssClass: 'badge-protecteur', desc: 'Boucliers conférés aux alliés', score: s => s._protecteurScore }
     ];
 
     // Cache des analyses par voieId
@@ -328,9 +328,9 @@
         ctx.fill();
 
         ctx.strokeStyle = spiritType === 'ESPRIT' ? 'rgba(56, 189, 248, 0.95)'
-                        : spiritType === 'TENEBRES' ? 'rgba(192, 132, 252, 0.95)'
-                        : spiritType === 'KARMA' ? 'rgba(245, 158, 11, 0.95)'
-                        : 'rgba(192, 132, 252, 0.9)';
+            : spiritType === 'TENEBRES' ? 'rgba(192, 132, 252, 0.95)'
+                : spiritType === 'KARMA' ? 'rgba(245, 158, 11, 0.95)'
+                    : 'rgba(192, 132, 252, 0.9)';
         ctx.lineWidth = 2.2;
         ctx.stroke();
 

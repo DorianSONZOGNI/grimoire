@@ -59,6 +59,7 @@ public class CombatSession {
     private boolean playerWon = false;
     private boolean roomEventCompleted = false;
     private boolean lostMoreThan5PercentHp = false;
+    private boolean hadCombat = false;
     private String trapResolutionType;
 
     private Long turnStartTime;

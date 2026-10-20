@@ -630,14 +630,7 @@ class CombatTurnService {
                     && !session.getPenalizedDeadPlayers().contains(p.getId())) {
                 session.getPenalizedDeadPlayers().add(p.getId());
 
-                int penalty = switch (p.getVoieLevel()) {
-                    case 1 -> 10;
-                    case 2 -> 30;
-                    case 3 -> 80;
-                    case 4 -> 125;
-                    case 5 -> 160;
-                    default -> 10;
-                };
+                int penalty = calculateDeathPenalty(p.getVoieLevel());
 
                 Personnage dbPersonnage = personnageRepository.findById(java.util.Objects.requireNonNull(p.getId()))
                         .orElse(null);
@@ -709,6 +702,7 @@ class CombatTurnService {
                 .allMatch(e -> e.getMaxHp() <= 0);
 
         if (!allAlreadyProcessed && allNowProcessed) {
+            session.setHadCombat(true);
             session.addLog("Combat terminé, vous avez vaincu tous les monstres !");
             for (Personnage p : session.getPlayers()) {
                 if (p.getUser() != null) {
@@ -879,7 +873,25 @@ class CombatTurnService {
         }
     }
 
+    public static int calculateDeathPenalty(int voieLevel) {
+        return switch (voieLevel) {
+            case 1 -> 5;
+            case 2 -> 20;
+            case 3 -> 60;
+            case 4 -> 150;
+            case 5 -> 350;
+            case 6 -> 800;
+            case 7 -> 2000;
+            case 8 -> 5000;
+            case 9 -> 12500;
+            default -> 0; // Niveau 10 (MAX) ou invalide : aucune perte
+        };
+    }
+
     void rollInitiative(CombatSession session) {
+        if (session.getEnemies() != null && !session.getEnemies().isEmpty()) {
+            session.setHadCombat(true);
+        }
         session.getTurnOrder().clear();
         session.setCurrentTurnIndex(0);
         java.util.Random rnd = new java.util.Random();

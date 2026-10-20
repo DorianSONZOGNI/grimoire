@@ -534,7 +534,8 @@ public class AchievementService {
         if (user == null || session == null) return;
 
         // 1. POINT_FAIBLE_TROP_FORT : aucun héros n'a jamais perdu plus de 5% HP max (ou HP finaux >= 95%)
-        if (!session.isLostMoreThan5PercentHp()) {
+        // Condition obligatoire : le donjon doit obligatoirement avoir comporté au moins un combat
+        if (session.isHadCombat() && !session.isLostMoreThan5PercentHp()) {
             boolean allAbove95 = true;
             for (Personnage p : session.getPlayers()) {
                 if (p.getTotalHealthMax() > 0 && (double) p.getHealthCurrent() / p.getTotalHealthMax() < 0.95) {
@@ -542,7 +543,7 @@ public class AchievementService {
                     break;
                 }
             }
-            if (allAbove95) {
+            if (allAbove95 && !session.getPlayers().isEmpty()) {
                 unlock(user, AchievementType.POINT_FAIBLE_TROP_FORT);
             }
         }

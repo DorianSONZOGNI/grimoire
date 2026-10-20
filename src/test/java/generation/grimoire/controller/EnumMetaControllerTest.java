@@ -214,6 +214,30 @@ class EnumMetaControllerTest {
     }
 
     @Test
+    @DisplayName("getCastingTypes retourne la liste des types de sort")
+    void getCastingTypes_devraitRetournerTousLesCastingTypes() throws Exception {
+        List<Map<String, String>> castingTypes = controller.getCastingTypes();
+
+        assertThat(castingTypes).hasSize(SpellCastingType.values().length);
+        assertThat(castingTypes.get(0)).containsOnlyKeys("name", "label", "description", "icon", "color");
+
+        SpellCastingType first = SpellCastingType.values()[0];
+        assertThat(castingTypes.get(0))
+                .containsEntry("name", first.name())
+                .containsEntry("label", first.getLabel())
+                .containsEntry("description", first.getDescription())
+                .containsEntry("icon", first.getIcon())
+                .containsEntry("color", first.getColor());
+
+        mockMvc.perform(get("/api/meta/casting-types"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$", hasSize(SpellCastingType.values().length)))
+                .andExpect(jsonPath("$[0].name").value(first.name()))
+                .andExpect(jsonPath("$[0].label").value(first.getLabel()));
+    }
+
+    @Test
     @DisplayName("getAllMeta regroupe toutes les métadonnées dans une seule réponse")
     void getAllMeta_devraitRetournerToutesLesMetas() throws Exception {
         Map<String, List<Map<String, String>>> allMeta = controller.getAllMeta();
@@ -226,7 +250,8 @@ class EnumMetaControllerTest {
                 "sources",
                 "consumableCategories",
                 "anomalieCategories",
-                "statTypes"
+                "statTypes",
+                "castingTypes"
         );
 
         assertThat(allMeta.get("equipmentSlots")).hasSize(EquipmentSlot.values().length);
@@ -237,6 +262,7 @@ class EnumMetaControllerTest {
         assertThat(allMeta.get("consumableCategories")).hasSize(ConsumableCategory.values().length);
         assertThat(allMeta.get("anomalieCategories")).hasSize(AnomalieCategory.values().length);
         assertThat(allMeta.get("statTypes")).hasSize(StatType.values().length);
+        assertThat(allMeta.get("castingTypes")).hasSize(SpellCastingType.values().length);
 
         mockMvc.perform(get("/api/meta/all"))
                 .andExpect(status().isOk())
@@ -248,6 +274,7 @@ class EnumMetaControllerTest {
                 .andExpect(jsonPath("$.sources", hasSize(Source.values().length)))
                 .andExpect(jsonPath("$.consumableCategories", hasSize(ConsumableCategory.values().length)))
                 .andExpect(jsonPath("$.anomalieCategories", hasSize(AnomalieCategory.values().length)))
-                .andExpect(jsonPath("$.statTypes", hasSize(StatType.values().length)));
+                .andExpect(jsonPath("$.statTypes", hasSize(StatType.values().length)))
+                .andExpect(jsonPath("$.castingTypes", hasSize(SpellCastingType.values().length)));
     }
 }

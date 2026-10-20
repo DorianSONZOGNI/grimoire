@@ -642,13 +642,20 @@ export function showGlobalTooltip(el) {
     const tooltipHeight = tooltip.offsetHeight;
     const tooltipWidth = tooltip.offsetWidth;
 
-    let topPos = rect.bottom + 8;
-    let leftPos = rect.left + rect.width / 2 - tooltipWidth / 2;
-
-    if (topPos + tooltipHeight > window.innerHeight) {
+    const preferTop = el.getAttribute('data-tooltip-position') === 'top' || el.hasAttribute('data-prefer-top');
+    let topPos;
+    if (preferTop) {
         topPos = rect.top - tooltipHeight - 8;
+        if (topPos < 10) topPos = rect.bottom + 8;
+    } else {
+        topPos = rect.bottom + 8;
+        if (topPos + tooltipHeight > window.innerHeight) {
+            topPos = rect.top - tooltipHeight - 8;
+        }
     }
+    if (topPos < 10) topPos = 10;
 
+    let leftPos = rect.left + rect.width / 2 - tooltipWidth / 2;
     if (leftPos < 10) leftPos = 10;
     if (leftPos + tooltipWidth > window.innerWidth - 10) {
         leftPos = window.innerWidth - tooltipWidth - 10;
@@ -668,6 +675,95 @@ export function hideGlobalTooltip() {
 
 window.showGlobalTooltip = showGlobalTooltip;
 window.hideGlobalTooltip = hideGlobalTooltip;
+
+export function getCastingTypeName(castingType) {
+    if (!castingType) return 'BANAL';
+    if (typeof castingType === 'object') {
+        return castingType.name || 'BANAL';
+    }
+    return castingType;
+}
+
+export function getCastingTypeInfo(castingType) {
+    const name = getCastingTypeName(castingType);
+    const globalMeta = window.CASTING_TYPES && window.CASTING_TYPES[name];
+    if (typeof castingType === 'object' && castingType !== null) {
+        return {
+            name: castingType.name || name,
+            label: castingType.label || (globalMeta ? globalMeta.label : name),
+            description: castingType.description || (globalMeta ? globalMeta.description : ''),
+            icon: castingType.icon || (globalMeta ? globalMeta.icon : (name === 'INSTANTANE' ? 'bolt' : name === 'CANALISE' ? 'cyclone' : 'hourglass_empty')),
+            color: castingType.color || (globalMeta ? globalMeta.color : (name === 'INSTANTANE' ? '#fbbf24' : name === 'CANALISE' ? '#a855f7' : '#60a5fa'))
+        };
+    }
+    if (globalMeta) {
+        return globalMeta;
+    }
+    const fallbacks = {
+        INSTANTANE: {
+            name: 'INSTANTANE',
+            label: 'Instantané',
+            description: "Ne consomme pas le tour de jeu. Peut être lancé en complément d'une action banale si les ressources le permettent.",
+            icon: 'bolt',
+            color: '#fbbf24'
+        },
+        CANALISE: {
+            name: 'CANALISE',
+            label: 'Canalisé',
+            description: "Action puissante qui s'exécute sur plusieurs tours. Empêche généralement les actions banales durant sa canalisation.",
+            icon: 'cyclone',
+            color: '#a855f7'
+        },
+        BANAL: {
+            name: 'BANAL',
+            label: 'Banal',
+            description: "Action classique qui consomme le tour de jeu. Termine votre phase d'action une fois lancée.",
+            icon: 'hourglass_empty',
+            color: '#60a5fa'
+        }
+    };
+    return fallbacks[name] || fallbacks.BANAL;
+}
+
+export function generateCastingTypeTooltipHtml(castingType, options = {}) {
+    const info = getCastingTypeInfo(castingType);
+    let channelInfo = '';
+    if (info.name === 'CANALISE') {
+        if (options.channelingDuration) {
+            channelInfo += `<div class="tooltip-extra text-xs text-purple-300 mt-1 flex items-center gap-1">
+                <span class="material-symbols-outlined text-sm">timelapse</span>
+                <span>Durée : <strong>${options.channelingDuration} tour${options.channelingDuration > 1 ? 's' : ''}</strong></span>
+            </div>`;
+        }
+        if (options.allowInstantDuringChanneling !== undefined) {
+            if (options.allowInstantDuringChanneling) {
+                channelInfo += `<div class="tooltip-extra text-xs text-emerald-400 mt-1 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">flash_on</span>
+                    <span>Sorts instantanés <strong>autorisés</strong> pendant la canalisation</span>
+                </div>`;
+            } else {
+                channelInfo += `<div class="tooltip-extra text-xs text-rose-400 mt-1 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">flash_off</span>
+                    <span>Sorts instantanés <strong>interdits</strong> pendant la canalisation</span>
+                </div>`;
+            }
+        }
+    }
+    return `
+        <div class="tooltip-title" style="color: ${info.color}; border-bottom-color: ${info.color}40;">
+            <span class="material-symbols-outlined text-base">${info.icon}</span>
+            <span>Sort ${info.label}</span>
+        </div>
+        <div class="tooltip-desc">
+            ${info.description}
+        </div>
+        ${channelInfo}
+    `.trim();
+}
+
+window.getCastingTypeName = getCastingTypeName;
+window.getCastingTypeInfo = getCastingTypeInfo;
+window.generateCastingTypeTooltipHtml = generateCastingTypeTooltipHtml;
 
 export function generateMutationTooltipHtml(mut) {
     if (!mut) return '';
@@ -716,16 +812,21 @@ export function generateMutationTooltipHtml(mut) {
 
             let effectsHtml = window.getSpellEffectsSummaryHtml ? window.getSpellEffectsSummaryHtml(spell) : '';
 
+            const ctInfo = getCastingTypeInfo(spell.castingType);
+            const ctTooltip = generateCastingTypeTooltipHtml(spell.castingType, {
+                channelingDuration: spell.channelingDuration,
+                allowInstantDuringChanneling: spell.allowInstantDuringChanneling
+            }).replace(/"/g, '&quot;');
             let castingTypeHtml = '';
-            if (spell.castingType === 'INSTANTANE') {
-                castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #fbbf24;" title="Action Instantanée">bolt</span>';
-            } else if (spell.castingType === 'CANALISE') {
-                castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #8b5cf6;" title="Action Canalisée">cyclone</span>';
+            if (ctInfo.name === 'INSTANTANE') {
+                castingTypeHtml = `<span class="material-symbols-outlined cursor-help" style="font-size: 1.1rem; color: #fbbf24;" data-color="${ctInfo.color}" data-prefer-top data-tooltip-html="${ctTooltip}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">bolt</span>`;
+            } else if (ctInfo.name === 'CANALISE') {
+                castingTypeHtml = `<span class="material-symbols-outlined cursor-help" style="font-size: 1.1rem; color: #8b5cf6;" data-color="${ctInfo.color}" data-prefer-top data-tooltip-html="${ctTooltip}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">cyclone</span>`;
                 castingTypeHtml += spell.allowInstantDuringChanneling ?
                     '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #d8b4fe;" title="Instantanés autorisés pendant la canalisation">flash_on</span>' :
                     '<span class="relative" title="Instantanés interdits pendant la canalisation" style="display: inline-flex; align-items: center; justify-content: center; width: 1.1rem; height: 1.1rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #94a3b8;">flash_off</span><span class="absolute" style="width: 100%; height: 2px; background: #ef4444; transform: rotate(-45deg);"></span></span>';
             } else {
-                castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #60a5fa;" title="Action Banale">hourglass_empty</span>';
+                castingTypeHtml = `<span class="material-symbols-outlined cursor-help" style="font-size: 1.1rem; color: #60a5fa;" data-color="${ctInfo.color}" data-prefer-top data-tooltip-html="${ctTooltip}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">hourglass_empty</span>`;
             }
 
             html += `<div class="bg-slate-800/80 rounded p-1.5 border border-slate-700/50">

@@ -55,8 +55,8 @@
     background: linear-gradient(135deg, #10b981, #06b6d4);
     color: white;
     border: none;
-    padding: 1rem 3rem;
-    font-size: 1.15rem;
+    padding: 0.75rem 2.5rem;
+    font-size: 1rem;
     font-weight: 700;
     letter-spacing: 1px;
     text-transform: uppercase;
@@ -113,17 +113,22 @@
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
-    padding: 3rem;
+    padding: 1.5rem 2rem;
     backdrop-filter: blur(16px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1rem;
     width: 100%;
     max-width: 800px;
     text-align: center;
     position: relative;
+    height: 100%;
+    max-height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
 }
 
 .alchemy-panel::before {
@@ -136,6 +141,8 @@
     background: linear-gradient(to right, #10b981, #06b6d4);
     border-top-left-radius: 16px;
     border-top-right-radius: 16px;
+    pointer-events: none;
+    z-index: 10;
 }
 
 .alchemy-empty-state {

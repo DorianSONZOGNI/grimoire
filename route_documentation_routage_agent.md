@@ -139,6 +139,12 @@ Après ça vous pouvez lancer directement dans le terminal powershell :
 ai "requete à insérer ici"
 ```
 
+Après ça vous pouvez lancer directement dans le terminal powershell :
+
+```powershell
+ai "requete à insérer ici"
+```
+
 ---
 
 ## 5. Description des scripts

@@ -111,7 +111,8 @@ export function renderFilteredSpells() {
         // Type d'action (Instantané, Banal, Canalisé)
         const typeFilter = state.spellTypeFilter || 'ALL';
         if (typeFilter !== 'ALL') {
-            if (sp.castingType !== typeFilter) return false;
+            const ct = ui.getCastingTypeName ? ui.getCastingTypeName(sp.castingType) : ((typeof sp.castingType === 'object' && sp.castingType) ? sp.castingType.name : sp.castingType);
+            if (ct !== typeFilter) return false;
         }
 
         if (effectVal !== 'ALL') {
@@ -190,8 +191,10 @@ export function renderFilteredSpells() {
             if (lvlDiff !== 0) return lvlDiff;
 
             const castingWeight = { 'INSTANTANE': 1, 'BANAL': 2, 'CANALISE': 3 };
-            const weightA = castingWeight[a.castingType] || 2;
-            const weightB = castingWeight[b.castingType] || 2;
+            const ctA = ui.getCastingTypeName ? ui.getCastingTypeName(a.castingType) : ((typeof a.castingType === 'object' && a.castingType) ? a.castingType.name : a.castingType);
+            const ctB = ui.getCastingTypeName ? ui.getCastingTypeName(b.castingType) : ((typeof b.castingType === 'object' && b.castingType) ? b.castingType.name : b.castingType);
+            const weightA = castingWeight[ctA] || 2;
+            const weightB = castingWeight[ctB] || 2;
             return weightA - weightB;
         } else if (sortByVal === 'NAME_ASC') {
             return (a.nom || '').localeCompare(b.nom || '');
@@ -490,7 +493,8 @@ export function getSpellEffectsSummaryHtml(sp) {
                 const keyBadge = e.requiredChoiceKey != null ? `<span class="badge-pill badge-amber-flat" title="S'active uniquement si l'option choisie au cast est ${e.requiredChoiceKey}">Option ${e.requiredChoiceKey}</span>` : '';
 
                 let turnBadge = '';
-                if (sp.castingType === 'CANALISE') {
+                const spCt = ui.getCastingTypeName ? ui.getCastingTypeName(sp.castingType) : ((typeof sp.castingType === 'object' && sp.castingType) ? sp.castingType.name : sp.castingType);
+                if (spCt === 'CANALISE') {
                     const turns = e.channelingTurns || [];
                     if (turns.length > 0) {
                         const turnStr = turns.map(t => `T${t}`).join(', ');
@@ -621,13 +625,19 @@ export function getSpellCardHtml(sp) {
     }
 
     let castBadge = '';
-    if (sp.castingType === 'INSTANTANE') {
-        castBadge = `<span class="badge-pill badge-amber"><span class="material-symbols-outlined" style="font-size: 1.05rem;">bolt</span>Instantané</span>`;
-    } else if (sp.castingType === 'CANALISE') {
-        castBadge = `<span class="badge-pill badge-purple"><span class="material-symbols-outlined" style="font-size: 1.05rem;">cyclone</span>Canalisé</span>`;
-    } else {
-        castBadge = `<span class="badge-pill badge-slate"><span class="material-symbols-outlined" style="font-size: 1.05rem;">hourglass_empty</span>Banal</span>`;
-    }
+    const ctInfo = ui.getCastingTypeInfo ? ui.getCastingTypeInfo(sp.castingType) : { name: sp.castingType, label: 'Banal', icon: 'hourglass_empty', color: '#60a5fa' };
+    const ctTooltipHtml = ui.generateCastingTypeTooltipHtml ? ui.generateCastingTypeTooltipHtml(sp.castingType, {
+        channelingDuration: sp.channelingDuration,
+        allowInstantDuringChanneling: sp.allowInstantDuringChanneling
+    }) : '';
+    const ctBadgeClass = ctInfo.name === 'INSTANTANE' ? 'badge-amber' : (ctInfo.name === 'CANALISE' ? 'badge-purple' : 'badge-slate');
+
+    castBadge = `<span class="badge-pill ${ctBadgeClass} cursor-help" data-color="${ctInfo.color}" data-prefer-top onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
+        <span class="material-symbols-outlined" style="font-size: 1.05rem;">${ctInfo.icon}</span>${ctInfo.label}
+        <template class="tooltip-data">
+            ${ctTooltipHtml}
+        </template>
+    </span>`;
 
     if ((sp.voie && sp.voie.nom && sp.voie.nom.toLowerCase().includes('violence')) || (sp.spiritualite && sp.spiritualite.nom && sp.spiritualite.nom.toLowerCase().includes('violence'))) {
         if (sp.category === 'INSPIRATION' || sp.inspiration === true) {
@@ -721,7 +731,7 @@ export function getSpellCardHtml(sp) {
                         ${sp.healCost > 0 || sp.percentHealCost > 0 ? `<span class="inline-flex items-center gap-1"><span class="material-symbols-outlined align-middle" style="font-size: 1.05rem; color: #f43f5e;">bloodtype</span>${sp.healCost > 0 ? sp.healCost : (sp.percentHealCost > 0 ? '' : '0')}${sp.healCost > 0 && sp.percentHealCost > 0 ? ' + ' : ''}${sp.percentHealCost > 0 ? `${sp.percentHealCost}% (${ui.formatSrc(sp.percentHealCostSource || 'CASTER_HEALTH_MAX')})` : ''} PV</span>` : ''}
                         ${sp.heatCost > 0 || sp.percentHeatCost > 0 ? `<span class="inline-flex items-center gap-1"><span class="material-symbols-outlined align-middle" style="font-size: 1.05rem; color: #f97316;">local_fire_department</span>${sp.heatCost > 0 ? sp.heatCost : (sp.percentHeatCost > 0 ? '' : '0')}${sp.heatCost > 0 && sp.percentHeatCost > 0 ? ' + ' : ''}${sp.percentHeatCost > 0 ? `${sp.percentHeatCost}% Chaleur` : ''} Chaleur</span>` : ''}
                         ${sp.seedCost > 0 ? `<span class="inline-flex items-center gap-1"><span class="material-symbols-outlined align-middle" style="font-size: 1.05rem; color: #6ee7b7;">yard</span>${sp.seedCost} Graines</span>` : ''}
-                        ${sp.castingType === 'CANALISE' ? `
+                        ${(ui.getCastingTypeName ? ui.getCastingTypeName(sp.castingType) : sp.castingType) === 'CANALISE' ? `
                             <span style="color: #a78bfa;" class="inline-flex items-center gap-1 text-sm" title="Paramètres du sort canalisé">
                                 <span class="material-symbols-outlined align-middle" style="font-size: 1.1rem; color: #a78bfa;">cyclone</span>
                                 <span>${sp.channelingDuration} tour${sp.channelingDuration > 1 ? 's' : ''}</span>
@@ -832,7 +842,8 @@ export function editSpell(id) {
     document.getElementById('nom').value = sp.nom || '';
     document.getElementById('niveau').value = sp.niveau || 1;
     document.getElementById('niveau').dispatchEvent(new Event('change'));
-    document.getElementById('castingTypeSelect').value = sp.castingType || 'BANAL';
+    const ctVal = ui.getCastingTypeName ? ui.getCastingTypeName(sp.castingType) : ((typeof sp.castingType === 'object' && sp.castingType) ? sp.castingType.name : (sp.castingType || 'BANAL'));
+    document.getElementById('castingTypeSelect').value = ctVal;
     document.getElementById('castingTypeSelect').dispatchEvent(new Event('change'));
     document.getElementById('channelingDuration').value = sp.channelingDuration || 1;
     document.getElementById('allowInstantDuringChanneling').checked = sp.allowInstantDuringChanneling !== false;

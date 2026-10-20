@@ -8,6 +8,30 @@ export const javaClassToCode = {
     'DISPEL': 'PURGE'
 };
 
+window.CASTING_TYPES = {
+    INSTANTANE: {
+        name: 'INSTANTANE',
+        label: 'Instantané',
+        description: "Ne consomme pas le tour de jeu. Peut être lancé en complément d'une action banale si les ressources le permettent.",
+        icon: 'bolt',
+        color: '#fbbf24'
+    },
+    BANAL: {
+        name: 'BANAL',
+        label: 'Banal',
+        description: "Action classique qui consomme le tour de jeu. Termine votre phase d'action une fois lancée.",
+        icon: 'hourglass_empty',
+        color: '#60a5fa'
+    },
+    CANALISE: {
+        name: 'CANALISE',
+        label: 'Canalisé',
+        description: "Action puissante qui s'exécute sur plusieurs tours. Empêche généralement les actions banales durant sa canalisation.",
+        icon: 'cyclone',
+        color: '#a855f7'
+    }
+};
+
 window.EFFECT_LABELS = {
     'LIFESTEAL': 'Vol de Vie',
     'THORNS': 'Épines',
@@ -37,14 +61,14 @@ window.EFFECT_DESCRIPTIONS = {
     'CHEAT_DEATH': 'Survie miraculeuse : une fois par donjon, annule un coup mortel et rend des points de vie.',
     'CRIT_DAMAGE': 'Augmente le multiplicateur de dégâts de toutes les attaques critiques du porteur.',
     'CURSED_MANA_DRAIN': '[Malédiction] Draine chaque tour un pourcentage du mana actuel du porteur.',
-    'CURSED_HP_LOSS_ON_MANA': '[Malédiction] Le porteur subit des dégâts proportionnels au mana dépensé lors du lancement d\'un sort.',
+    'CURSED_HP_LOSS_ON_MANA': '[Malédiction] Le porteur subit des dégâts proportionnels au mana dépensé.',
     'CURSED_MAGIC_DAMAGE_REDUCTION': '[Malédiction] Diminue les dégâts magiques infligés par le porteur.',
     'CURSED_PHYSICAL_DAMAGE_REDUCTION': '[Malédiction] Diminue les dégâts physiques infligés par le porteur.',
     'CURSED_VULNERABILITY': '[Malédiction] Augmente l\'intégralité des dégâts subis par le porteur.',
     'CURSED_HEALING_REDUCTION': '[Malédiction] Diminue l\'efficacité des soins reçus.',
     'EXECUTION': 'Coup de grâce : multiplie les dégâts physiques infligés si la cible a 50% de ses PV ou moins.',
     'MAGIC_OVERLOAD': 'Surcharge : ajoute des dégâts supplémentaires proportionnels au mana actuel du porteur.',
-    'VITAL_ARCANE': 'Arcane Vitale : soigne le porteur d\'un montant proportionnel au mana dépensé lors du lancement d\'un sort.',
+    'VITAL_ARCANE': 'Arcane Vitale : soigne le porteur en fonction du mana dépensé.',
     'OVERHEAL_SHIELD': 'Bouclier vital : Si un soin dépasse vos PV max, X% du surplus est converti en Bouclier pendant 2 tours.',
     'CURSED_MANA_TAX': '[Malédiction] Le coût en mana de tous vos sorts et compétences est augmenté de X%.',
     'CAPILLARITY': 'X% des dégâts infligés sont convertis en mana volé à la cible.',
@@ -128,6 +152,19 @@ export async function initMeta() {
                     window.ANOMALIE_CATEGORIES[c.name] = {
                         label: c.label,
                         icon: c.icon
+                    };
+                });
+            }
+
+            if (allMeta.castingTypes) {
+                window.CASTING_TYPES = window.CASTING_TYPES || {};
+                allMeta.castingTypes.forEach(ct => {
+                    window.CASTING_TYPES[ct.name] = {
+                        name: ct.name,
+                        label: ct.label,
+                        description: ct.description,
+                        icon: ct.icon,
+                        color: ct.color
                     };
                 });
             }

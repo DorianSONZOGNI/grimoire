@@ -87,7 +87,7 @@ async function updateCharLimitUI() {
 
             limitContainer.innerHTML = html;
             window.charLimitData = data;
-            
+
             if (window.currentUser) {
                 window.currentUser.availableCharacterSlots = Math.max(0, data.maxCharacters - data.currentCharacters);
             }
@@ -101,7 +101,7 @@ async function updateCharLimitUI() {
                     armoryBadge.style.display = 'none';
                 }
             }
-            
+
             updateSubmitButtonState();
         }
     } catch (e) {
@@ -112,7 +112,7 @@ async function updateCharLimitUI() {
 function updateSubmitButtonState() {
     const submitBtn = document.getElementById('submitBtn');
     if (!submitBtn) return;
-    
+
     if (pageState.editingId || window.isAdmin) {
         submitBtn.disabled = false;
         submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');

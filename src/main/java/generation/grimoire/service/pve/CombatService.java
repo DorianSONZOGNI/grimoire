@@ -52,6 +52,7 @@ public class CombatService {
     private final CombatTurnService combatTurnService;
     private final CombatActionService combatActionService;
     private final SpellAvailabilityService spellAvailabilityService;
+    private final DungeonTutorialService dungeonTutorialService;
 
     // Injected lazily to avoid circular dependency with MultiCombatService
     @Setter
@@ -127,11 +128,18 @@ public class CombatService {
             throw new RuntimeException("Ce donjon ne contient aucune salle.");
         }
 
+        // Validate tutorial accessibility
+        if (!dungeonTutorialService.isDungeonAccessible(account, d)) {
+            throw new RuntimeException("Ce donjon n'est pas encore accessible.");
+        }
+
         // Validate character level
         for (Personnage p : players) {
             if (p.getVoieLevel() < d.getRecommendedLevel()) {
-                throw new RuntimeException("Le personnage " + p.getName() + " (Niv." + p.getVoieLevel()
-                        + ") n'a pas le niveau requis (" + d.getRecommendedLevel() + ") pour ce donjon.");
+                if (!dungeonTutorialService.isLevelBypassed(account, d.getId())) {
+                    throw new RuntimeException("Le personnage " + p.getName() + " (Niv." + p.getVoieLevel()
+                            + ") n'a pas le niveau requis (" + d.getRecommendedLevel() + ") pour ce donjon.");
+                }
             }
         }
 

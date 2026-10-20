@@ -3597,7 +3597,10 @@ export function renderSpells(spells) {
     const typeFilterVal = pageState.combatSpellTypeFilter || 'ALL';
 
     if (typeFilterVal !== 'ALL') {
-        filteredSpells = filteredSpells.filter(s => s.castingType === typeFilterVal);
+        filteredSpells = filteredSpells.filter(s => {
+            const ct = ui.getCastingTypeName ? ui.getCastingTypeName(s.castingType) : ((typeof s.castingType === 'object' && s.castingType) ? s.castingType.name : s.castingType);
+            return ct === typeFilterVal;
+        });
     }
 
     if (filteredSpells.length === 0) {
@@ -3610,8 +3613,10 @@ export function renderSpells(spells) {
     filteredSpells.sort((a, b) => {
         const lvlDiff = (a.niveau || 1) - (b.niveau || 1);
         if (lvlDiff !== 0) return lvlDiff;
-        const weightA = castingWeight[a.castingType] || 2;
-        const weightB = castingWeight[b.castingType] || 2;
+        const ctA = ui.getCastingTypeName ? ui.getCastingTypeName(a.castingType) : ((typeof a.castingType === 'object' && a.castingType) ? a.castingType.name : a.castingType);
+        const ctB = ui.getCastingTypeName ? ui.getCastingTypeName(b.castingType) : ((typeof b.castingType === 'object' && b.castingType) ? b.castingType.name : b.castingType);
+        const weightA = castingWeight[ctA] || 2;
+        const weightB = castingWeight[ctB] || 2;
         return weightA - weightB;
     });
 
@@ -3681,15 +3686,31 @@ export function renderSpellCard(sp) {
     let costDetails = costDetailsHtml.join('<span style="color:rgba(255,255,255,0.2); margin:0 0.2rem;">|</span>');
     if (costDetailsHtml.length === 0) costDetails = '';
     let castingTypeHtml = '';
-    if (sp.castingType === 'INSTANTANE') {
-        castingTypeHtml = '<span class="material-symbols-outlined text-base text-gold" title="Action Instantanée">bolt</span>';
-    } else if (sp.castingType === 'CANALISE') {
-        castingTypeHtml = '<span class="material-symbols-outlined text-base text-violet-500" title="Action Canalisée">cyclone</span>';
+    const ctInfo = ui.getCastingTypeInfo ? ui.getCastingTypeInfo(sp.castingType) : {
+        name: sp.castingType,
+        label: sp.castingType === 'INSTANTANE' ? 'Instantané' : (sp.castingType === 'CANALISE' ? 'Canalisé' : 'Banal'),
+        icon: sp.castingType === 'INSTANTANE' ? 'bolt' : (sp.castingType === 'CANALISE' ? 'cyclone' : 'hourglass_empty'),
+        color: sp.castingType === 'INSTANTANE' ? '#fbbf24' : (sp.castingType === 'CANALISE' ? '#a855f7' : '#60a5fa')
+    };
+
+    const ctTooltipHtml = ui.generateCastingTypeTooltipHtml ?
+        ui.generateCastingTypeTooltipHtml(sp.castingType, {
+            channelingDuration: sp.channelingDuration,
+            allowInstantDuringChanneling: sp.allowInstantDuringChanneling
+        }) : '';
+
+    const ctEscapedTooltip = (ctTooltipHtml || '').replace(/"/g, '&quot;');
+    const ctHoverAttrs = `data-color="${ctInfo.color}" data-prefer-top data-tooltip-html="${ctEscapedTooltip}" onmouseenter="event.stopPropagation(); window.showGlobalTooltip(this)" onmouseleave="window.hideGlobalTooltip(); (this.closest('.combat-spell-card') && window.showGlobalTooltip(this.closest('.combat-spell-card')))"`;
+
+    if (ctInfo.name === 'INSTANTANE') {
+        castingTypeHtml = `<span class="material-symbols-outlined text-base text-gold cursor-help" ${ctHoverAttrs}>bolt</span>`;
+    } else if (ctInfo.name === 'CANALISE') {
+        castingTypeHtml = `<span class="material-symbols-outlined text-base text-violet-500 cursor-help" ${ctHoverAttrs}>cyclone</span>`;
         castingTypeHtml += sp.allowInstantDuringChanneling ?
-            '<span class="material-symbols-outlined text-base text-purple-300" title="Instantanés autorisés pendant la canalisation">flash_on</span>' :
-            '<span class="relative" title="Instantanés interdits pendant la canalisation" style="display: inline-flex; align-items: center; justify-content: center; width: 1rem; height: 1rem;"><span class="material-symbols-outlined text-base text-slate">flash_off</span><span class="absolute" style="width: 100%; height: 2px; background: #ef4444; transform: rotate(-45deg);"></span></span>';
+            `<span class="material-symbols-outlined text-base text-purple-300 cursor-help" ${ctHoverAttrs}>flash_on</span>` :
+            `<span class="relative cursor-help" ${ctHoverAttrs} style="display: inline-flex; align-items: center; justify-content: center; width: 1rem; height: 1rem;"><span class="material-symbols-outlined text-base text-slate">flash_off</span><span class="absolute" style="width: 100%; height: 2px; background: #ef4444; transform: rotate(-45deg);"></span></span>`;
     } else {
-        castingTypeHtml = '<span class="material-symbols-outlined text-base text-blue" title="Action Banale">hourglass_empty</span>';
+        castingTypeHtml = `<span class="material-symbols-outlined text-base text-blue cursor-help" ${ctHoverAttrs}>hourglass_empty</span>`;
     }
 
     let categoryHtml = '';
