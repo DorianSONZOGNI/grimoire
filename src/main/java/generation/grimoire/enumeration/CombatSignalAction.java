@@ -9,6 +9,7 @@ public enum CombatSignalAction {
     // Pings sur Monstre
     ATTACK("Attaquer", "Attaquer cette cible en priorité", "swords", "⚔️", "#ef4444", CombatSignalType.MOB_PING),
     FEAR("Danger", "Attention danger / menace sur cette cible", "warning", "⚠️", "#f59e0b", CombatSignalType.MOB_PING),
+    IGNORE("Ignorer", "Ignorer cette cible / ne pas attaquer", "block", "🚫", "#94a3b8", CombatSignalType.MOB_PING),
 
     // Pings sur Héros
     HEAL("Soin", "Demande de soins d'urgence", "favorite", "💚", "#10b981", CombatSignalType.HERO_PING),

@@ -27,6 +27,7 @@ public record CombatSignalDTO(
         return switch (action) {
             case ATTACK -> "⚔️ " + user + " cible " + (target != null ? target : "l'ennemi") + " : Attaquez !";
             case FEAR -> "⚠️ " + user + " signale un danger sur " + (target != null ? target : "l'ennemi") + " !";
+            case IGNORE -> "🚫 " + user + " demande d'ignorer " + (target != null ? target : "l'ennemi") + " !";
             case HEAL -> "💚 " + user + " demande des soins pour " + (target != null ? target : "un allié") + " !";
             case SHIELD -> "🛡️ " + user + " demande un bouclier pour " + (target != null ? target : "un allié") + " !";
             case BUFF -> "✨ " + user + " demande des renforts pour " + (target != null ? target : "un allié") + " !";

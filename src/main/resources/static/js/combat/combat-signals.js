@@ -55,6 +55,16 @@ function playSignalAudio(actionName) {
             osc.connect(gain);
             osc.start(now);
             osc.stop(now + 0.35);
+        } else if (actionName === 'IGNORE') {
+            const osc = ctx.createOscillator();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(280, now);
+            osc.frequency.exponentialRampToValueAtTime(140, now + 0.15);
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+            osc.connect(gain);
+            osc.start(now);
+            osc.stop(now + 0.2);
         } else if (actionName === 'HEAL' || actionName === 'SHIELD' || actionName === 'BUFF') {
             const osc1 = ctx.createOscillator();
             const osc2 = ctx.createOscillator();
@@ -167,11 +177,19 @@ function showMobPingVisual(targetIndex, actionName, badge, label, sender) {
     const card = document.querySelector(`.fighter-enemy[data-index="${targetIndex}"]`);
     if (!card) return;
 
-    const pulseClass = (actionName === 'FEAR') ? 'ping-pulse-fear' : 'ping-pulse-attack';
+    let pulseClass = 'ping-pulse-attack';
+    let overlayType = 'ping-type-attack';
+    if (actionName === 'FEAR') {
+        pulseClass = 'ping-pulse-fear';
+        overlayType = 'ping-type-fear';
+    } else if (actionName === 'IGNORE') {
+        pulseClass = 'ping-pulse-ignore';
+        overlayType = 'ping-type-ignore';
+    }
     card.classList.add(pulseClass);
 
     const overlay = document.createElement('div');
-    overlay.className = `fighter-ping-overlay ${actionName === 'FEAR' ? 'ping-type-fear' : 'ping-type-attack'}`;
+    overlay.className = `fighter-ping-overlay ${overlayType}`;
 
     const badgeEl = document.createElement('span');
     badgeEl.className = 'fighter-ping-badge';

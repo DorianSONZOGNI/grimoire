@@ -54,6 +54,7 @@ class CombatSignalsTest {
 
         assertTrue(config.mobActions().contains(CombatSignalAction.ATTACK));
         assertTrue(config.mobActions().contains(CombatSignalAction.FEAR));
+        assertTrue(config.mobActions().contains(CombatSignalAction.IGNORE));
 
         assertTrue(config.heroActions().contains(CombatSignalAction.HEAL));
         assertTrue(config.heroActions().contains(CombatSignalAction.SHIELD));

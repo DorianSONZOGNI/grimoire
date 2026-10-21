@@ -1608,6 +1608,13 @@ body {
     box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
 }
 
+.combat-ping-item-btn.ping-type-ignore:hover {
+    background: rgba(148, 163, 184, 0.2);
+    border-color: #94a3b8;
+    color: #cbd5e1;
+    box-shadow: 0 0 10px rgba(148, 163, 184, 0.3);
+}
+
 .combat-ping-item-btn.ping-type-heal:hover {
     background: rgba(16, 185, 129, 0.2);
     border-color: #10b981;
@@ -1657,6 +1664,21 @@ body {
     to {
         box-shadow: 0 0 25px rgba(245, 158, 11, 0.9), inset 0 0 15px rgba(245, 158, 11, 0.3);
         border-color: #f59e0b !important;
+    }
+}
+
+.ping-pulse-ignore {
+    animation: pingCardPulseIgnore 1.2s infinite alternate !important;
+}
+
+@keyframes pingCardPulseIgnore {
+    from {
+        box-shadow: 0 0 10px rgba(148, 163, 184, 0.4);
+        border-color: rgba(148, 163, 184, 0.6) !important;
+    }
+    to {
+        box-shadow: 0 0 25px rgba(148, 163, 184, 0.9), inset 0 0 15px rgba(148, 163, 184, 0.3);
+        border-color: #94a3b8 !important;
     }
 }
 
@@ -1752,6 +1774,11 @@ body {
 .fighter-ping-overlay.ping-type-fear {
     border: 2px solid #f59e0b;
     box-shadow: 0 0 24px rgba(245, 158, 11, 0.7);
+}
+
+.fighter-ping-overlay.ping-type-ignore {
+    border: 2px solid #94a3b8;
+    box-shadow: 0 0 24px rgba(148, 163, 184, 0.7);
 }
 
 .fighter-ping-overlay.ping-type-heal {
