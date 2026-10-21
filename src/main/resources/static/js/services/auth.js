@@ -133,18 +133,40 @@ window.globalFetch = async function (url, options = {}) {
             }
         } else if (res.status === 403) {
             let errorMsg = 'Accès refusé';
+            let parsedData = null;
             try {
                 const text = await res.text();
                 try {
-                    const data = JSON.parse(text);
-                    errorMsg = data.message || data.error || text || errorMsg;
+                    parsedData = JSON.parse(text);
+                    errorMsg = parsedData.message || parsedData.error || text || errorMsg;
                 } catch (e) {
                     errorMsg = text || errorMsg;
                 }
             } catch (e2) {}
 
-            if (errorMsg.includes('combat')) {
+            let isInCombat = errorMsg && errorMsg.toLowerCase().includes('combat');
+
+            // If error message was generic (e.g. Spring Boot default "Forbidden"), query /api/pve/combat/current
+            if (!isInCombat && isValidToken(accessToken) && !url.includes('/api/pve/combat/')) {
+                try {
+                    const curRes = await fetch('/api/pve/combat/current', {
+                        headers: { 'Authorization': `Bearer ${accessToken}` }
+                    });
+                    if (curRes.ok) {
+                        const curData = await curRes.json();
+                        if (curData && curData.sessionId) {
+                            isInCombat = true;
+                            localStorage.setItem('activeCombatId', curData.sessionId);
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            if (isInCombat) {
                 console.warn('Redirecting to combat page due to active combat session', url);
+                if (parsedData && parsedData.activeCombatSessionId) {
+                    localStorage.setItem('activeCombatId', parsedData.activeCombatSessionId);
+                }
                 window.location.href = '/combat.html';
                 await new Promise(() => {}); // Halt execution
             }
@@ -359,6 +381,24 @@ window.checkAuthStatus = async function checkAuthStatus() {
             window.currentUser = data;
             window.isAdmin = data.roles && data.roles.some(r => r.authority === 'ADMIN' || r.authority === 'ROLE_ADMIN');
             window.dispatchEvent(new Event('authLoaded'));
+
+            // Redirection automatique si une session de combat est toujours en cours
+            if (!window.location.pathname.includes('/combat.html') &&
+                !window.location.pathname.includes('/login.html') &&
+                !window.location.pathname.includes('/register.html')) {
+                fetch('/api/pve/combat/current', {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                }).then(async (curRes) => {
+                    if (curRes.ok) {
+                        const curData = await curRes.json();
+                        if (curData && curData.sessionId) {
+                            console.warn("Active combat session found via checkAuthStatus, redirecting to combat.html");
+                            localStorage.setItem('activeCombatId', curData.sessionId);
+                            window.location.href = '/combat.html';
+                        }
+                    }
+                }).catch(() => {});
+            }
             
             let prevGold = window.previousGold || 0;
             let currentGold = data.monnaie !== undefined ? +Number(data.monnaie) : 0;

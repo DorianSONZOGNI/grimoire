@@ -7,6 +7,7 @@ import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
 import { showFighterPingMenu } from './combat-signals.js';
+import { renderHeroCombatSprite } from './combat-sprites.js';
 
 window.toggleCombatLog = function() {
     const log = document.getElementById('combatLog');
@@ -503,6 +504,7 @@ export function updateUI(data) {
 
             div.innerHTML = timerHtml + generateFighterHtml(p, true, false, forcedHp, forcedMana, turnMap.players[index] || null);
             playersContainer.appendChild(div);
+            renderHeroCombatSprite(div, p, isActive, isDead);
 
             div.addEventListener('contextmenu', (e) => {
                 if (!pageState.isMulti) return;

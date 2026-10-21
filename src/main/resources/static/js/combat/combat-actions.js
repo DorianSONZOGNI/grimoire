@@ -3,12 +3,14 @@ import { updateUI } from './combat-ui.js';
 import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
+import { triggerAllWaitSprites } from './combat-sprites.js';
 
 
 export async function endTurn() {
     if (!pageState.sessionId || !pageState.currentSessionData || pageState.isProcessing) return;
     pageState.isProcessing = true;
     setButtonsProcessing(true);
+    triggerAllWaitSprites();
 
     try {
         let url = `/api/pve/combat/${pageState.sessionId}/end-turn`;

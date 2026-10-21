@@ -5,6 +5,7 @@ import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
 import { handleSignalReceived } from './combat-signals.js';
+import { handleCombatSpriteLog } from './combat-sprites.js';
 
 
 export function processNewDeathLogs(combatLogs) {
@@ -38,6 +39,10 @@ export function initMultiSSE(sessionId) {
     _multiSSE.addEventListener('combat-update', (e) => {
         try {
             const data = JSON.parse(e.data);
+            if (data.combatLog && data.combatLog.length > 0) {
+                const latestLog = data.combatLog[data.combatLog.length - 1];
+                handleCombatSpriteLog(latestLog);
+            }
             // Ne pas re-renderer si on est en train de traiter une action locale
             if (!pageState.isProcessing) {
                 updateUI(data);

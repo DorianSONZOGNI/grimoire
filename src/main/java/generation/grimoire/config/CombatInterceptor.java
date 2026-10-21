@@ -42,7 +42,9 @@ public class CombatInterceptor implements HandlerInterceptor {
 
                 if (inCombat && !session.isFinished()) {
                     if (uri.startsWith("/api/")) {
-                        response.sendError(HttpServletResponse.SC_FORBIDDEN, "Vous êtes en combat, action interdite.");
+                        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                        response.setContentType("application/json;charset=UTF-8");
+                        response.getWriter().write("{\"error\":\"Vous êtes en combat, action interdite.\",\"message\":\"Vous êtes en combat, action interdite.\",\"activeCombatSessionId\":\"" + session.getSessionId() + "\"}");
                         return false;
                     } else {
                         response.sendRedirect("/combat.html"); // Replace with actual combat view URL
