@@ -16,10 +16,10 @@ import { pageState } from './combat-state.js';
 import { javaClassToCode } from '../utils/constants.js';
 
 // Voies disposant d'assets sprites dans /styles/sprites/<voieSlug>/
-const SPRITE_VOIES = ['conviction'];
+const SPRITE_VOIES = ['conviction', 'violence'];
 
 // Cache buster pour recharger immédiatement les assets graphiques après modification
-const SPRITE_VERSION = '1786180000062';
+const SPRITE_VERSION = '1786180000064';
 
 // Durée de maintien de la pose d'action avant retour en "wait" (ms)
 const ACTION_POSE_DURATION = 1600;
@@ -47,18 +47,28 @@ export function getVoieSlug(voie) {
 }
 
 /**
- * Détermine la pose ('shield' | 'attak' | 'prepare' | 'wait') selon le sort lancé.
- * Priorités demandées :
+ * Détermine la pose ('attak' | 'power' | 'weakness' | 'heal' | 'shield' | 'prepare' | 'wait') selon le sort lancé.
+ *
+ * Pour la Voie de la Violence :
+ * 1. Dégâts -> attak.png
+ * 2. Buff -> power.png (stat buffs uniquement, un MoT / Mana n'est pas un buff)
+ * 3. Débuff -> weakness.png
+ * 4. Soin -> heal.png
+ * 5. Attente -> wait.png
+ * (Et Dead quand il meurt au niveau de renderHeroCombatSprite)
+ *
+ * Pour la Voie de la Conviction :
  * 1. Bouclier -> TOUJOURS shield.png
- * 2. Dégâts -> attak.png
- * 3. Buff uniquement -> prepare.png
- * 4. Début / Fin de tour / Attente -> wait.png
+ * 2. Dégâts / Débuff offensif -> attak.png
+ * 3. Buff / Soin / Mana seul -> prepare.png
+ * 4. Attente -> wait.png
  *
  * @param {Object|null} spell - Sort lancé (null = attaque basique)
  * @param {string|null} choiceKey - Clé du choix actif
- * @returns {'shield'|'attak'|'prepare'|'wait'}
+ * @param {string} voieSlug - Slug de la voie du héros lanceur
+ * @returns {string}
  */
-export function getSpritePose(spell, choiceKey = null) {
+export function getSpritePose(spell, choiceKey = null, voieSlug = 'conviction') {
     // Attaque de base sans sort -> toujours attak
     if (!spell) return 'attak';
 
@@ -73,61 +83,108 @@ export function getSpritePose(spell, choiceKey = null) {
     let hasShield = false;
     let hasDamage = false;
     let hasBuff = false;
+    let hasDebuff = false;
+    let hasHeal = false;
+    let hasMana = false;
 
     for (const e of activeEffects) {
         const rawType = String(e.effectType || e.effect_type || '');
         const mappedType = javaClassToCode[rawType] || rawType;
-        const target = String(e.effectTarget || e.effect_target || '');
+        const target = String(e.effectTarget || e.effect_target || '').toUpperCase();
+        const stat = String(e.statAffected || '').toUpperCase();
+        const mod = Number(e.modifier != null ? e.modifier : 0);
+        const flat = Number(e.flatValue != null ? e.flatValue : 0);
 
         // 1. Détection Shield (Bouclier)
         if (mappedType === 'SHIELD' || rawType.includes('Shield')) {
             hasShield = true;
+            hasBuff = true;
         }
 
         // 2. Détection Dégâts
-        if (['FIXED_DAMAGE', 'PERCENTAGE_DAMAGE', 'DOT', 'DAMAGE_OVER_TIME', 'POISON', 'BURN'].includes(mappedType) ||
+        if (['DAMAGE', 'FIXED_DAMAGE', 'PERCENTAGE_DAMAGE', 'DOT', 'DAMAGE_OVER_TIME', 'POISON', 'BURN', 'DAMAGE_FIXED', 'DAMAGE_PERCENTAGE'].includes(mappedType) ||
             rawType.includes('Damage') || rawType.includes('Heat')) {
             hasDamage = true;
         }
 
-        // 3. Détection Buff / Débuff
+        // 3. Détection Soins
+        if (['HEAL', 'FIXED_HEAL', 'PERCENTAGE_HEAL', 'HOT', 'HEAL_OVER_TIME', 'HEAL_FIXED', 'HEAL_PERCENTAGE'].includes(mappedType) || rawType.includes('Heal')) {
+            hasHeal = true;
+        }
+
+        // 4. Détection Buff / Débuff
+        const isEnemyTarget = ['TARGET', 'ALL_ENEMIES', 'ENEMY'].includes(target);
+        const isFriendlyTarget = ['CASTER', 'ALLY', 'ALL_ALLIES', 'SELF', 'NONE', ''].includes(target);
+
         if (mappedType === 'BUFF_DEBUFF' || rawType.includes('Buff')) {
-            const sa = String(e.statAffected || '').toUpperCase();
-            if (sa === 'POISON' || sa === 'BURN') {
+            if (stat === 'POISON' || stat === 'BURN') {
                 hasDamage = true;
-            } else if (target === 'TARGET' || target === 'ALL_ENEMIES') {
-                // Débuff offensif sur ennemi = assimilé à une attaque
-                hasDamage = true;
+            } else if (stat === 'MANA') {
+                if (isEnemyTarget || mod < 0 || flat < 0) {
+                    hasDebuff = true;
+                } else {
+                    hasMana = true; // Mana n'est pas un buff de stats
+                }
+            } else if (isEnemyTarget) {
+                hasDebuff = true;
+            } else if (isFriendlyTarget) {
+                if (mod < 0 || flat < 0) {
+                    hasDebuff = true;
+                } else {
+                    hasBuff = true;
+                }
+            } else {
+                if (mod < 0 || flat < 0) {
+                    hasDebuff = true;
+                } else {
+                    hasBuff = true;
+                }
+            }
+        }
+
+        // 5. Mana (Fixed, Percentage, MoT)
+        // Règle Grimoire : Un MoT / Mana n'est PAS un buff de stats. Ne doit pas déclencher power.png.
+        if (['FIXED_MANA', 'PERCENTAGE_MANA', 'MOT', 'MANA_OVER_TIME', 'MANA_FIXED', 'MANA_PERCENTAGE'].includes(mappedType) || rawType.includes('Mana')) {
+            if (isEnemyTarget) {
+                hasDebuff = true;
+            } else {
+                hasMana = true;
+            }
+        }
+
+        // 6. Purge / Dispel
+        if (['PURGE', 'DISPEL'].includes(mappedType) || rawType.includes('Purge') || rawType.includes('Dispel')) {
+            if (isEnemyTarget) {
+                hasDebuff = true;
             } else {
                 hasBuff = true;
             }
         }
 
-        // Soins
-        if (['FIXED_HEAL', 'PERCENTAGE_HEAL', 'HOT', 'HEAL_OVER_TIME'].includes(mappedType) || rawType.includes('Heal')) {
-            hasBuff = true;
-        }
-
-        // Mana
-        if (['FIXED_MANA', 'PERCENTAGE_MANA', 'MOT', 'MANA_OVER_TIME'].includes(mappedType) || rawType.includes('Mana')) {
-            hasBuff = true;
-        }
-
-        // Purge / Dispel / Bud
-        if (['PURGE', 'DISPEL', 'BUD'].includes(mappedType) || rawType.includes('Purge') || rawType.includes('Dispel') || rawType.includes('Bud')) {
+        // 7. Bud
+        if (['BUD'].includes(mappedType) || rawType.includes('Bud')) {
             hasBuff = true;
         }
     }
 
-    // Règle 1 : Bouclier toujours prioritaire
+    // Ordre de priorité strict pour la Voie de la Violence :
+    // 1. Dégâts -> attak.png
+    // 2. Buff de stats -> power.png (exclut MoT / Mana)
+    // 3. Débuff adverse -> weakness.png
+    // 4. Soin -> heal.png
+    // 5. Attente / état neutre -> wait.png
+    if (voieSlug === 'violence') {
+        if (hasDamage) return 'attak';
+        if (hasBuff) return 'power';
+        if (hasDebuff) return 'weakness';
+        if (hasHeal) return 'heal';
+        return 'wait';
+    }
+
+    // Ordre de priorité pour la Voie de la Conviction (et fallback)
     if (hasShield) return 'shield';
-
-    // Règle 2 : Dégâts
-    if (hasDamage) return 'attak';
-
-    // Règle 3 : Buff seul
-    if (hasBuff) return 'prepare';
-
+    if (hasDamage || hasDebuff) return 'attak';
+    if (hasBuff || hasHeal || hasMana) return 'prepare';
     return 'wait';
 }
 
@@ -147,7 +204,9 @@ function applyPoseToSpriteEl(spriteEl, voieSlug, pose) {
 
     const targetSrc = `/styles/sprites/${voieSlug}/${pose}.png?v=${SPRITE_VERSION}`;
     img.onerror = () => {
-        if (!img.src.includes('/conviction/dead.png')) {
+        if (pose !== 'wait') {
+            img.src = `/styles/sprites/${voieSlug}/wait.png?v=${SPRITE_VERSION}`;
+        } else if (!img.src.includes('/conviction/dead.png')) {
             img.src = `/styles/sprites/conviction/dead.png?v=${SPRITE_VERSION}`;
         }
     };
@@ -158,7 +217,10 @@ function applyPoseToSpriteEl(spriteEl, voieSlug, pose) {
     spriteEl.dataset.pose = pose;
 
     // Mise à jour propre des classes CSS
-    spriteEl.classList.remove('pose-wait', 'pose-attak', 'pose-shield', 'pose-prepare', 'pose-dead');
+    spriteEl.classList.remove(
+        'pose-wait', 'pose-attak', 'pose-shield', 'pose-prepare',
+        'pose-dead', 'pose-power', 'pose-weakness', 'pose-heal'
+    );
     spriteEl.classList.add(`pose-${pose}`);
 }
 
@@ -200,7 +262,7 @@ export function renderHeroCombatSprite(heroCardEl, player, isActive, isDead) {
         heroCardEl.appendChild(spriteEl);
     }
 
-    // Gestion de l'état mort via classe CSS et pose dead.png
+    // Gestion de l'état mort via classe CSS et pose dead.png (Priorité absolue)
     if (isDead) {
         spriteEl.classList.add('is-dead');
         applyPoseToSpriteEl(spriteEl, voieSlug, 'dead');
@@ -236,6 +298,7 @@ export function triggerCombatActionSprite(spellId = null, choiceKey = null) {
     const heroIndex = parseInt(activeCard.dataset.index, 10);
     const hero = data.players[heroIndex];
     if (!hero) return;
+    if ((hero.healthCurrent != null && hero.healthCurrent <= 0) || (hero.pv != null && hero.pv <= 0)) return;
 
     const voieSlug = getVoieSlug(hero.voie);
     if (!voieSlug || !SPRITE_VOIES.includes(voieSlug)) return;
@@ -246,7 +309,7 @@ export function triggerCombatActionSprite(spellId = null, choiceKey = null) {
         spell = data.availableSpells.find(s => s.id === spellId) || null;
     }
 
-    const pose = getSpritePose(spell, choiceKey);
+    const pose = getSpritePose(spell, choiceKey, voieSlug);
 
     let spriteEl = activeCard.querySelector('.combat-hero-sprite');
     if (!spriteEl) {
@@ -271,13 +334,16 @@ export function triggerCombatActionSprite(spellId = null, choiceKey = null) {
         void img.offsetWidth;
     }
 
-    // Après la durée d'action, retour automatique à "wait"
+    // Après la durée d'action, retour automatique à "wait" (sauf si mort entre temps)
     const timer = setTimeout(() => {
         activeHeroPoses.delete(heroIndex);
         activeSpriteTimers.delete(heroIndex);
-        // Vérifier si la carte est toujours présente
         const currentCard = document.querySelector(`.fighter-player[data-index="${heroIndex}"]`);
         if (currentCard) {
+            const currentHero = data.players[heroIndex];
+            if (currentHero && ((currentHero.healthCurrent != null && currentHero.healthCurrent <= 0) || (currentHero.pv != null && currentHero.pv <= 0))) {
+                return;
+            }
             const currentSprite = currentCard.querySelector('.combat-hero-sprite');
             if (currentSprite) {
                 applyPoseToSpriteEl(currentSprite, voieSlug, 'wait');
@@ -289,7 +355,7 @@ export function triggerCombatActionSprite(spellId = null, choiceKey = null) {
 }
 
 /**
- * Force la pose 'wait' sur tous les héros (ex: fin de tour ou nouveau tour).
+ * Force la pose 'wait' sur tous les héros vivants (ex: fin de tour ou nouveau tour).
  */
 export function triggerAllWaitSprites() {
     activeSpriteTimers.forEach(t => clearTimeout(t));
@@ -303,6 +369,8 @@ export function triggerAllWaitSprites() {
         const idx = parseInt(card.dataset.index, 10);
         const hero = data.players[idx];
         if (!hero) return;
+        if ((hero.healthCurrent != null && hero.healthCurrent <= 0) || (hero.pv != null && hero.pv <= 0)) return;
+
         const voieSlug = getVoieSlug(hero.voie);
         if (!voieSlug || !SPRITE_VOIES.includes(voieSlug)) return;
 
@@ -349,6 +417,8 @@ export function handleCombatSpriteLog(logEntry) {
     if (heroIndex === -1) return;
 
     const hero = data.players[heroIndex];
+    if ((hero.healthCurrent != null && hero.healthCurrent <= 0) || (hero.pv != null && hero.pv <= 0)) return;
+
     const voieSlug = getVoieSlug(hero.voie);
     if (!voieSlug || !SPRITE_VOIES.includes(voieSlug)) return;
 
@@ -359,7 +429,7 @@ export function handleCombatSpriteLog(logEntry) {
     if (!isBasicAttack && spellName && data.availableSpells) {
         const spell = data.availableSpells.find(s => s.nom === spellName) || null;
         if (spell) {
-            pose = getSpritePose(spell, null);
+            pose = getSpritePose(spell, null, voieSlug);
         }
     }
 
@@ -383,6 +453,10 @@ export function handleCombatSpriteLog(logEntry) {
         activeSpriteTimers.delete(heroIndex);
         const cCard = document.querySelector(`.fighter-player[data-index="${heroIndex}"]`);
         if (cCard) {
+            const currentHero = data.players[heroIndex];
+            if (currentHero && ((currentHero.healthCurrent != null && currentHero.healthCurrent <= 0) || (currentHero.pv != null && currentHero.pv <= 0))) {
+                return;
+            }
             const cSprite = cCard.querySelector('.combat-hero-sprite');
             if (cSprite) applyPoseToSpriteEl(cSprite, voieSlug, 'wait');
         }

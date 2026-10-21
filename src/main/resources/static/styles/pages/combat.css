@@ -2175,6 +2175,81 @@ body {
     opacity: 0.8;
 }
 
+/* --- Pose: power (buff pour Voie de la Violence) --- */
+@keyframes heroSpritePower {
+    0% {
+        transform: scale(0.96) translateY(2px);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+    35% {
+        transform: scale(1.16) translateY(-6px);
+        filter: drop-shadow(0 0 22px rgba(239, 68, 68, 1)) drop-shadow(0 0 35px rgba(220, 38, 38, 0.7));
+    }
+    75% {
+        transform: scale(1.06) translateY(-2px);
+        filter: drop-shadow(0 0 14px rgba(239, 68, 68, 0.85));
+    }
+    100% {
+        transform: scale(1) translateY(0);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+}
+.combat-hero-sprite.pose-power img {
+    animation: heroSpritePower 0.65s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+}
+.combat-hero-sprite.pose-power::after {
+    transform: scale(1.15);
+    opacity: 0.9;
+}
+
+/* --- Pose: weakness (débuff pour Voie de la Violence) --- */
+@keyframes heroSpriteWeakness {
+    0% {
+        transform: scale(0.95) translateX(-4px);
+    }
+    30% {
+        transform: scale(1.12) translateX(18px);
+        filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.95)) drop-shadow(0 0 30px rgba(139, 92, 246, 0.6));
+    }
+    70% {
+        transform: scale(1.04) translateX(8px);
+    }
+    100% {
+        transform: scale(1) translateX(0);
+    }
+}
+.combat-hero-sprite.pose-weakness img {
+    animation: heroSpriteWeakness 0.6s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+}
+.combat-hero-sprite.pose-weakness::after {
+    transform: scale(1.1) translateX(8px);
+}
+
+/* --- Pose: heal (soin pour Voie de la Violence) --- */
+@keyframes heroSpriteHeal {
+    0% {
+        transform: scale(0.96) translateY(2px);
+    }
+    35% {
+        transform: scale(1.12) translateY(-8px);
+        filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.95)) drop-shadow(0 0 32px rgba(52, 211, 153, 0.6));
+    }
+    75% {
+        transform: scale(1.03) translateY(-2px);
+        filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.8));
+    }
+    100% {
+        transform: scale(1) translateY(0);
+    }
+}
+.combat-hero-sprite.pose-heal img {
+    animation: heroSpriteHeal 0.65s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+}
+.combat-hero-sprite.pose-heal::after {
+    transform: scale(0.9);
+    opacity: 0.85;
+}
+
 /* Héros mort */
 .combat-hero-sprite.is-dead img,
 .combat-hero-sprite.pose-dead img {
