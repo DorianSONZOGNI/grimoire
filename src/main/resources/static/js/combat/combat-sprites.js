@@ -19,7 +19,7 @@ import { javaClassToCode } from '../utils/constants.js';
 const SPRITE_VOIES = ['conviction'];
 
 // Cache buster pour recharger immédiatement les assets graphiques après modification
-const SPRITE_VERSION = '1786180000060';
+const SPRITE_VERSION = '1786180000062';
 
 // Durée de maintien de la pose d'action avant retour en "wait" (ms)
 const ACTION_POSE_DURATION = 1600;
@@ -146,6 +146,11 @@ function applyPoseToSpriteEl(spriteEl, voieSlug, pose) {
     }
 
     const targetSrc = `/styles/sprites/${voieSlug}/${pose}.png?v=${SPRITE_VERSION}`;
+    img.onerror = () => {
+        if (!img.src.includes('/conviction/dead.png')) {
+            img.src = `/styles/sprites/conviction/dead.png?v=${SPRITE_VERSION}`;
+        }
+    };
     if (img.getAttribute('src') !== targetSrc) {
         img.src = targetSrc;
     }
@@ -153,7 +158,7 @@ function applyPoseToSpriteEl(spriteEl, voieSlug, pose) {
     spriteEl.dataset.pose = pose;
 
     // Mise à jour propre des classes CSS
-    spriteEl.classList.remove('pose-wait', 'pose-attak', 'pose-shield', 'pose-prepare');
+    spriteEl.classList.remove('pose-wait', 'pose-attak', 'pose-shield', 'pose-prepare', 'pose-dead');
     spriteEl.classList.add(`pose-${pose}`);
 }
 
@@ -170,15 +175,20 @@ export function renderHeroCombatSprite(heroCardEl, player, isActive, isDead) {
     if (!heroCardEl || !player) return;
 
     const data = pageState.currentSessionData;
-    if (data && data.finished) {
+    // Si combat terminé avec victoire, pas besoin du sprite de combat actif
+    if (data && data.finished && data.playerWon) {
         const oldSprite = heroCardEl.querySelector('.combat-hero-sprite');
         if (oldSprite) oldSprite.remove();
         return;
     }
 
-    const voieSlug = getVoieSlug(player.voie);
+    let voieSlug = getVoieSlug(player.voie);
     if (!voieSlug || !SPRITE_VOIES.includes(voieSlug)) {
-        return;
+        if (isDead) {
+            voieSlug = 'conviction';
+        } else {
+            return;
+        }
     }
 
     const heroIndex = parseInt(heroCardEl.dataset.index, 10);
@@ -190,9 +200,11 @@ export function renderHeroCombatSprite(heroCardEl, player, isActive, isDead) {
         heroCardEl.appendChild(spriteEl);
     }
 
-    // Gestion de l'état mort via classe CSS
+    // Gestion de l'état mort via classe CSS et pose dead.png
     if (isDead) {
         spriteEl.classList.add('is-dead');
+        applyPoseToSpriteEl(spriteEl, voieSlug, 'dead');
+        return;
     } else {
         spriteEl.classList.remove('is-dead');
     }

@@ -2176,12 +2176,29 @@ body {
 }
 
 /* Héros mort */
-.combat-hero-sprite.is-dead img {
-    filter: grayscale(1) opacity(0.35);
-    animation: none !important;
+.combat-hero-sprite.is-dead img,
+.combat-hero-sprite.pose-dead img {
+    filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.45));
+    opacity: 0.95;
+    animation: heroSpriteDead 0.5s ease-out forwards;
 }
-.combat-hero-sprite.is-dead::after {
-    opacity: 0.2;
+.combat-hero-sprite.is-dead::after,
+.combat-hero-sprite.pose-dead::after {
+    opacity: 0.15;
+    transform: scale(0.7);
+}
+
+@keyframes heroSpriteDead {
+    0% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Atténuation visuelle du corps de carte héros sans étouffer le sprite */
+.fighter.fighter-player.dead .fighter-avatar-wrapper,
+.fighter.fighter-player.dead .fighter-gauges,
+.fighter.fighter-player.dead .fighter-stats {
+    opacity: 0.45;
+    filter: grayscale(0.8);
 }
 
 /* Responsiveness */

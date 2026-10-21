@@ -7,7 +7,7 @@ import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
 import { showFighterPingMenu } from './combat-signals.js';
-import { renderHeroCombatSprite } from './combat-sprites.js?v=1786180000060';
+import { renderHeroCombatSprite } from './combat-sprites.js?v=1786180000062';
 
 window.toggleCombatLog = function() {
     const log = document.getElementById('combatLog');
@@ -493,8 +493,8 @@ export function updateUI(data) {
                 div.style.boxShadow = '0 0 20px rgba(56, 189, 248, 0.4)';
                 div.style.transform = 'scale(1.05)';
             } else if (isDead) {
-                div.style.opacity = '0.4';
-                div.style.filter = 'grayscale(1)';
+                div.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+                div.style.transform = 'scale(0.95)';
             } else {
                 div.style.borderColor = 'rgba(255, 255, 255, 0.1)';
                 div.style.transform = 'scale(0.95)';
