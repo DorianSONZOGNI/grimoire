@@ -106,8 +106,8 @@ export async function initMeta() {
     if (window.GRIMOIRE_META) return;
     try {
         const [metaRes, recipesRes] = await Promise.all([
-            globalFetch('/api/meta/all').catch(() => null),
-            globalFetch('/api/alchemy/recipes').catch(() => null)
+            globalFetch('/api/meta/all', { silent: true }).catch(() => null),
+            globalFetch('/api/alchemy/recipes', { silent: true }).catch(() => null)
         ]);
 
         if (recipesRes && recipesRes.ok) {

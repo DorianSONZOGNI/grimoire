@@ -14,7 +14,7 @@ window.showFighterPingMenu = showFighterPingMenu;
 
 if (!window.allAnomaliesCombat || !Array.isArray(window.allAnomaliesCombat)) {
     window.allAnomaliesCombat = [];
-    window.globalFetch('/api/anomalies/all-templates').then(res => {
+    window.globalFetch('/api/anomalies/all-templates', { silent: true }).then(res => {
         if (!res.ok) throw new Error("HTTP error " + res.status);
         return res.json();
     }).then(data => {
@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Charger le username actuel
     try {
-        const meRes = await globalFetch('/api/auth/me', { credentials: 'same-origin' });
+        const meRes = await globalFetch('/api/auth/me', { credentials: 'same-origin', silent: true });
         if (meRes.ok) {
             const meData = await meRes.json();
             pageState.currentUsername = meData.username || null;

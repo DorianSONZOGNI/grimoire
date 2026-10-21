@@ -21,7 +21,7 @@ export async function fetchCombatEquipments(sessionId) {
 export async function loadAnomaliesCombat() {
     if (!window.allAnomaliesCombat || !Array.isArray(window.allAnomaliesCombat) || window.allAnomaliesCombat.length === 0) {
         try {
-            const res = await globalFetch('/api/anomalies/all-templates');
+            const res = await globalFetch('/api/anomalies/all-templates', { silent: true });
             if (res.ok) {
                 const data = await res.json();
                 if (Array.isArray(data)) window.allAnomaliesCombat = data;
@@ -32,7 +32,7 @@ export async function loadAnomaliesCombat() {
         }
     }
     try {
-        const resUser = await globalFetch('/api/anomalies');
+        const resUser = await globalFetch('/api/anomalies', { silent: true });
         if (resUser.ok) {
             const dataUser = await resUser.json();
             if (Array.isArray(dataUser)) window.myGlobalAnomalies = dataUser;
