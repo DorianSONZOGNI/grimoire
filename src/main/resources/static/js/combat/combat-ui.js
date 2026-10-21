@@ -2555,7 +2555,7 @@ export function getBossBuffsHtml(c) {
     return html;
 }
 
-export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = null, forcedMana = null, turnOrderNum = null) {
+export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = null, forcedMana = null, turnOrderNum = null, isBossSolo = false) {
     const hpToRender = forcedHp !== null && !isNaN(forcedHp) ? forcedHp : c.healthCurrent;
     const hpPct = c.healthMax > 0 ? Math.max(0, Math.min(100, (hpToRender / c.healthMax) * 100)) : 0;
     let hpLabel = `${hpToRender} / ${c.healthMax}`;
@@ -3009,7 +3009,7 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
     } else if (rMana < 0) {
         manaRegenBadge = `<span title="Perd ${-rMana} Mana au début du tour (Famine)" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">water_drop</span>${rMana} MP/t</span>`;
     }
-    let avatarHtml = isHero ? '🧙‍♂️' : '👹';
+    let avatarHtml = isHero ? '🧙‍♂️' : (isBossSolo ? '<span class="fighter-avatar-boss">👑</span>' : '👹');
     if (isHero && c.voie && c.voie.nom) {
         const vNom = c.voie.nom.toLowerCase();
         let avatarName = '';
@@ -3076,13 +3076,24 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         ? `<button class="fighter-card-ping-btn" type="button" title="Signaler / Communication (ou clic droit)"><span class="material-symbols-outlined">campaign</span></button>`
         : '';
 
+    const bossSoloHeaderHtml = isBossSolo ? `
+        <div class="boss-solo-header">
+            <div class="boss-solo-crest">
+                <span class="material-symbols-outlined boss-solo-icon">skull</span>
+                <span class="boss-solo-title">BOSS MAJEUR</span>
+                <span class="material-symbols-outlined boss-solo-icon">skull</span>
+            </div>
+        </div>
+    ` : '';
+
     return `
+        ${bossSoloHeaderHtml}
         ${turnOrderBadgeHtml}
         ${pingBtnHtml}
         ${mutationsHtml}
         ${passiveIconsHtml}
         ${channelingBadgeHtml}
-        <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.3rem; display: flex; justify-content: center; align-items: center; gap: 0.2rem; margin-bottom: 0.8rem; width: 100%;">
+        <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: ${isBossSolo ? '1.75rem' : '1.3rem'}; display: flex; justify-content: center; align-items: center; gap: 0.2rem; margin-bottom: 0.8rem; width: 100%;">
             <span style="flex-shrink: 0; display: flex; align-items: center; ${isHero ? 'cursor: help;' : ''}" ${isHero ? `onmouseenter="if(window.showHeroEquipmentTooltip) window.showHeroEquipmentTooltip(this, ${c.id})" onmouseleave="if(window.hideHeroEquipmentTooltip) window.hideHeroEquipmentTooltip()"` : ''}>${avatarHtml}</span>
             <div style="display: flex; align-items: center; gap: 0.3rem; min-width: 0;">
                 <span style="flex-shrink: 0; display: flex;">${titleIconsHtml}</span>
@@ -3125,6 +3136,19 @@ export function renderEnemies(enemies, turnMap = null) {
 
     let bossBuffsRendered = false;
 
+    const isBossRoom = !!(pageState.currentSessionData && pageState.currentSessionData.currentRoom && pageState.currentSessionData.currentRoom.type === 'BOSS');
+    const isSingleEnemy = enemies.length === 1;
+    const isBossSolo = isSingleEnemy && (isBossRoom || (enemies[0] && (
+        (enemies[0].asPersonnage && enemies[0].asPersonnage.passiveStates && Object.keys(enemies[0].asPersonnage.passiveStates).some(k => k.startsWith('BOSS_BUFF_'))) ||
+        (enemies[0].base && (enemies[0].base.monsterType === 'BOSS' || (typeof enemies[0].base.monsterType === 'object' && enemies[0].base.monsterType?.name === 'BOSS')))
+    )));
+
+    if (isBossSolo) {
+        container.classList.add('is-boss-solo');
+    } else {
+        container.classList.remove('is-boss-solo');
+    }
+
     enemies.forEach((activeMonster, index) => {
         const m = activeMonster.base;
         const pMonster = activeMonster.asPersonnage || activeMonster; // Fallback just in case
@@ -3148,22 +3172,24 @@ export function renderEnemies(enemies, turnMap = null) {
         if (typeof activeMonster.maxHp !== 'undefined') pMonster.healthMax = activeMonster.maxHp;
 
         const div = document.createElement('div');
-        div.className = `fighter fighter-enemy enemy-card ${isActive ? 'active' : ''} ${activeMonster.dead ? 'dead' : ''}`;
+        div.className = `fighter fighter-enemy enemy-card ${isBossSolo ? 'fighter-boss-solo' : ''} ${isActive ? 'active' : ''} ${activeMonster.dead ? 'dead' : ''}`;
         div.dataset.index = index;
         div.dataset.fighterId = `monster-${m.monsterId || index}`;
         div.style.position = 'relative';
 
-        if (isActive) {
-            div.style.borderColor = '#ef4444';
-            div.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.4)';
-            div.style.transform = 'scale(1.05)';
-        } else if (!activeMonster.dead) {
-            div.style.borderColor = 'rgba(220, 38, 38, 0.4)'; // Default enemy border
-            div.style.boxShadow = 'none';
-            div.style.transform = 'scale(0.95)';
+        if (!isBossSolo) {
+            if (isActive) {
+                div.style.borderColor = '#ef4444';
+                div.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.4)';
+                div.style.transform = 'scale(1.05)';
+            } else if (!activeMonster.dead) {
+                div.style.borderColor = 'rgba(220, 38, 38, 0.4)'; // Default enemy border
+                div.style.boxShadow = 'none';
+                div.style.transform = 'scale(0.95)';
+            }
         }
 
-        const isBoss = pMonster.passiveStates && Object.keys(pMonster.passiveStates).some(k => k.startsWith('BOSS_BUFF_'));
+        const isBoss = (pMonster.passiveStates && Object.keys(pMonster.passiveStates).some(k => k.startsWith('BOSS_BUFF_'))) || isBossRoom;
 
         if (isBoss) {
             if (bossBuffsContainer && !bossBuffsRendered) {
@@ -3183,7 +3209,7 @@ export function renderEnemies(enemies, turnMap = null) {
             forcedMana = window.combatOldStats[fId].mana;
         }
 
-        div.innerHTML = generateFighterHtml(pMonster, false, isBoss, forcedHp, forcedMana, turnMap && turnMap.enemies ? turnMap.enemies[index] : null);
+        div.innerHTML = generateFighterHtml(pMonster, false, isBoss, forcedHp, forcedMana, turnMap && turnMap.enemies ? turnMap.enemies[index] : null, isBossSolo);
         container.appendChild(div);
 
         div.addEventListener('contextmenu', (e) => {
