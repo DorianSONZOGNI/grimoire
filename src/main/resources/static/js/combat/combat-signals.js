@@ -101,6 +101,7 @@ function playSignalAudio(actionName) {
  * Envoie un signal au serveur backend.
  */
 export async function dispatchSignal(actionName, targetIndex, targetName) {
+    if (!pageState.isMulti) return;
     const sId = pageState.sessionId;
     if (!sId) return;
 
@@ -379,6 +380,7 @@ function showEmoteVisual(actionName, badge, label, sender) {
  * Ouvre ou ferme le panneau d'émotes dans le header.
  */
 export async function toggleEmotesPopover(anchorBtn) {
+    if (!pageState.isMulti) return;
     const popover = document.getElementById('combatEmotesPopover');
     if (!popover) return;
 
@@ -441,6 +443,7 @@ export function hideEmotesPopover() {
  * Ouvre le menu contextuel de ping pour monstres ou héros.
  */
 export async function showFighterPingMenu(e, type, targetIndex, targetName) {
+    if (!pageState.isMulti) return;
     if (e) {
         e.preventDefault();
         e.stopPropagation();

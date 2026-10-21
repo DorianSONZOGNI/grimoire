@@ -337,6 +337,17 @@ export function updateUI(data) {
     }
 
     pageState.currentSessionData = data;
+    if (data && data.multi !== undefined) {
+        pageState.isMulti = (data.multi === true);
+    }
+    const emotesBtn = document.getElementById('btnCombatEmotes');
+    if (emotesBtn) {
+        if (pageState.isMulti) {
+            emotesBtn.classList.remove('is-hidden');
+        } else {
+            emotesBtn.classList.add('is-hidden');
+        }
+    }
 
     if (data.finished) {
         localStorage.removeItem('activeCombatId');
@@ -494,6 +505,7 @@ export function updateUI(data) {
             playersContainer.appendChild(div);
 
             div.addEventListener('contextmenu', (e) => {
+                if (!pageState.isMulti) return;
                 e.preventDefault();
                 showFighterPingMenu(e, 'hero', index, p.name);
             });
@@ -3060,7 +3072,9 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         shieldBarHtml = `<div style="width: 100%; height: 3px; background: rgba(0,0,0,0.3); border-radius: 2px; position: relative;"><div class="${glowClass}" style="position: absolute; top: 0; left: 0; height: 100%; width: ${shieldPct}%; background: #3b82f6; border-radius: 2px; box-shadow: 0 0 5px #3b82f6;"></div></div>`;
     }
 
-    let pingBtnHtml = `<button class="fighter-card-ping-btn" type="button" title="Signaler / Communication (ou clic droit)"><span class="material-symbols-outlined">campaign</span></button>`;
+    let pingBtnHtml = pageState.isMulti
+        ? `<button class="fighter-card-ping-btn" type="button" title="Signaler / Communication (ou clic droit)"><span class="material-symbols-outlined">campaign</span></button>`
+        : '';
 
     return `
         ${turnOrderBadgeHtml}
@@ -3173,6 +3187,7 @@ export function renderEnemies(enemies, turnMap = null) {
         container.appendChild(div);
 
         div.addEventListener('contextmenu', (e) => {
+            if (!pageState.isMulti) return;
             e.preventDefault();
             showFighterPingMenu(e, 'mob', index, m.name);
         });
