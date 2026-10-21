@@ -12,6 +12,9 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.security.Principal;
 import java.util.List;
+import generation.grimoire.dto.pve.CombatSignalRequest;
+import generation.grimoire.dto.pve.CombatSignalDTO;
+import generation.grimoire.dto.pve.CombatSignalsConfigDTO;
 
 @RestController
 @RequestMapping("/api/pve/combat")
@@ -352,4 +355,24 @@ public class CombatController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/signals/config")
+    public ResponseEntity<CombatSignalsConfigDTO> getSignalsConfig() {
+        return ResponseEntity.ok(combatService.getSignalsConfig());
+    }
+
+    @PostMapping("/{sessionId}/signal")
+    public ResponseEntity<?> sendSignal(
+            @PathVariable("sessionId") String sessionId,
+            @RequestBody CombatSignalRequest request,
+            Principal principal) {
+        try {
+            String username = principal != null ? principal.getName() : "Joueur";
+            CombatSignalDTO result = combatService.sendSignal(sessionId, username, request);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
 }
+

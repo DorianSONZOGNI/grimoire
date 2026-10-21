@@ -45,6 +45,10 @@
             <div id="bossBuffsContainer" class="flex gap-2 items-center flex-wrap justify-end max-w-[40vw]">
             </div>
 
+            <button id="btnCombatEmotes" class="combat-emotes-btn" type="button" title="Émotes & Communication">
+                <span class="material-symbols-outlined">add_reaction</span>
+                <span class="combat-emotes-btn-label">Émotes</span>
+            </button>
             <div class="flex items-center gap-2 bg-white/5 py-1 px-3 rounded-lg border border-white/10">
                 <span class="material-symbols-outlined text-emerald cursor-pointer text-[1.4rem] select-none"
                     id="musicToggleBtn" onclick="window.toggleMusic()"
@@ -392,9 +396,23 @@
         <div id="heroEquipmentTooltipContent" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
     </div>
 
+    <!-- Popover Émotes -->
+    <div id="combatEmotesPopover" class="combat-emotes-popover is-hidden">
+        <div class="combat-emotes-popover-header">
+            <span class="material-symbols-outlined">add_reaction</span>
+            <span>Émotes & Communication</span>
+        </div>
+        <div id="combatEmotesGrid" class="combat-emotes-grid"></div>
+    </div>
+
+    <!-- Menu contextuel / radial de ping pour monstres et héros -->
+    <div id="combatPingMenu" class="combat-ping-menu is-hidden">
+        <div class="combat-ping-menu-header" id="combatPingMenuTitle"></div>
+        <div class="combat-ping-menu-items" id="combatPingMenuItems"></div>
+    </div>
+
     <script type="module" src="/js/services/auth.js"></script>
     <script type="module" src="/js/combat/combat-state.js"></script>
-
 
 </body>
 

@@ -7,6 +7,9 @@ import { loadAnomaliesCombat, resumeCombat, startCombat, fetchCombatEquipments }
 import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
+import { initCombatSignals, showFighterPingMenu } from './combat-signals.js';
+
+window.showFighterPingMenu = showFighterPingMenu;
 
 
 if (!window.allAnomaliesCombat || !Array.isArray(window.allAnomaliesCombat)) {
@@ -172,6 +175,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener('click', tryPlayMusic);
 
     try { if (window.initAppMeta) await window.initAppMeta(); } catch (e) { console.warn('Meta loading skipped:', e); }
+    initCombatSignals();
 
     // Charger le username actuel
     try {

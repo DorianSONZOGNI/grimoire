@@ -20,6 +20,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import generation.grimoire.dto.pve.CombatSignalDTO;
+import generation.grimoire.dto.pve.CombatSignalRequest;
+import generation.grimoire.dto.pve.CombatSignalsConfigDTO;
+import generation.grimoire.enumeration.CombatSignalAction;
+import generation.grimoire.enumeration.CombatSignalType;
 
 /**
  * Façade publique du système de combat PvE.
@@ -643,4 +648,57 @@ public class CombatService {
             }
         }
     }
+
+    public CombatSignalsConfigDTO getSignalsConfig() {
+        List<CombatSignalAction> mob = java.util.Arrays.stream(CombatSignalAction.values())
+                .filter(a -> a.getType() == CombatSignalType.MOB_PING)
+                .toList();
+        List<CombatSignalAction> hero = java.util.Arrays.stream(CombatSignalAction.values())
+                .filter(a -> a.getType() == CombatSignalType.HERO_PING)
+                .toList();
+        List<CombatSignalAction> emotes = java.util.Arrays.stream(CombatSignalAction.values())
+                .filter(a -> a.getType() == CombatSignalType.EMOTE)
+                .toList();
+        return new CombatSignalsConfigDTO(mob, hero, emotes);
+    }
+
+    public CombatSignalDTO sendSignal(String sessionId, String username, CombatSignalRequest request) {
+        if (request == null || request.action() == null) {
+            throw new IllegalArgumentException("Action de signal requise");
+        }
+        CombatSession session = getSession(sessionId);
+        if (session == null) {
+            throw new IllegalArgumentException("Session introuvable : " + sessionId);
+        }
+
+        String targetName = request.targetName();
+        if (request.targetIndex() != null) {
+            int idx = request.targetIndex();
+            if (request.action().getType() == CombatSignalType.MOB_PING) {
+                if (session.getEnemies() != null && idx >= 0 && idx < session.getEnemies().size()) {
+                    var m = session.getEnemies().get(idx);
+                    if (m != null && m.getBase() != null) {
+                        targetName = m.getBase().getName();
+                    }
+                }
+            } else if (request.action().getType() == CombatSignalType.HERO_PING) {
+                if (session.getPlayers() != null && idx >= 0 && idx < session.getPlayers().size()) {
+                    var p = session.getPlayers().get(idx);
+                    if (p != null) {
+                        targetName = p.getName();
+                    }
+                }
+            }
+        }
+
+        CombatSignalDTO dto = CombatSignalDTO.of(username, request.action(), request.targetIndex(), targetName);
+        session.addLog(dto.formattedMessage());
+
+        if (combatEventEmitter != null) {
+            combatEventEmitter.broadcastEvent(session.getSessionId(), "combat-signal", dto);
+        }
+
+        return dto;
+    }
 }
+

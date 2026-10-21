@@ -6,6 +6,7 @@ import { nextRoom, openStrangeDoor, acceptAlteration, useRope, openBuyModal, add
 import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
+import { showFighterPingMenu } from './combat-signals.js';
 
 window.toggleCombatLog = function() {
     const log = document.getElementById('combatLog');
@@ -459,6 +460,8 @@ export function updateUI(data) {
             const div = document.createElement('div');
             div.className = `fighter fighter-player ${isActive ? 'active' : ''} ${isAllySelected ? 'selected-ally' : ''} ${isDead ? 'dead' : ''}`;
             div.dataset.fighterId = `hero-${p.id || index}`;
+            div.dataset.index = index;
+            div.dataset.ownerUsername = p.ownerUsername || p.user?.username || '';
 
             if (isAllySelected) {
                 div.style.borderColor = '#10b981';
@@ -489,6 +492,18 @@ export function updateUI(data) {
 
             div.innerHTML = timerHtml + generateFighterHtml(p, true, false, forcedHp, forcedMana, turnMap.players[index] || null);
             playersContainer.appendChild(div);
+
+            div.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                showFighterPingMenu(e, 'hero', index, p.name);
+            });
+            const heroPingBtn = div.querySelector('.fighter-card-ping-btn');
+            if (heroPingBtn) {
+                heroPingBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showFighterPingMenu(e, 'hero', index, p.name);
+                });
+            }
 
             // Animate bars with JS loop
             const hpBar = div.querySelector('.gauge-fill.hp');
@@ -3045,8 +3060,11 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         shieldBarHtml = `<div style="width: 100%; height: 3px; background: rgba(0,0,0,0.3); border-radius: 2px; position: relative;"><div class="${glowClass}" style="position: absolute; top: 0; left: 0; height: 100%; width: ${shieldPct}%; background: #3b82f6; border-radius: 2px; box-shadow: 0 0 5px #3b82f6;"></div></div>`;
     }
 
+    let pingBtnHtml = `<button class="fighter-card-ping-btn" type="button" title="Signaler / Communication (ou clic droit)"><span class="material-symbols-outlined">campaign</span></button>`;
+
     return `
         ${turnOrderBadgeHtml}
+        ${pingBtnHtml}
         ${mutationsHtml}
         ${passiveIconsHtml}
         ${channelingBadgeHtml}
@@ -3153,6 +3171,18 @@ export function renderEnemies(enemies, turnMap = null) {
 
         div.innerHTML = generateFighterHtml(pMonster, false, isBoss, forcedHp, forcedMana, turnMap && turnMap.enemies ? turnMap.enemies[index] : null);
         container.appendChild(div);
+
+        div.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            showFighterPingMenu(e, 'mob', index, m.name);
+        });
+        const mobPingBtn = div.querySelector('.fighter-card-ping-btn');
+        if (mobPingBtn) {
+            mobPingBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showFighterPingMenu(e, 'mob', index, m.name);
+            });
+        }
 
         // Animate bars with JS loop
         const hpBar = div.querySelector('.gauge-fill.hp');
