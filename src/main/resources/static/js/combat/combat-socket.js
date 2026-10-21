@@ -4,6 +4,7 @@ import { updateUI } from './combat-ui.js';
 import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
+import { handleSignalReceived } from './combat-signals.js';
 
 
 export function processNewDeathLogs(combatLogs) {
@@ -43,6 +44,15 @@ export function initMultiSSE(sessionId) {
             }
         } catch (err) {
             console.error('[SSE] parse error', err);
+        }
+    });
+
+    _multiSSE.addEventListener('combat-signal', (e) => {
+        try {
+            const signal = JSON.parse(e.data);
+            handleSignalReceived(signal);
+        } catch (err) {
+            console.error('[SSE] combat-signal parse error', err);
         }
     });
 

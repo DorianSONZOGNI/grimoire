@@ -1366,3 +1366,504 @@ body {
     50% { box-shadow: 0 0 14px currentColor, 0 0 20px currentColor; }
     100% { box-shadow: 0 0 4px currentColor; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Communication Co-op : Émotes & Pings Tactiques
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Bouton Émotes dans le header */
+.combat-emotes-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(168, 85, 247, 0.15);
+    border: 1px solid rgba(168, 85, 247, 0.35);
+    color: #e9d5ff;
+    padding: 0.4rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.combat-emotes-btn:hover {
+    background: rgba(168, 85, 247, 0.28);
+    border-color: rgba(168, 85, 247, 0.6);
+    color: #ffffff;
+    box-shadow: 0 0 14px rgba(168, 85, 247, 0.4);
+    transform: translateY(-1px);
+}
+
+.combat-emotes-btn-label {
+    letter-spacing: 0.3px;
+}
+
+/* Popover Émotes */
+.combat-emotes-popover {
+    position: fixed;
+    z-index: 10000;
+    width: 320px;
+    background: rgba(15, 23, 42, 0.96);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(168, 85, 247, 0.35);
+    border-radius: 14px;
+    padding: 1rem;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7), 0 0 20px rgba(168, 85, 247, 0.25);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    animation: emotesPopoverPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.combat-emotes-popover.is-hidden {
+    display: none !important;
+}
+
+.combat-emotes-popover.is-visible {
+    display: flex !important;
+    flex-direction: column;
+}
+
+@keyframes emotesPopoverPop {
+    from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.combat-emotes-popover-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #c084fc;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.combat-emotes-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+}
+
+.combat-emote-choice-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 0.5rem 0.65rem;
+    color: #f1f5f9;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.combat-emote-choice-btn:hover {
+    background: rgba(168, 85, 247, 0.18);
+    border-color: rgba(168, 85, 247, 0.5);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.combat-emote-choice-badge {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.combat-emote-choice-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Bouton ping discret sur chaque carte de combattant */
+.fighter-card-ping-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 8;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0;
+}
+
+.fighter-card-ping-btn .material-symbols-outlined {
+    font-size: 15px;
+}
+
+.fighter-card-ping-btn:hover {
+    background: rgba(56, 189, 248, 0.25);
+    border-color: #38bdf8;
+    color: #38bdf8;
+    transform: scale(1.18);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+/* Menu contextuel / radial de ping */
+.combat-ping-menu {
+    position: fixed;
+    z-index: 10001;
+    min-width: 190px;
+    background: rgba(15, 23, 42, 0.96);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    border-radius: 12px;
+    padding: 0.6rem;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75), 0 0 16px rgba(56, 189, 248, 0.2);
+    animation: pingMenuPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.combat-ping-menu.is-hidden {
+    display: none !important;
+}
+
+.combat-ping-menu.is-visible {
+    display: flex !important;
+    flex-direction: column;
+}
+
+@keyframes pingMenuPop {
+    from {
+        opacity: 0;
+        transform: scale(0.92);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.combat-ping-menu-header {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.2rem 0.5rem 0.5rem 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 0.4rem;
+}
+
+.combat-ping-menu-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.combat-ping-item-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #f1f5f9;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.combat-ping-item-btn .ping-item-icon {
+    font-size: 1.1rem;
+}
+
+.combat-ping-item-btn .ping-item-badge {
+    font-size: 1.15rem;
+}
+
+.combat-ping-item-btn.ping-type-attack:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
+    color: #fca5a5;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+.combat-ping-item-btn.ping-type-fear:hover {
+    background: rgba(245, 158, 11, 0.2);
+    border-color: #f59e0b;
+    color: #fcd34d;
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+}
+
+.combat-ping-item-btn.ping-type-heal:hover {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+    color: #6ee7b7;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+.combat-ping-item-btn.ping-type-shield:hover {
+    background: rgba(56, 189, 248, 0.2);
+    border-color: #38bdf8;
+    color: #7dd3fc;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+}
+
+.combat-ping-item-btn.ping-type-buff:hover {
+    background: rgba(192, 132, 252, 0.2);
+    border-color: #c084fc;
+    color: #e9d5ff;
+    box-shadow: 0 0 10px rgba(192, 132, 252, 0.3);
+}
+
+/* Effets de halo pulsant sur les cartes lors d'un ping */
+.ping-pulse-attack {
+    animation: pingCardPulseAttack 1.2s infinite alternate !important;
+}
+
+@keyframes pingCardPulseAttack {
+    from {
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+        border-color: rgba(239, 68, 68, 0.6) !important;
+    }
+    to {
+        box-shadow: 0 0 25px rgba(239, 68, 68, 0.9), inset 0 0 15px rgba(239, 68, 68, 0.3);
+        border-color: #ef4444 !important;
+    }
+}
+
+.ping-pulse-fear {
+    animation: pingCardPulseFear 1.2s infinite alternate !important;
+}
+
+@keyframes pingCardPulseFear {
+    from {
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+        border-color: rgba(245, 158, 11, 0.6) !important;
+    }
+    to {
+        box-shadow: 0 0 25px rgba(245, 158, 11, 0.9), inset 0 0 15px rgba(245, 158, 11, 0.3);
+        border-color: #f59e0b !important;
+    }
+}
+
+.ping-pulse-heal {
+    animation: pingCardPulseHeal 1.2s infinite alternate !important;
+}
+
+@keyframes pingCardPulseHeal {
+    from {
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+        border-color: rgba(16, 185, 129, 0.6) !important;
+    }
+    to {
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.9), inset 0 0 15px rgba(16, 185, 129, 0.3);
+        border-color: #10b981 !important;
+    }
+}
+
+.ping-pulse-shield {
+    animation: pingCardPulseShield 1.2s infinite alternate !important;
+}
+
+@keyframes pingCardPulseShield {
+    from {
+        box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+        border-color: rgba(56, 189, 248, 0.6) !important;
+    }
+    to {
+        box-shadow: 0 0 25px rgba(56, 189, 248, 0.9), inset 0 0 15px rgba(56, 189, 248, 0.3);
+        border-color: #38bdf8 !important;
+    }
+}
+
+.ping-pulse-buff {
+    animation: pingCardPulseBuff 1.2s infinite alternate !important;
+}
+
+@keyframes pingCardPulseBuff {
+    from {
+        box-shadow: 0 0 10px rgba(192, 132, 252, 0.4);
+        border-color: rgba(192, 132, 252, 0.6) !important;
+    }
+    to {
+        box-shadow: 0 0 25px rgba(192, 132, 252, 0.9), inset 0 0 15px rgba(192, 132, 252, 0.3);
+        border-color: #c084fc !important;
+    }
+}
+
+/* Badge flottant au centre de la carte lors du ping */
+.fighter-ping-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 60;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    padding: 0.6rem 1rem;
+    min-width: 140px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+    animation: pingOverlayBounceIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.fighter-ping-overlay.ping-fading {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.85);
+}
+
+@keyframes pingOverlayBounceIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.6);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.fighter-ping-overlay.ping-type-attack {
+    border: 2px solid #ef4444;
+    box-shadow: 0 0 24px rgba(239, 68, 68, 0.7);
+}
+
+.fighter-ping-overlay.ping-type-fear {
+    border: 2px solid #f59e0b;
+    box-shadow: 0 0 24px rgba(245, 158, 11, 0.7);
+}
+
+.fighter-ping-overlay.ping-type-heal {
+    border: 2px solid #10b981;
+    box-shadow: 0 0 24px rgba(16, 185, 129, 0.7);
+}
+
+.fighter-ping-overlay.ping-type-shield {
+    border: 2px solid #38bdf8;
+    box-shadow: 0 0 24px rgba(56, 189, 248, 0.7);
+}
+
+.fighter-ping-overlay.ping-type-buff {
+    border: 2px solid #c084fc;
+    box-shadow: 0 0 24px rgba(192, 132, 252, 0.7);
+}
+
+.fighter-ping-badge {
+    font-size: 2rem;
+    animation: pingBadgeThrob 0.6s infinite alternate;
+}
+
+@keyframes pingBadgeThrob {
+    from { transform: scale(1); }
+    to { transform: scale(1.2); }
+}
+
+.fighter-ping-label {
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #ffffff;
+}
+
+.fighter-ping-sender {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+/* Bulle d'émote façon BD au-dessus du héros */
+.combat-speech-bubble {
+    position: fixed;
+    z-index: 99999;
+    pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(8px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    padding: 0.4rem 0.9rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    animation: speechBubblePop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.combat-speech-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid rgba(15, 23, 42, 0.95);
+}
+
+.combat-speech-bubble.bubble-fading {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px) scale(0.9);
+}
+
+.combat-speech-bubble.bubble-arena-floating {
+    position: fixed;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+@keyframes speechBubblePop {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px) scale(0.7);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+}
+
+.bubble-badge {
+    font-size: 1.4rem;
+}
+
+.bubble-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+/* Entrée de signal dans le journal de combat */
+.log-entry.log-entry-signal {
+    border-left: 3px solid #38bdf8;
+    background: rgba(56, 189, 248, 0.1);
+    color: #e2e8f0;
+    font-weight: 500;
+    padding: 0.35rem 0.6rem;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 0.35rem;
+}
+
