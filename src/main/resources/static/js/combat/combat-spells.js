@@ -3,7 +3,7 @@ import { updateUI } from './combat-ui.js';
 import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
-import { triggerCombatActionSprite } from './combat-sprites.js';
+import { triggerCombatActionSprite } from './combat-sprites.js?v=1786180000060';
 
 
 export function initiateCombatCast(spellId) {
@@ -121,10 +121,9 @@ export function initiateCombatCast(spellId) {
 
     const cardEl = spellId ? document.getElementById(`spell-card-${spellId}`) : document.getElementById('btnAttack');
 
-    // Disable all other buttons
-    document.querySelectorAll('.combat-spell-card, .action-btn, .filter-radio, .filter-chip').forEach(btn => {
+    // Disable all other buttons (except flee)
+    document.querySelectorAll('.combat-spell-card, .action-btn:not(.flee), .filter-radio, .filter-chip').forEach(btn => {
         if (btn !== cardEl) {
-            btn.classList.add('disabled');
             btn.classList.add('disabled');
         }
     });
@@ -373,13 +372,13 @@ export async function doAction(spellId = null) {
         }
         const data = await res.json();
 
-        // Let user read log by adding a small delay before full UI update
+        // Update UI promptly after attack animation starts
         setTimeout(() => {
             pageState.selectedAllyIndex = -1; // Reset after action completes
             pageState.isProcessing = false;
             setButtonsProcessing(false);
             updateUI(data);
-        }, 600);
+        }, 150);
 
     } catch (e) {
         console.error(e);

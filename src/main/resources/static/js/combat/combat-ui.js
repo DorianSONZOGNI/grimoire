@@ -7,7 +7,7 @@ import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
 import { showFighterPingMenu } from './combat-signals.js';
-import { renderHeroCombatSprite } from './combat-sprites.js';
+import { renderHeroCombatSprite } from './combat-sprites.js?v=1786180000060';
 
 window.toggleCombatLog = function() {
     const log = document.getElementById('combatLog');
@@ -290,14 +290,23 @@ export function updateUI(data) {
 
     if (pageState.currentSessionData && data && !data.error) {
         const old = pageState.currentSessionData;
-        const isStale = (
-            data.currentRoomIndex < old.currentRoomIndex ||
-            (data.currentRoomIndex === old.currentRoomIndex && data.turnNumber < old.turnNumber) ||
-            (data.currentRoomIndex === old.currentRoomIndex && data.turnNumber === old.turnNumber && data.combatLog && old.combatLog && data.combatLog.length < old.combatLog.length)
-        );
-        if (isStale) {
-            console.log('Ignored stale data update (likely delayed HTTP response).');
+        const isOlderRoom = data.currentRoomIndex < old.currentRoomIndex;
+        const isOlderTurn = (data.currentRoomIndex === old.currentRoomIndex && data.turnNumber < old.turnNumber);
+        if (isOlderRoom || isOlderTurn) {
+            console.log('Ignored stale data update (older room or turn).', {
+                dataRoom: data.currentRoomIndex, oldRoom: old.currentRoomIndex,
+                dataTurn: data.turnNumber, oldTurn: old.turnNumber
+            });
             return;
+        }
+
+        // If in same room and same turn but incoming data has fewer logs (e.g. out-of-order SSE vs HTTP),
+        // preserve the longer combatLog rather than dropping the state update and ignoring player action!
+        if (data.currentRoomIndex === old.currentRoomIndex &&
+            data.turnNumber === old.turnNumber &&
+            data.combatLog && old.combatLog &&
+            data.combatLog.length < old.combatLog.length) {
+            data.combatLog = old.combatLog;
         }
     }
 
@@ -2404,6 +2413,15 @@ export function updateUI(data) {
         if (btnEnd) btnEnd.disabled = false;
     }
 
+    // Always ensure the flee button remains available while combat is active
+    const btnFlee = document.getElementById('btnFlee') || document.querySelector('.action-btn.flee');
+    if (btnFlee && (!data.finished)) {
+        btnFlee.disabled = false;
+        btnFlee.classList.remove('disabled', 'multi-disabled');
+        btnFlee.style.pointerEvents = '';
+        btnFlee.style.opacity = '';
+    }
+
     processNewDeathLogs(data.combatLog);
     updateNextRoomButtons(data);
     renderActiveChallenges(data);
@@ -3082,7 +3100,7 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         <div class="boss-solo-header">
             <div class="boss-solo-crest">
                 <span class="material-symbols-outlined boss-solo-icon">skull</span>
-                <span class="boss-solo-title">BOSS MAJEUR</span>
+                <span class="boss-solo-title">BOSS</span>
                 <span class="material-symbols-outlined boss-solo-icon">skull</span>
             </div>
         </div>
@@ -3946,12 +3964,27 @@ export function showResult(data) {
         if (tipContainer) tipContainer.style.display = 'none';
     }
 
+    localStorage.removeItem('activeCombatId');
+
     const retryBtn = document.getElementById('retryDungeonBtn');
     if (retryBtn) {
         const urlParams = new URLSearchParams(window.location.search);
-        const dId = (data && data.dungeonId) || urlParams.get('dungeonId');
+        const dId = (data && data.dungeonId) || (pageState.currentSessionData && pageState.currentSessionData.dungeonId) || urlParams.get('dungeonId');
         if (dId) {
-            retryBtn.href = `/dungeons.html?dungeonId=${dId}`;
+            let targetUrl = `/dungeons.html?dungeonId=${dId}`;
+            const heroes = (data && data.players && data.players.length > 0)
+                ? data.players
+                : (pageState.currentSessionData && pageState.currentSessionData.players);
+            if (heroes && heroes.length > 0) {
+                const charIds = heroes.map(p => p.id).join(',');
+                targetUrl += `&charIds=${charIds}`;
+            }
+            retryBtn.href = targetUrl;
+            retryBtn.onclick = (e) => {
+                e.preventDefault();
+                localStorage.removeItem('activeCombatId');
+                window.location.href = targetUrl;
+            };
             retryBtn.style.display = 'inline-flex';
         } else {
             retryBtn.style.display = 'none';

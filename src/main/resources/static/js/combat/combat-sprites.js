@@ -19,7 +19,7 @@ import { javaClassToCode } from '../utils/constants.js';
 const SPRITE_VOIES = ['conviction'];
 
 // Cache buster pour recharger immédiatement les assets graphiques après modification
-const SPRITE_VERSION = '1786180000050';
+const SPRITE_VERSION = '1786180000060';
 
 // Durée de maintien de la pose d'action avant retour en "wait" (ms)
 const ACTION_POSE_DURATION = 1600;

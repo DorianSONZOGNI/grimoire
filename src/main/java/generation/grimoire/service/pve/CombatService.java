@@ -384,6 +384,9 @@ public class CombatService {
         } catch (Exception e) {
             // Errors in computeSpellAvailability should not block the response
         }
+        if (session.isFinished()) {
+            activeSessions.remove(sessionId);
+        }
         return session;
     }
 
@@ -401,14 +404,22 @@ public class CombatService {
             session.increasePlayerTurnTimeLimit(p.getId(), 30000);
         }
 
-        return combatTurnService.endTurn(session);
+        CombatSession result = combatTurnService.endTurn(session);
+        if (session.isFinished()) {
+            activeSessions.remove(sessionId);
+        }
+        return result;
     }
 
     public CombatSession processNextAutoTurn(String sessionId) {
         CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
-        return combatTurnService.processNextAutoTurn(session);
+        CombatSession result = combatTurnService.processNextAutoTurn(session);
+        if (session.isFinished()) {
+            activeSessions.remove(sessionId);
+        }
+        return result;
     }
 
     public void fleeCombat(String sessionId, String username) {

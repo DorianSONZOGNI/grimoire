@@ -3,11 +3,17 @@ window.initAppMeta = async function () {
     return initMeta();
 };
 
+const isExplicitDungeonLaunch = window.location.pathname.includes('/dungeons.html') && window.location.search.includes('dungeonId=');
+if (isExplicitDungeonLaunch) {
+    localStorage.removeItem('activeCombatId');
+}
+
 const activeCombatId = localStorage.getItem('activeCombatId');
 if (activeCombatId && 
     !window.location.pathname.includes('/combat.html') && 
     !window.location.pathname.includes('/login.html') && 
-    !window.location.pathname.includes('/register.html')) {
+    !window.location.pathname.includes('/register.html') &&
+    !isExplicitDungeonLaunch) {
     console.warn('Active combat session found in localStorage, redirecting to combat page.');
     window.location.href = '/combat.html';
 }
@@ -385,7 +391,8 @@ window.checkAuthStatus = async function checkAuthStatus() {
             // Redirection automatique si une session de combat est toujours en cours
             if (!window.location.pathname.includes('/combat.html') &&
                 !window.location.pathname.includes('/login.html') &&
-                !window.location.pathname.includes('/register.html')) {
+                !window.location.pathname.includes('/register.html') &&
+                !isExplicitDungeonLaunch) {
                 fetch('/api/pve/combat/current', {
                     headers: { 'Authorization': `Bearer ${accessToken}` }
                 }).then(async (curRes) => {

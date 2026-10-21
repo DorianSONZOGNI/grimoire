@@ -301,8 +301,9 @@
                 <a class="action-btn no-underline" href="/dungeons.html">
                     Retourner à la page des donjons
                 </a>
-                <a class="action-btn no-underline bg-amber-500/20 text-amber-400 border-amber-500/40 hover:bg-amber-500/30"
-                    id="retryDungeonBtn" href="#" style="display: none;">
+                <a class="action-btn no-underline bg-amber-500/20 text-amber-400 border-amber-500/40 hover:bg-amber-500/30 flex items-center gap-1.5"
+                    id="retryDungeonBtn" href="#" style="display: none;" title="Ouvrir l'écran de lancement de ce donjon">
+                    <span class="material-symbols-outlined text-lg">restart_alt</span>
                     Relancer le donjon
                 </a>
             </div>
@@ -365,7 +366,7 @@
                 <span class="material-symbols-outlined">hourglass_top</span>
                 Fin de Tour
             </button>
-            <button class="action-btn flee w-full justify-center whitespace-nowrap" onclick="window.promptFlee()">
+            <button class="action-btn flee w-full justify-center whitespace-nowrap" id="btnFlee" onclick="window.promptFlee()">
                 <span class="material-symbols-outlined">directions_run</span>
                 Fuir
             </button>
@@ -411,8 +412,8 @@
         <div class="combat-ping-menu-items" id="combatPingMenuItems"></div>
     </div>
 
-    <script type="module" src="/js/services/auth.js"></script>
-    <script type="module" src="/js/combat/combat-state.js?v=1786180000045"></script>
+    <script type="module" src="/js/services/auth.js?v=17"></script>
+    <script type="module" src="/js/combat/combat-state.js"></script>
 
 </body>
 

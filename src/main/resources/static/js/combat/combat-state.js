@@ -41,7 +41,7 @@ shakeStyle.innerHTML = `
 
 document.head.appendChild(shakeStyle);
 
-export const pageState = {
+window.pageState = window.pageState || {
     lastCombatLogCount: null,
     sessionId: null,
     currentSessionData: null,
@@ -68,6 +68,7 @@ export const pageState = {
     combatWarningTimer: null,
     combatCountdownInterval: null,
 };
+export const pageState = window.pageState;
 
 pageState.lastCombatLogCount = 0;
 
@@ -90,7 +91,7 @@ pageState.pendingNeedsEnemy = false;
 pageState.pendingNeedsAlly = false;
 
 export function setButtonsProcessing(isProc) {
-    const buttons = document.querySelectorAll('.action-btn, .btn');
+    const buttons = document.querySelectorAll('.action-btn:not(.flee), .btn');
     buttons.forEach(btn => {
         if (isProc) {
             btn.disabled = true;
@@ -121,14 +122,18 @@ window.confirmCombatCast = confirmCombatCast;
 window.cancelCombatCast = cancelCombatCast;
 
 window.promptFlee = function () {
-    console.log("promptFlee called", pageState.sessionId, pageState.currentSessionData);
-    if (!pageState.sessionId || !pageState.currentSessionData || pageState.currentSessionData.finished) {
-        console.log("promptFlee aborted due to missing data or finished session");
+    const state = window.pageState || pageState;
+    const sId = state.sessionId || (state.currentSessionData && state.currentSessionData.sessionId) || localStorage.getItem('activeCombatId');
+    console.log("promptFlee called, resolved sessionId:", sId, "state:", state);
+    if (!sId) {
+        if (typeof window.showNotif === 'function') window.showNotif("Aucune session de combat active à fuir.", true);
+        else ui.showNotif("Aucune session de combat active à fuir.", true);
         return;
     }
     
-    const roomsCount = Math.max(1, pageState.currentSessionData.totalRooms || 1);
-    const nbHeroes = Math.max(1, (pageState.currentSessionData.players || []).length);
+    const sess = state.currentSessionData;
+    const roomsCount = Math.max(1, (sess && sess.totalRooms) || 1);
+    const nbHeroes = Math.max(1, ((sess && sess.players) || []).length);
     const xpLossPerHero = Math.floor((10 * roomsCount) / nbHeroes);
     const goldLoss = 10 * roomsCount;
     
@@ -141,10 +146,10 @@ window.promptFlee = function () {
         confirmText: 'Oui, fuir',
         onConfirm: async () => {
             try {
-                pageState.isFleeing = true;
-                const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/flee`, { method: 'POST' });
+                state.isFleeing = true;
+                const res = await globalFetch(`/api/pve/combat/${sId}/flee`, { method: 'POST' });
                 if (!res.ok) {
-                    pageState.isFleeing = false;
+                    state.isFleeing = false;
                     const err = await res.text();
                     ui.showNotif("Erreur lors de la fuite : " + err, true);
                     return;

@@ -5,7 +5,7 @@ import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
 import { handleSignalReceived } from './combat-signals.js';
-import { handleCombatSpriteLog } from './combat-sprites.js';
+import { handleCombatSpriteLog } from './combat-sprites.js?v=1786180000060';
 
 
 export function processNewDeathLogs(combatLogs) {
@@ -134,7 +134,7 @@ export function updateMultiTurnBanner(data) {
 }
 
 export function setMultiActionsEnabled(enabled) {
-    const selectors = ['#btnAttack', '#btnEndTurn', '.combat-spell-card', '.action-btn'];
+    const selectors = ['#btnAttack', '#btnEndTurn', '.combat-spell-card', '.action-btn:not(.flee)'];
     selectors.forEach(sel => {
         document.querySelectorAll(sel).forEach(el => {
             if (enabled) {

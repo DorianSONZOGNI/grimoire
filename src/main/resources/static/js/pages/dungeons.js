@@ -776,7 +776,9 @@ async function loadDungeons() {
 
     const urlParams = new URLSearchParams(window.location.search);
     const openDungeonId = urlParams.get('dungeonId');
+    const openCharIds = urlParams.get('charIds');
     if (openDungeonId) {
+        localStorage.removeItem('activeCombatId');
         const card = document.getElementById(`dungeon-card-${openDungeonId}`);
         if (card) {
             const section = card.closest('.tab-content');
@@ -789,6 +791,15 @@ async function loadDungeons() {
             if (!card.classList.contains('locked')) {
                 card.click();
                 window.scrollTo({ top: 0, behavior: 'instant' });
+
+                if (openCharIds) {
+                    const ids = openCharIds.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+                    ids.forEach(cid => {
+                        if (typeof window.selectCharacter === 'function') {
+                            window.selectCharacter(cid);
+                        }
+                    });
+                }
             } else {
                 if (window.showNotif) window.showNotif('Ce donjon est actuellement verrouillé.', true);
             }
@@ -798,6 +809,7 @@ async function loadDungeons() {
 
         const url = new URL(window.location);
         url.searchParams.delete('dungeonId');
+        url.searchParams.delete('charIds');
         window.history.replaceState({}, '', url);
     }
 }
