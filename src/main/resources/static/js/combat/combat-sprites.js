@@ -18,6 +18,9 @@ import { javaClassToCode } from '../utils/constants.js';
 // Voies disposant d'assets sprites dans /styles/sprites/<voieSlug>/
 const SPRITE_VOIES = ['conviction'];
 
+// Cache buster pour recharger immédiatement les assets graphiques après modification
+const SPRITE_VERSION = '1786180000050';
+
 // Durée de maintien de la pose d'action avant retour en "wait" (ms)
 const ACTION_POSE_DURATION = 1600;
 
@@ -142,7 +145,7 @@ function applyPoseToSpriteEl(spriteEl, voieSlug, pose) {
         spriteEl.appendChild(img);
     }
 
-    const targetSrc = `/styles/sprites/${voieSlug}/${pose}.png`;
+    const targetSrc = `/styles/sprites/${voieSlug}/${pose}.png?v=${SPRITE_VERSION}`;
     if (img.getAttribute('src') !== targetSrc) {
         img.src = targetSrc;
     }
