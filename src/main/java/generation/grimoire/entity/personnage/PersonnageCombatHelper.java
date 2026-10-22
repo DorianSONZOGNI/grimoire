@@ -19,6 +19,7 @@ public class PersonnageCombatHelper {
     public static void startTurn(Personnage p) {
         p.setInstantSpellCastThisTurn(false);
         p.setBanalSpellCastThisTurn(false);
+        p.setStartedChannelingThisTurn(false);
 
         if (p.getRemainingChannelingTurns() > 0) {
             p.setBanalSpellCastThisTurn(true);

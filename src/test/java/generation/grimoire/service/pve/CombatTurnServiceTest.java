@@ -26,7 +26,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.List;
 
+import generation.grimoire.entity.Spell;
+import generation.grimoire.entity.pve.Salle;
+import generation.grimoire.enumeration.RoomType;
+import generation.grimoire.model.pve.InitiativeEntry;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class CombatTurnServiceTest {
@@ -88,7 +96,11 @@ class CombatTurnServiceTest {
         List<Personnage> players = new ArrayList<>(List.of(player1, player2));
         Donjon mockDonjon = new Donjon();
         mockDonjon.setId(99L);
+        Salle combatRoom = new Salle();
+        combatRoom.setType(RoomType.COMBAT);
+        mockDonjon.setSalles(new ArrayList<>(List.of(combatRoom)));
         session = new CombatSession("test-session", mockDonjon, players);
+        session.loadRoom(0);
 
         Monstre baseMonster = new Monstre();
         baseMonster.setName("Goblin");
@@ -169,5 +181,47 @@ class CombatTurnServiceTest {
 
         assertThat(target).isIn(player1, player2);
         assertThat(ally.getLeaderForcedTargetId()).isEqualTo(target.getId());
+    }
+
+    @Test
+    void testProcessNextTurn_ChannelingTurn2_TicksChannelingAndEmitsLog() {
+        session.getTurnOrder().clear();
+        session.getTurnOrder().add(new InitiativeEntry(true, 0, 10, 5, 0));
+        session.setCurrentTurnIndex(0);
+
+        Spell channeledSpell = new Spell();
+        channeledSpell.setId(10L);
+        channeledSpell.setNom("Rayon Céleste");
+        channeledSpell.setChannelingDuration(3);
+
+        player1.setRemainingChannelingTurns(2);
+        player1.setChanneledSpell(channeledSpell);
+        player1.setStartedChannelingThisTurn(false);
+
+        combatTurnService.endTurn(session);
+
+        verify(spellService).tickChanneling(eq(player1), any(), any(), any(), any(), any());
+        assertThat(session.getCombatLog()).anyMatch(log -> log.contains("Hero1 canalise Rayon Céleste ! (Tour 2)"));
+    }
+
+    @Test
+    void testProcessNextTurn_ChannelingTurn1_DoesNotTickChanneling() {
+        session.getTurnOrder().clear();
+        session.getTurnOrder().add(new InitiativeEntry(true, 0, 10, 5, 0));
+        session.setCurrentTurnIndex(0);
+
+        Spell channeledSpell = new Spell();
+        channeledSpell.setId(10L);
+        channeledSpell.setNom("Rayon Céleste");
+        channeledSpell.setChannelingDuration(3);
+
+        player1.setRemainingChannelingTurns(2);
+        player1.setChanneledSpell(channeledSpell);
+        player1.setStartedChannelingThisTurn(true);
+
+        combatTurnService.endTurn(session);
+
+        verify(spellService, never()).tickChanneling(any(), any(), any(), any(), any(), any());
+        assertThat(session.getCombatLog()).noneMatch(log -> log.contains("canalise"));
     }
 }

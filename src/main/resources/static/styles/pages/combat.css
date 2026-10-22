@@ -2250,6 +2250,196 @@ body {
     opacity: 0.85;
 }
 
+/* --- Pose: blood (attaque + soin pour Voie de la Sûreté) --- */
+@keyframes heroSpriteBlood {
+    0% {
+        transform: scale(0.95) translateX(-6px);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+    30% {
+        transform: scale(1.18) translateX(22px) translateY(-4px);
+        filter: drop-shadow(0 0 24px rgba(220, 38, 38, 1)) drop-shadow(0 0 38px rgba(185, 28, 28, 0.8)) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.85));
+    }
+    65% {
+        transform: scale(1.06) translateX(10px) translateY(-2px);
+        filter: drop-shadow(0 0 16px rgba(239, 68, 68, 0.85));
+    }
+    100% {
+        transform: scale(1) translateX(0) translateY(0);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+}
+.combat-hero-sprite.pose-blood img {
+    animation: heroSpriteBlood 0.6s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+}
+.combat-hero-sprite.pose-blood::after {
+    transform: scale(1.2) translateX(10px);
+}
+
+/* --- Pose: mana (rendu de mana pour Voie de la Sûreté) --- */
+@keyframes heroSpriteMana {
+    0% {
+        transform: scale(0.96) translateY(2px);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+    35% {
+        transform: scale(1.14) translateY(-8px);
+        filter: drop-shadow(0 0 22px rgba(59, 130, 246, 1)) drop-shadow(0 0 35px rgba(14, 165, 233, 0.75));
+    }
+    75% {
+        transform: scale(1.04) translateY(-2px);
+        filter: drop-shadow(0 0 14px rgba(59, 130, 246, 0.85));
+    }
+    100% {
+        transform: scale(1) translateY(0);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+}
+.combat-hero-sprite.pose-mana img {
+    animation: heroSpriteMana 0.65s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+}
+.combat-hero-sprite.pose-mana::after {
+    transform: scale(0.9);
+    opacity: 0.85;
+}
+
+/* --- Pose: buff (don de buff pour Voie de la Sûreté) --- */
+@keyframes heroSpriteBuff {
+    0% {
+        transform: scale(0.96) translateY(2px);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+    35% {
+        transform: scale(1.15) translateY(-6px);
+        filter: drop-shadow(0 0 22px rgba(234, 179, 8, 1)) drop-shadow(0 0 35px rgba(250, 204, 21, 0.7));
+    }
+    75% {
+        transform: scale(1.05) translateY(-2px);
+        filter: drop-shadow(0 0 14px rgba(234, 179, 8, 0.85));
+    }
+    100% {
+        transform: scale(1) translateY(0);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+}
+.combat-hero-sprite.pose-buff img {
+    animation: heroSpriteBuff 0.65s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+}
+.combat-hero-sprite.pose-buff::after {
+    transform: scale(1.1);
+    opacity: 0.9;
+}
+
+/* --- Pose: auto-buff (buff offensif pour Voie de la Consolidation : force, dégâts physiques, dégâts bouclier) --- */
+@keyframes heroSpriteAutoBuff {
+    0% {
+        transform: scale(0.96) translateY(2px);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+    35% {
+        transform: scale(1.16) translateY(-8px);
+        filter: drop-shadow(0 0 22px rgba(245, 158, 11, 1)) drop-shadow(0 0 35px rgba(217, 119, 6, 0.8)) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.85));
+    }
+    75% {
+        transform: scale(1.06) translateY(-2px);
+        filter: drop-shadow(0 0 14px rgba(245, 158, 11, 0.85));
+    }
+    100% {
+        transform: scale(1) translateY(0);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+}
+.combat-hero-sprite.pose-auto-buff img {
+    animation: heroSpriteAutoBuff 0.65s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+}
+.combat-hero-sprite.pose-auto-buff::after {
+    transform: scale(1.15);
+    opacity: 0.9;
+}
+
+/* --- Pose: renforce (buff défensif pour Voie de la Consolidation : pv max, don d'armure) --- */
+@keyframes heroSpriteRenforce {
+    0% {
+        transform: scale(0.96) translateY(3px);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+    35% {
+        transform: scale(1.14) translateY(-5px);
+        filter: drop-shadow(0 0 24px rgba(180, 115, 75, 1)) drop-shadow(0 0 38px rgba(153, 103, 76, 0.85)) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.85));
+    }
+    75% {
+        transform: scale(1.05) translateY(-2px);
+        filter: drop-shadow(0 0 15px rgba(180, 115, 75, 0.85));
+    }
+    100% {
+        transform: scale(1) translateY(0);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+}
+.combat-hero-sprite.pose-renforce img {
+    animation: heroSpriteRenforce 0.65s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+}
+.combat-hero-sprite.pose-renforce::after {
+    transform: scale(1.2);
+    opacity: 0.95;
+}
+
+/* --- Pose: poison (altération de poison pour Voie de la Création) --- */
+@keyframes heroSpritePoison {
+    0% {
+        transform: scale(0.95) translateX(-4px);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+    30% {
+        transform: scale(1.16) translateX(18px) translateY(-3px);
+        filter: drop-shadow(0 0 22px rgba(16, 185, 129, 1)) drop-shadow(0 0 36px rgba(5, 150, 105, 0.8)) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.85));
+    }
+    65% {
+        transform: scale(1.05) translateX(6px);
+        filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.85));
+    }
+    100% {
+        transform: scale(1) translateX(0) translateY(0);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+}
+.combat-hero-sprite.pose-poison img {
+    animation: heroSpritePoison 0.65s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+}
+.combat-hero-sprite.pose-poison::after {
+    transform: scale(1.2) translateX(8px);
+    opacity: 0.9;
+}
+
+/* --- Pose: bourgeons (génération de bourgeons ou dissipation pour Voie de la Création) --- */
+@keyframes heroSpriteBourgeon {
+    0% {
+        transform: scale(0.96) translateY(2px);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+    35% {
+        transform: scale(1.16) translateY(-8px);
+        filter: drop-shadow(0 0 22px rgba(74, 222, 128, 1)) drop-shadow(0 0 35px rgba(34, 197, 94, 0.75)) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.85));
+    }
+    75% {
+        transform: scale(1.05) translateY(-2px);
+        filter: drop-shadow(0 0 14px rgba(74, 222, 128, 0.85));
+    }
+    100% {
+        transform: scale(1) translateY(0);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+}
+.combat-hero-sprite.pose-bourgeon img,
+.combat-hero-sprite.pose-bourgeons img {
+    animation: heroSpriteBourgeon 0.65s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+}
+.combat-hero-sprite.pose-bourgeon::after,
+.combat-hero-sprite.pose-bourgeons::after {
+    transform: scale(0.9);
+    opacity: 0.85;
+}
+
 /* Héros mort */
 .combat-hero-sprite.is-dead img,
 .combat-hero-sprite.pose-dead img {
