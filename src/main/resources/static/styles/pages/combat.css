@@ -2330,6 +2330,60 @@ body {
     opacity: 0.9;
 }
 
+/* --- Pose: auto-buff (buff offensif pour Voie de la Consolidation : force, dégâts physiques, dégâts bouclier) --- */
+@keyframes heroSpriteAutoBuff {
+    0% {
+        transform: scale(0.96) translateY(2px);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+    35% {
+        transform: scale(1.16) translateY(-8px);
+        filter: drop-shadow(0 0 22px rgba(245, 158, 11, 1)) drop-shadow(0 0 35px rgba(217, 119, 6, 0.8)) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.85));
+    }
+    75% {
+        transform: scale(1.06) translateY(-2px);
+        filter: drop-shadow(0 0 14px rgba(245, 158, 11, 0.85));
+    }
+    100% {
+        transform: scale(1) translateY(0);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+}
+.combat-hero-sprite.pose-auto-buff img {
+    animation: heroSpriteAutoBuff 0.65s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+}
+.combat-hero-sprite.pose-auto-buff::after {
+    transform: scale(1.15);
+    opacity: 0.9;
+}
+
+/* --- Pose: renforce (buff défensif pour Voie de la Consolidation : pv max, don d'armure) --- */
+@keyframes heroSpriteRenforce {
+    0% {
+        transform: scale(0.96) translateY(3px);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+    35% {
+        transform: scale(1.14) translateY(-5px);
+        filter: drop-shadow(0 0 24px rgba(180, 115, 75, 1)) drop-shadow(0 0 38px rgba(153, 103, 76, 0.85)) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.85));
+    }
+    75% {
+        transform: scale(1.05) translateY(-2px);
+        filter: drop-shadow(0 0 15px rgba(180, 115, 75, 0.85));
+    }
+    100% {
+        transform: scale(1) translateY(0);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+}
+.combat-hero-sprite.pose-renforce img {
+    animation: heroSpriteRenforce 0.65s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+}
+.combat-hero-sprite.pose-renforce::after {
+    transform: scale(1.2);
+    opacity: 0.95;
+}
+
 /* Héros mort */
 .combat-hero-sprite.is-dead img,
 .combat-hero-sprite.pose-dead img {

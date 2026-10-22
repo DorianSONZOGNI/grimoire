@@ -3,7 +3,7 @@ import { updateUI } from './combat-ui.js';
 import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
-import { triggerCombatActionSprite } from './combat-sprites.js?v=1786180000077';
+import { triggerCombatActionSprite } from './combat-sprites.js?v=1786180000088';
 
 
 export function initiateCombatCast(spellId) {

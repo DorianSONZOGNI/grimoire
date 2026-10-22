@@ -17,16 +17,23 @@
  *   - mana.png (rendu de mana)
  *   - buff.png (don de buff)
  *   - dead.png (personnage mort)
+ * - Voie de la Consolidation supportée dans /styles/sprites/consolidation/ :
+ *   - wait.png (attente)
+ *   - shield.png (bouclier sur soi ou un allié)
+ *   - attak.png (attaque)
+ *   - auto-buff.png (buff offensif : force, dégâts physiques, dégâts au bouclier)
+ *   - renforce.png (buff défensif : pv max en plus, don d'armure)
+ *   - dead.png (personnage mort)
  */
 
 import { pageState } from './combat-state.js';
 import { javaClassToCode } from '../utils/constants.js';
 
 // Voies disposant d'assets sprites dans /styles/sprites/<voieSlug>/
-const SPRITE_VOIES = ['conviction', 'violence', 'surete'];
+const SPRITE_VOIES = ['conviction', 'violence', 'surete', 'consolidation'];
 
 // Cache buster pour recharger immédiatement les assets graphiques après modification
-const SPRITE_VERSION = '1786180000077';
+const SPRITE_VERSION = '1786180000088';
 
 // Durée de maintien de la pose d'action avant retour en "wait" (ms)
 const ACTION_POSE_DURATION = 1600;
@@ -129,6 +136,8 @@ export function getSpritePose(spell, choiceKey = null, voieSlug = 'conviction', 
     let hasDebuff = false;
     let hasHeal = false;
     let hasMana = false;
+    let autoBuffCount = 0;
+    let renforceCount = 0;
 
     for (const e of activeEffects) {
         const rawType = String(e.effectType || e.effect_type || '');
@@ -158,6 +167,22 @@ export function getSpritePose(spell, choiceKey = null, voieSlug = 'conviction', 
         // 4. Détection Buff / Débuff
         const isEnemyTarget = ['TARGET', 'ALL_ENEMIES', 'ENEMY'].includes(target);
         const isFriendlyTarget = ['CASTER', 'ALLY', 'ALL_ALLIES', 'SELF', 'NONE', ''].includes(target);
+
+        // Consolidation : détection fine des buffs offensifs (force, dégâts physiques, dégâts bouclier) vs défensifs (pv max, armure)
+        const isOffensiveStat = ['STRENGTH', 'DAMAGE_GIVEN_PHYSIC', 'DAMAGE_GIVEN_PHYSIC_TO_SHIELD', 'DAMAGE_GIVEN_MAGIC_TO_SHIELD', 'DAMAGE_GIVEN_BRUT', 'POWER', 'CRIT', 'SHIELD_PENETRATION', 'SHIELD_PIERCED'].includes(stat)
+            || stat.includes('TO_SHIELD');
+        const isDefensiveStat = ['HEALTH', 'PV', 'ARMURE', 'ARMOR', 'RESISTANCE', 'SHIELD_RECEIVED', 'SHIELD_GIVEN'].includes(stat)
+            || stat.includes('ARMUR');
+
+        const isPositiveOrNeutralBuff = (mappedType === 'BUFF_DEBUFF' || rawType.includes('Buff')) && !(mod < 0 || flat < 0) && target !== 'ALL_ENEMIES' && target !== 'ENEMY';
+
+        if (isPositiveOrNeutralBuff) {
+            if (isOffensiveStat) {
+                autoBuffCount++;
+            } else if (isDefensiveStat) {
+                renforceCount++;
+            }
+        }
 
         if (mappedType === 'BUFF_DEBUFF' || rawType.includes('Buff')) {
             if (stat === 'POISON' || stat === 'BURN') {
@@ -242,6 +267,26 @@ export function getSpritePose(spell, choiceKey = null, voieSlug = 'conviction', 
         return 'wait';
     }
 
+    // Ordre de priorité strict pour la Voie de la Consolidation :
+    // 1. shield -> quand il se shield ou met un shield sur un de ses alliés
+    // 2. attak -> quand il attaque
+    // 3. auto-buff / renforce -> selon le nombre d'effets de buff offensif vs défensif dans le sort :
+    //    - Si renforceCount > autoBuffCount : renforce
+    //    - Si autoBuffCount > renforceCount : auto-buff
+    //    - Si égalité (> 0) : auto-buff
+    // 4. wait -> attente / état neutre
+    if (voieSlug === 'consolidation') {
+        if (hasShield) return 'shield';
+        if (hasDamage) return 'attak';
+        if (autoBuffCount > 0 || renforceCount > 0) {
+            if (renforceCount > autoBuffCount) return 'renforce';
+            return 'auto-buff';
+        }
+        if (hasDebuff) return 'attak';
+        if (hasBuff || hasHeal) return 'renforce';
+        return 'wait';
+    }
+
     // Ordre de priorité pour la Voie de la Conviction (et fallback)
     if (hasShield) return 'shield';
     if (hasDamage || hasDebuff) return 'attak';
@@ -281,7 +326,8 @@ function applyPoseToSpriteEl(spriteEl, voieSlug, pose) {
     spriteEl.classList.remove(
         'pose-wait', 'pose-attak', 'pose-shield', 'pose-prepare',
         'pose-dead', 'pose-power', 'pose-weakness', 'pose-heal',
-        'pose-blood', 'pose-mana', 'pose-buff'
+        'pose-blood', 'pose-mana', 'pose-buff',
+        'pose-auto-buff', 'pose-renforce'
     );
     spriteEl.classList.add(`pose-${pose}`);
 }
