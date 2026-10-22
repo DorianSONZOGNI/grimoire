@@ -3,7 +3,7 @@ import { updateUI } from './combat-ui.js';
 import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
-import { triggerCombatActionSprite } from './combat-sprites.js?v=1786180000065';
+import { triggerCombatActionSprite } from './combat-sprites.js?v=1786180000066';
 
 
 export function initiateCombatCast(spellId) {
@@ -348,12 +348,6 @@ export async function doAction(spellId = null) {
     // Déclencher le sprite de combat adapté (attak, shield, prepare)
     triggerCombatActionSprite(spellId, choiceKey);
 
-    // Animation attack
-    const activePlayerCard = document.querySelector('.fighter-player.active');
-    if (activePlayerCard) {
-        activePlayerCard.style.transform = 'translateX(50px)';
-        setTimeout(() => { activePlayerCard.style.transform = 'none'; }, 200);
-    }
 
     try {
         let url = `/api/pve/combat/${pageState.sessionId}/action?targetIndex=${pageState.selectedTargetIndex}`;

@@ -86,11 +86,15 @@ class CombatTurnService {
         Personnage p = session.getActivePlayer();
 
         if (p != null) {
-            boolean startedChannelingThisTurn = p.isBanalSpellCastThisTurn() && p.getRemainingChannelingTurns() > 0;
+            boolean startedChannelingThisTurn = p.isStartedChannelingThisTurn();
+            p.setStartedChannelingThisTurn(false);
             p.setBanalSpellCastThisTurn(false);
             p.setInstantSpellCastThisTurn(false);
             CombatLogCapture.captureLogs(session, () -> {
                 if (p.getRemainingChannelingTurns() > 0 && !startedChannelingThisTurn) {
+                    if (p.getChanneledSpell() != null) {
+                        session.addLog(p.getName() + " canalise " + p.getChanneledSpell().getNom() + " !");
+                    }
                     Personnage channelingTarget = p.getChannelingTarget();
                     if (channelingTarget == null && !session.getEnemies().isEmpty()) {
                         channelingTarget = session.getEnemies().get(0).getAsPersonnage();
@@ -189,6 +193,9 @@ class CombatTurnService {
                 if (!m.isDead()) {
                     Personnage mp = m.getAsPersonnage();
                     if (mp.getRemainingChannelingTurns() > 0) {
+                        if (mp.getChanneledSpell() != null) {
+                            session.addLog("🌀 " + m.getBase().getName() + " canalise " + mp.getChanneledSpell().getNom() + " !");
+                        }
                         Personnage cTarget = mp.getChannelingTarget();
                         if (cTarget == null && !session.getPlayers().isEmpty()) {
                             cTarget = session.getPlayers().get(0);

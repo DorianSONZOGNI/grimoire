@@ -3,14 +3,37 @@ import { updateUI } from './combat-ui.js';
 import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
-import { triggerAllWaitSprites } from './combat-sprites.js?v=1786180000065';
+import { triggerAllWaitSprites, triggerCombatActionSprite } from './combat-sprites.js?v=1786180000066';
 
 
 export async function endTurn() {
     if (!pageState.sessionId || !pageState.currentSessionData || pageState.isProcessing) return;
     pageState.isProcessing = true;
     setButtonsProcessing(true);
-    triggerAllWaitSprites();
+
+    const data = pageState.currentSessionData;
+    const activePlayer = data.activePlayer;
+    const activePlayerCard = document.querySelector('.fighter-player.active');
+    const activeHeroIndex = activePlayerCard ? parseInt(activePlayerCard.dataset.index, 10) : (data.players && activePlayer ? data.players.findIndex(p => p.id === activePlayer.id) : -1);
+
+    const isChannelingTick = activePlayer && activePlayer.remainingChannelingTurns > 0 && !activePlayer.startedChannelingThisTurn;
+
+    if (isChannelingTick) {
+        if (activePlayerCard) {
+            activePlayerCard.style.transform = 'translateX(50px)';
+            setTimeout(() => {
+                if (activePlayerCard.classList.contains('active')) {
+                    activePlayerCard.style.transform = 'scale(1.05)';
+                } else {
+                    activePlayerCard.style.transform = 'scale(0.95)';
+                }
+            }, 200);
+        }
+        triggerCombatActionSprite(activePlayer.channeledSpell, activePlayer.channelingChoiceKey, activeHeroIndex);
+        triggerAllWaitSprites(activeHeroIndex);
+    } else {
+        triggerAllWaitSprites();
+    }
 
     try {
         let url = `/api/pve/combat/${pageState.sessionId}/end-turn`;

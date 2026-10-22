@@ -26,7 +26,7 @@ import { javaClassToCode } from '../utils/constants.js';
 const SPRITE_VOIES = ['conviction', 'violence', 'surete'];
 
 // Cache buster pour recharger immédiatement les assets graphiques après modification
-const SPRITE_VERSION = '1786180000065';
+const SPRITE_VERSION = '1786180000066';
 
 // Durée de maintien de la pose d'action avant retour en "wait" (ms)
 const ACTION_POSE_DURATION = 1600;
@@ -324,14 +324,23 @@ export function renderHeroCombatSprite(heroCardEl, player, isActive, isDead) {
  * @param {number|null} spellId - ID du sort (null = attaque de base)
  * @param {string|null} choiceKey - Clé du choix éventuel
  */
-export function triggerCombatActionSprite(spellId = null, choiceKey = null) {
+export function triggerCombatActionSprite(spellOrId = null, choiceKey = null, targetHeroIndex = null) {
     const data = pageState.currentSessionData;
     if (!data || !data.players) return;
 
-    const activeCard = document.querySelector('.fighter-player.active');
-    if (!activeCard) return;
+    let heroIndex = targetHeroIndex;
+    let activeCard = null;
+    if (heroIndex !== null && heroIndex !== undefined && heroIndex >= 0) {
+        activeCard = document.querySelector(`.fighter-player[data-index="${heroIndex}"]`);
+    } else {
+        activeCard = document.querySelector('.fighter-player.active');
+        if (activeCard) {
+            heroIndex = parseInt(activeCard.dataset.index, 10);
+        }
+    }
 
-    const heroIndex = parseInt(activeCard.dataset.index, 10);
+    if (!activeCard || heroIndex === null || heroIndex === undefined || isNaN(heroIndex)) return;
+
     const hero = data.players[heroIndex];
     if (!hero) return;
     if ((hero.healthCurrent != null && hero.healthCurrent <= 0) || (hero.pv != null && hero.pv <= 0)) return;
@@ -339,13 +348,24 @@ export function triggerCombatActionSprite(spellId = null, choiceKey = null) {
     const voieSlug = getVoieSlug(hero.voie);
     if (!voieSlug || !SPRITE_VOIES.includes(voieSlug)) return;
 
-    // Trouver le sort dans availableSpells si spellId fourni
+    // Trouver le sort dans availableSpells si spellId fourni, ou objet sort directement
     let spell = null;
-    if (spellId && data.availableSpells) {
-        spell = data.availableSpells.find(s => s.id === spellId) || null;
+    if (spellOrId && typeof spellOrId === 'object') {
+        spell = spellOrId;
+    } else if (spellOrId && typeof spellOrId === 'number') {
+        if (data.availableSpells) {
+            spell = data.availableSpells.find(s => s.id === spellOrId) || null;
+        }
     }
 
-    const pose = getSpritePose(spell, choiceKey, voieSlug);
+    if (!spell && hero.channeledSpell && (spellOrId === null || spellOrId === hero.channeledSpell.id || typeof spellOrId === 'object')) {
+        if (hero.remainingChannelingTurns > 0) {
+            spell = hero.channeledSpell;
+        }
+    }
+
+    const activeChoiceKey = choiceKey !== null ? choiceKey : (hero.channelingChoiceKey || null);
+    const pose = getSpritePose(spell, activeChoiceKey, voieSlug);
 
     let spriteEl = activeCard.querySelector('.combat-hero-sprite');
     if (!spriteEl) {
@@ -393,16 +413,30 @@ export function triggerCombatActionSprite(spellId = null, choiceKey = null) {
 /**
  * Force la pose 'wait' sur tous les héros vivants (ex: fin de tour ou nouveau tour).
  */
-export function triggerAllWaitSprites() {
-    activeSpriteTimers.forEach(t => clearTimeout(t));
-    activeSpriteTimers.clear();
-    activeHeroPoses.clear();
+export function triggerAllWaitSprites(exceptHeroIndex = null) {
+    activeSpriteTimers.forEach((t, idx) => {
+        if (exceptHeroIndex === null || idx !== exceptHeroIndex) {
+            clearTimeout(t);
+            activeSpriteTimers.delete(idx);
+        }
+    });
+    if (exceptHeroIndex === null) {
+        activeHeroPoses.clear();
+    } else {
+        const toDelete = [];
+        activeHeroPoses.forEach((_, idx) => {
+            if (idx !== exceptHeroIndex) toDelete.push(idx);
+        });
+        toDelete.forEach(idx => activeHeroPoses.delete(idx));
+    }
 
     const data = pageState.currentSessionData;
     if (!data || !data.players) return;
 
     document.querySelectorAll('.fighter-player').forEach(card => {
         const idx = parseInt(card.dataset.index, 10);
+        if (exceptHeroIndex !== null && idx === exceptHeroIndex) return;
+
         const hero = data.players[idx];
         if (!hero) return;
         if ((hero.healthCurrent != null && hero.healthCurrent <= 0) || (hero.pv != null && hero.pv <= 0)) return;
@@ -426,9 +460,9 @@ export function handleCombatSpriteLog(logEntry) {
     const data = pageState.currentSessionData;
     if (!data || !data.players) return;
 
-    // Pattern : "NomJoueur lance NomSort !" ou "NomJoueur attaque NomEnnemi !"
-    const lanceMatch = logEntry.match(/^(.*?)\s+lance\s+(.*?)\s*!/);
-    const attackMatch = logEntry.match(/^(.*?)\s+attaque\s+(.*?)\s*!/);
+    // Pattern : "NomJoueur lance NomSort !" ou "NomJoueur attaque NomEnnemi !" ou "NomJoueur canalise NomSort !"
+    const lanceMatch = logEntry.match(/^(?:[🌀🧬✨🔥💀]\s*)?(.*?)\s+(?:lance|canalise)\s+(.*?)\s*!/);
+    const attackMatch = logEntry.match(/^(?:[🌀🧬✨🔥💀]\s*)?(.*?)\s+attaque\s+(.*?)\s*!/);
 
     let heroName = null;
     let spellName = null;
@@ -462,12 +496,28 @@ export function handleCombatSpriteLog(logEntry) {
     if (!card) return;
 
     let pose = 'attak';
-    if (!isBasicAttack && spellName && data.availableSpells) {
-        const spell = data.availableSpells.find(s => s.nom === spellName) || null;
+    if (!isBasicAttack && spellName) {
+        let spell = null;
+        if (data.availableSpells) {
+            spell = data.availableSpells.find(s => s.nom === spellName) || null;
+        }
+        if (!spell && hero.channeledSpell && hero.channeledSpell.nom === spellName) {
+            spell = hero.channeledSpell;
+        }
         if (spell) {
-            pose = getSpritePose(spell, null, voieSlug);
+            pose = getSpritePose(spell, hero.channelingChoiceKey || null, voieSlug);
         }
     }
+
+    // Animation de translation de la carte pour le coéquipier
+    card.style.transform = 'translateX(50px)';
+    setTimeout(() => {
+        if (card.classList.contains('active')) {
+            card.style.transform = 'scale(1.05)';
+        } else {
+            card.style.transform = 'scale(0.95)';
+        }
+    }, 200);
 
     let spriteEl = card.querySelector('.combat-hero-sprite');
     if (!spriteEl) {
