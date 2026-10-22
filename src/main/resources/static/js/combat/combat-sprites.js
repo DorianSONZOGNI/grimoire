@@ -6,12 +6,18 @@
  * - Classes CSS dynamiques (.pose-<pose>, .is-dead) nettoyées génériquement.
  * - Architecture ouverte (VOIE_POSE_RESOLVERS) : ajouter une voie consiste à
  *   ajouter son résolveur dans VOIE_POSE_RESOLVERS et ses assets dans /styles/sprites/<voie>/.
+ * - Voies supportées :
+ *   - Conviction (/styles/sprites/conviction/) : wait, shield, prepare, attak, dead
+ *   - Violence (/styles/sprites/violence/) : wait, attak, power, weakness, heal, dead
+ *   - Sûreté (/styles/sprites/surete/) : wait, blood, attak, heal, mana, buff, dead
+ *   - Consolidation (/styles/sprites/consolidation/) : wait, shield, attak, renforce, auto-buff, dead
+ *   - Création (/styles/sprites/creation/) : wait, poison, shield, heal, attak, bourgeons, dead
  */
 
 import { pageState } from './combat-state.js';
 import { javaClassToCode } from '../utils/constants.js';
 
-const SPRITE_VERSION = '1786180000089';
+const SPRITE_VERSION = '1786180000091';
 const ACTION_POSE_DURATION = 1600;
 
 const activeSpriteTimers = new Map();
@@ -62,6 +68,15 @@ const VOIE_POSE_RESOLVERS = {
         }
         if (fx.hasDebuff) return 'attak';
         if (fx.hasBuff || fx.hasHeal) return 'renforce';
+        return 'wait';
+    },
+    creation: (fx) => {
+        if (fx.hasPoison) return 'poison';
+        if (fx.hasShield) return 'shield';
+        if (fx.hasHeal || fx.hasStatBuff) return 'heal';
+        if (fx.hasDamage || fx.hasStatDebuff) return 'attak';
+        if (fx.hasBud || fx.hasDispel) return 'bourgeons';
+        if (fx.hasMana) return 'heal';
         return 'wait';
     }
 };
@@ -137,9 +152,14 @@ function analyzeSpellEffects(activeEffects) {
         hasShield: false,
         hasDamage: false,
         hasBuff: false,
+        hasStatBuff: false,
         hasDebuff: false,
+        hasStatDebuff: false,
         hasHeal: false,
         hasMana: false,
+        hasPoison: false,
+        hasBud: false,
+        hasDispel: false,
         autoBuffCount: 0,
         renforceCount: 0
     };
@@ -153,6 +173,16 @@ function analyzeSpellEffects(activeEffects) {
         const flat = Number(e.flatValue != null ? e.flatValue : 0);
         const isNegative = mod < 0 || flat < 0;
         const isEnemyTarget = ENEMY_TARGETS.has(target);
+
+        const isPoison = mappedType === 'POISON'
+            || rawType.toUpperCase().includes('POISON')
+            || stat === 'POISON'
+            || Boolean(e.poison);
+
+        if (isPoison) {
+            fx.hasPoison = true;
+            fx.hasDamage = true;
+        }
 
         if (mappedType === 'SHIELD' || rawType.includes('Shield')) {
             fx.hasShield = true;
@@ -179,27 +209,38 @@ function analyzeSpellEffects(activeEffects) {
             if (stat === 'POISON' || stat === 'BURN') {
                 fx.hasDamage = true;
             } else if (stat === 'MANA') {
-                if (isEnemyTarget || isNegative) fx.hasDebuff = true;
-                else fx.hasMana = true;
+                if (isEnemyTarget || isNegative) {
+                    fx.hasDebuff = true;
+                    fx.hasStatDebuff = true;
+                } else {
+                    fx.hasMana = true;
+                }
             } else if (isEnemyTarget || isNegative) {
                 fx.hasDebuff = true;
+                fx.hasStatDebuff = true;
             } else {
                 fx.hasBuff = true;
+                fx.hasStatBuff = true;
             }
         }
 
-        if (MANA_TYPES.has(mappedType) || rawType.includes('Mana')) {
-            if (isEnemyTarget) fx.hasDebuff = true;
-            else fx.hasMana = true;
+        if (MANA_TYPES.has(mappedType) || rawType.toUpperCase().includes('MANA') || rawType.toUpperCase().includes('MOT')) {
+            if (isEnemyTarget) {
+                fx.hasDebuff = true;
+                fx.hasStatDebuff = true;
+            } else {
+                fx.hasMana = true;
+            }
         }
 
         if (mappedType === 'PURGE' || mappedType === 'DISPEL' || rawType.includes('Purge') || rawType.includes('Dispel')) {
+            fx.hasDispel = true;
             if (isEnemyTarget) fx.hasDebuff = true;
             else fx.hasBuff = true;
         }
 
         if (mappedType === 'BUD' || rawType.includes('Bud')) {
-            fx.hasBuff = true;
+            fx.hasBud = true;
         }
     }
 
