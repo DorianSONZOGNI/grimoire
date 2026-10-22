@@ -93,7 +93,8 @@ class CombatTurnService {
             CombatLogCapture.captureLogs(session, () -> {
                 if (p.getRemainingChannelingTurns() > 0 && !startedChannelingThisTurn) {
                     if (p.getChanneledSpell() != null) {
-                        session.addLog(p.getName() + " canalise " + p.getChanneledSpell().getNom() + " !");
+                        int currentTurn = p.getChanneledSpell().getChannelingDuration() - p.getRemainingChannelingTurns() + 1;
+                        session.addLog(p.getName() + " canalise " + p.getChanneledSpell().getNom() + " ! (Tour " + currentTurn + ")");
                     }
                     Personnage channelingTarget = p.getChannelingTarget();
                     if (channelingTarget == null && !session.getEnemies().isEmpty()) {
@@ -194,7 +195,8 @@ class CombatTurnService {
                     Personnage mp = m.getAsPersonnage();
                     if (mp.getRemainingChannelingTurns() > 0) {
                         if (mp.getChanneledSpell() != null) {
-                            session.addLog("🌀 " + m.getBase().getName() + " canalise " + mp.getChanneledSpell().getNom() + " !");
+                            int currentTurn = mp.getChanneledSpell().getChannelingDuration() - mp.getRemainingChannelingTurns() + 1;
+                            session.addLog("🌀 " + m.getBase().getName() + " canalise " + mp.getChanneledSpell().getNom() + " ! (Tour " + currentTurn + ")");
                         }
                         Personnage cTarget = mp.getChannelingTarget();
                         if (cTarget == null && !session.getPlayers().isEmpty()) {

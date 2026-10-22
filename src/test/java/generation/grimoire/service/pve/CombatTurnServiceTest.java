@@ -201,7 +201,7 @@ class CombatTurnServiceTest {
         combatTurnService.endTurn(session);
 
         verify(spellService).tickChanneling(eq(player1), any(), any(), any(), any(), any());
-        assertThat(session.getCombatLog()).anyMatch(log -> log.contains("Hero1 canalise Rayon Céleste !"));
+        assertThat(session.getCombatLog()).anyMatch(log -> log.contains("Hero1 canalise Rayon Céleste ! (Tour 2)"));
     }
 
     @Test

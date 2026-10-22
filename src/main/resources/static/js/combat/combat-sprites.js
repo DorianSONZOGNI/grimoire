@@ -26,7 +26,7 @@ import { javaClassToCode } from '../utils/constants.js';
 const SPRITE_VOIES = ['conviction', 'violence', 'surete'];
 
 // Cache buster pour recharger immédiatement les assets graphiques après modification
-const SPRITE_VERSION = '1786180000066';
+const SPRITE_VERSION = '1786180000077';
 
 // Durée de maintien de la pose d'action avant retour en "wait" (ms)
 const ACTION_POSE_DURATION = 1600;
@@ -34,6 +34,7 @@ const ACTION_POSE_DURATION = 1600;
 // Suivi des timers actifs par index de héros pour préserver l'animation lors des re-renders de updateUI
 const activeSpriteTimers = new Map();
 const activeHeroPoses = new Map();
+const channeledSpellCache = new Map();
 
 /**
  * Normalise le nom de la voie en slug de dossier (ex: "Voie de la Conviction" -> "conviction").
@@ -85,17 +86,42 @@ export function getVoieSlug(voie) {
  * @param {string} voieSlug - Slug de la voie du héros lanceur
  * @returns {string}
  */
-export function getSpritePose(spell, choiceKey = null, voieSlug = 'conviction') {
+export function getSpritePose(spell, choiceKey = null, voieSlug = 'conviction', channelingTurn = null) {
     // Attaque de base sans sort -> toujours attak
     if (!spell) return 'attak';
 
+    const isChanneled = spell.castingType === 'CANALISE' || (spell.channelingDuration && spell.channelingDuration > 1);
+
     const effects = spell.effects || [];
     const activeEffects = effects.filter(e => {
-        if (e.requiredChoiceKey == null) return true;
-        return String(e.requiredChoiceKey) === String(choiceKey);
+        if (e.requiredChoiceKey != null && String(e.requiredChoiceKey) !== String(choiceKey)) {
+            return false;
+        }
+
+        // Si le sort est canalisé, ne retenir que les effets actifs pour ce tour précis
+        if (isChanneled && channelingTurn != null && channelingTurn > 0) {
+            const turns = e.channelingTurns || e.channeling_turns;
+            if (turns) {
+                const turnNum = Number(channelingTurn);
+                const hasTurns = Array.isArray(turns) ? turns.length > 0 : (turns.size && turns.size > 0);
+                if (hasTurns) {
+                    const matchTurn = Array.isArray(turns)
+                        ? turns.some(t => Number(t) === turnNum)
+                        : (turns.has ? (turns.has(turnNum) || turns.has(String(turnNum))) : false);
+                    if (!matchTurn) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
     });
 
-    if (activeEffects.length === 0) return 'wait';
+    if (activeEffects.length === 0) {
+        if (isChanneled && voieSlug === 'conviction') return 'prepare';
+        return 'wait';
+    }
 
     let hasShield = false;
     let hasDamage = false;
@@ -272,6 +298,10 @@ function applyPoseToSpriteEl(spriteEl, voieSlug, pose) {
 export function renderHeroCombatSprite(heroCardEl, player, isActive, isDead) {
     if (!heroCardEl || !player) return;
 
+    if (player.channeledSpell) {
+        channeledSpellCache.set(player.name, player.channeledSpell);
+    }
+
     const data = pageState.currentSessionData;
     // Si combat terminé avec victoire, pas besoin du sprite de combat actif
     if (data && data.finished && data.playerWon) {
@@ -324,7 +354,7 @@ export function renderHeroCombatSprite(heroCardEl, player, isActive, isDead) {
  * @param {number|null} spellId - ID du sort (null = attaque de base)
  * @param {string|null} choiceKey - Clé du choix éventuel
  */
-export function triggerCombatActionSprite(spellOrId = null, choiceKey = null, targetHeroIndex = null) {
+export function triggerCombatActionSprite(spellOrId = null, choiceKey = null, targetHeroIndex = null, channelingTurn = null) {
     const data = pageState.currentSessionData;
     if (!data || !data.players) return;
 
@@ -363,9 +393,27 @@ export function triggerCombatActionSprite(spellOrId = null, choiceKey = null, ta
             spell = hero.channeledSpell;
         }
     }
+    if (!spell && channeledSpellCache.has(hero.name)) {
+        spell = channeledSpellCache.get(hero.name);
+    }
+
+    let computedChannelingTurn = channelingTurn;
+    const isChanneled = spell && (spell.castingType === 'CANALISE' || (spell.channelingDuration && spell.channelingDuration > 1));
+    if (isChanneled && (computedChannelingTurn === null || computedChannelingTurn === undefined)) {
+        if (hero && hero.remainingChannelingTurns > 0) {
+            if (hero.startedChannelingThisTurn) {
+                computedChannelingTurn = 1;
+            } else {
+                const duration = spell.channelingDuration || (hero.channeledSpell ? hero.channeledSpell.channelingDuration : 1);
+                computedChannelingTurn = Math.max(1, duration - hero.remainingChannelingTurns + 1);
+            }
+        } else {
+            computedChannelingTurn = 1;
+        }
+    }
 
     const activeChoiceKey = choiceKey !== null ? choiceKey : (hero.channelingChoiceKey || null);
-    const pose = getSpritePose(spell, activeChoiceKey, voieSlug);
+    const pose = getSpritePose(spell, activeChoiceKey, voieSlug, computedChannelingTurn);
 
     let spriteEl = activeCard.querySelector('.combat-hero-sprite');
     if (!spriteEl) {
@@ -455,22 +503,26 @@ export function triggerAllWaitSprites(exceptHeroIndex = null) {
  * Déclenche l'animation d'action pour un héros à partir d'un log multijoueur.
  * Permet aux coéquipiers de voir les poses animées en temps réel via SSE.
  */
-export function handleCombatSpriteLog(logEntry) {
+export function handleCombatSpriteLog(logEntry, sessionData = null) {
     if (!logEntry || typeof logEntry !== 'string') return;
-    const data = pageState.currentSessionData;
+    const data = sessionData || pageState.currentSessionData;
     if (!data || !data.players) return;
 
-    // Pattern : "NomJoueur lance NomSort !" ou "NomJoueur attaque NomEnnemi !" ou "NomJoueur canalise NomSort !"
-    const lanceMatch = logEntry.match(/^(?:[🌀🧬✨🔥💀]\s*)?(.*?)\s+(?:lance|canalise)\s+(.*?)\s*!/);
-    const attackMatch = logEntry.match(/^(?:[🌀🧬✨🔥💀]\s*)?(.*?)\s+attaque\s+(.*?)\s*!/);
+    // Pattern : "NomJoueur lance NomSort !" ou "NomJoueur attaque NomEnnemi !" ou "NomJoueur canalise NomSort ! (Tour X)"
+    const lanceMatch = logEntry.match(/^(?:[🌀🧬✨🔥💀]\s*)?(.*?)\s+(lance|canalise)\s+(.*?)(?:\s*!\s*\(Tour\s*(\d+)\)|\s*!)/u);
+    const attackMatch = logEntry.match(/^(?:[🌀🧬✨🔥💀]\s*)?(.*?)\s+attaque\s+(.*?)\s*!/u);
 
     let heroName = null;
     let spellName = null;
+    let actionVerb = null;
+    let logChannelingTurn = null;
     let isBasicAttack = false;
 
     if (lanceMatch) {
         heroName = lanceMatch[1].trim();
-        spellName = lanceMatch[2].trim();
+        actionVerb = lanceMatch[2].trim();
+        spellName = lanceMatch[3].trim();
+        logChannelingTurn = lanceMatch[4] ? parseInt(lanceMatch[4], 10) : null;
     } else if (attackMatch) {
         heroName = attackMatch[1].trim();
         isBasicAttack = true;
@@ -489,6 +541,10 @@ export function handleCombatSpriteLog(logEntry) {
     const hero = data.players[heroIndex];
     if ((hero.healthCurrent != null && hero.healthCurrent <= 0) || (hero.pv != null && hero.pv <= 0)) return;
 
+    if (hero.channeledSpell) {
+        channeledSpellCache.set(hero.name, hero.channeledSpell);
+    }
+
     const voieSlug = getVoieSlug(hero.voie);
     if (!voieSlug || !SPRITE_VOIES.includes(voieSlug)) return;
 
@@ -504,8 +560,28 @@ export function handleCombatSpriteLog(logEntry) {
         if (!spell && hero.channeledSpell && hero.channeledSpell.nom === spellName) {
             spell = hero.channeledSpell;
         }
+        if (!spell && channeledSpellCache.has(hero.name)) {
+            const cached = channeledSpellCache.get(hero.name);
+            if (cached && cached.nom === spellName) {
+                spell = cached;
+            }
+        }
         if (spell) {
-            pose = getSpritePose(spell, hero.channelingChoiceKey || null, voieSlug);
+            let turnToApply = null;
+            if (logChannelingTurn) {
+                turnToApply = logChannelingTurn;
+            } else if (actionVerb === 'lance') {
+                turnToApply = 1;
+            } else if (actionVerb === 'canalise') {
+                const duration = spell.channelingDuration || (hero.channeledSpell ? hero.channeledSpell.channelingDuration : 2);
+                const remaining = hero.remainingChannelingTurns;
+                if (remaining != null && remaining > 0) {
+                    turnToApply = Math.max(1, duration - remaining + 1);
+                } else {
+                    turnToApply = 2;
+                }
+            }
+            pose = getSpritePose(spell, hero.channelingChoiceKey || null, voieSlug, turnToApply);
         }
     }
 

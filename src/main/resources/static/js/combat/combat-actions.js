@@ -3,7 +3,7 @@ import { updateUI } from './combat-ui.js';
 import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
-import { triggerAllWaitSprites, triggerCombatActionSprite } from './combat-sprites.js?v=1786180000066';
+import { triggerAllWaitSprites, triggerCombatActionSprite } from './combat-sprites.js?v=1786180000077';
 
 
 export async function endTurn() {
@@ -29,7 +29,9 @@ export async function endTurn() {
                 }
             }, 200);
         }
-        triggerCombatActionSprite(activePlayer.channeledSpell, activePlayer.channelingChoiceKey, activeHeroIndex);
+        const duration = (activePlayer.channeledSpell && activePlayer.channeledSpell.channelingDuration) ? activePlayer.channeledSpell.channelingDuration : 2;
+        const currentTurn = Math.max(1, duration - activePlayer.remainingChannelingTurns + 1);
+        triggerCombatActionSprite(activePlayer.channeledSpell, activePlayer.channelingChoiceKey, activeHeroIndex, currentTurn);
         triggerAllWaitSprites(activeHeroIndex);
     } else {
         triggerAllWaitSprites();

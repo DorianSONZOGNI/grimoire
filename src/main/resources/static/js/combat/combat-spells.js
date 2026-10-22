@@ -3,7 +3,7 @@ import { updateUI } from './combat-ui.js';
 import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
-import { triggerCombatActionSprite } from './combat-sprites.js?v=1786180000066';
+import { triggerCombatActionSprite } from './combat-sprites.js?v=1786180000077';
 
 
 export function initiateCombatCast(spellId) {
@@ -345,8 +345,8 @@ export async function doAction(spellId = null) {
 
     setButtonsProcessing(true);
 
-    // Déclencher le sprite de combat adapté (attak, shield, prepare)
-    triggerCombatActionSprite(spellId, choiceKey);
+    // Déclencher le sprite de combat adapté (attak, shield, prepare) pour le Tour 1
+    triggerCombatActionSprite(spellId, choiceKey, null, 1);
 
 
     try {

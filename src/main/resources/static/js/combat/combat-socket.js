@@ -5,7 +5,7 @@ import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
 import { handleSignalReceived } from './combat-signals.js';
-import { handleCombatSpriteLog } from './combat-sprites.js?v=1786180000066';
+import { handleCombatSpriteLog } from './combat-sprites.js?v=1786180000077';
 
 
 export function processNewDeathLogs(combatLogs) {
@@ -44,7 +44,7 @@ export function initMultiSSE(sessionId) {
                     pageState.lastSpriteLogIndex = 0;
                 }
                 for (let i = pageState.lastSpriteLogIndex; i < data.combatLog.length; i++) {
-                    handleCombatSpriteLog(data.combatLog[i]);
+                    handleCombatSpriteLog(data.combatLog[i], data);
                 }
                 pageState.lastSpriteLogIndex = data.combatLog.length;
             }
