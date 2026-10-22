@@ -5,21 +5,28 @@
  * Règles SSOT & Grimoire :
  * - Aucun style inline (.style.* interdit).
  * - Utilisation exclusive de classes CSS existantes (.pose-wait, .pose-attak, .pose-shield, .pose-prepare, .is-dead).
- * - Voie de la Conviction supportée en priorité dans /styles/sprites/conviction/ :
- *   - attak.png (sort de dégâts ou attaque banale)
- *   - shield.png (sort qui donne un bouclier — toujours prioritaire)
- *   - prepare.png (sort qui ne fait que du buff / soin / mana)
- *   - wait.png (début du tour, fin du tour, état d'attente)
+ * - Voie de la Conviction supportée dans /styles/sprites/conviction/ :
+ *   - attak.png, shield.png, prepare.png, wait.png, dead.png
+ * - Voie de la Violence supportée dans /styles/sprites/violence/ :
+ *   - attak.png, power.png, weakness.png, heal.png, wait.png, dead.png
+ * - Voie de la Sûreté supportée dans /styles/sprites/surete/ :
+ *   - wait.png (attente)
+ *   - blood.png (attaque + soin dans le même sort)
+ *   - attak.png (attaque ou débuff uniquement)
+ *   - heal.png (soin réalisé)
+ *   - mana.png (rendu de mana)
+ *   - buff.png (don de buff)
+ *   - dead.png (personnage mort)
  */
 
 import { pageState } from './combat-state.js';
 import { javaClassToCode } from '../utils/constants.js';
 
 // Voies disposant d'assets sprites dans /styles/sprites/<voieSlug>/
-const SPRITE_VOIES = ['conviction', 'violence'];
+const SPRITE_VOIES = ['conviction', 'violence', 'surete'];
 
 // Cache buster pour recharger immédiatement les assets graphiques après modification
-const SPRITE_VERSION = '1786180000064';
+const SPRITE_VERSION = '1786180000065';
 
 // Durée de maintien de la pose d'action avant retour en "wait" (ms)
 const ACTION_POSE_DURATION = 1600;
@@ -48,6 +55,16 @@ export function getVoieSlug(voie) {
 
 /**
  * Détermine la pose ('attak' | 'power' | 'weakness' | 'heal' | 'shield' | 'prepare' | 'wait') selon le sort lancé.
+ *
+ * Pour la Voie de la Sûreté :
+ * 1. Attente -> wait.png
+ * 2. Attaque + Soin dans le même sort -> blood.png
+ * 3. Attaque -> attak.png
+ * 4. Soin -> heal.png
+ * 5. Rendu de mana -> mana.png
+ * 6. Don de buff -> buff.png
+ * 7. Débuff uniquement -> attak.png
+ * (Et Dead quand il meurt au niveau de renderHeroCombatSprite)
  *
  * Pour la Voie de la Violence :
  * 1. Dégâts -> attak.png
@@ -144,7 +161,7 @@ export function getSpritePose(spell, choiceKey = null, voieSlug = 'conviction') 
 
         // 5. Mana (Fixed, Percentage, MoT)
         // Règle Grimoire : Un MoT / Mana n'est PAS un buff de stats. Ne doit pas déclencher power.png.
-        if (['FIXED_MANA', 'PERCENTAGE_MANA', 'MOT', 'MANA_OVER_TIME', 'MANA_FIXED', 'MANA_PERCENTAGE'].includes(mappedType) || rawType.includes('Mana')) {
+        if (['MANA', 'FIXED_MANA', 'PERCENTAGE_MANA', 'MOT', 'MANA_OVER_TIME', 'MANA_FIXED', 'MANA_PERCENTAGE'].includes(mappedType) || rawType.includes('Mana')) {
             if (isEnemyTarget) {
                 hasDebuff = true;
             } else {
@@ -165,6 +182,24 @@ export function getSpritePose(spell, choiceKey = null, voieSlug = 'conviction') 
         if (['BUD'].includes(mappedType) || rawType.includes('Bud')) {
             hasBuff = true;
         }
+    }
+
+    // Ordre de priorité strict pour la Voie de la Sûreté :
+    // 1. blood -> Attaque ET soin dans le même sort
+    // 2. attak -> Attaque / dégâts
+    // 3. heal -> Soin réalisé
+    // 4. mana -> Rendu de mana
+    // 5. buff -> Don de buff
+    // 6. attak -> Lorsque l'on n'a que du débuff
+    // 7. wait -> Attente / état neutre
+    if (voieSlug === 'surete') {
+        if (hasDamage && hasHeal) return 'blood';
+        if (hasDamage) return 'attak';
+        if (hasHeal) return 'heal';
+        if (hasMana) return 'mana';
+        if (hasBuff) return 'buff';
+        if (hasDebuff) return 'attak';
+        return 'wait';
     }
 
     // Ordre de priorité strict pour la Voie de la Violence :
@@ -219,7 +254,8 @@ function applyPoseToSpriteEl(spriteEl, voieSlug, pose) {
     // Mise à jour propre des classes CSS
     spriteEl.classList.remove(
         'pose-wait', 'pose-attak', 'pose-shield', 'pose-prepare',
-        'pose-dead', 'pose-power', 'pose-weakness', 'pose-heal'
+        'pose-dead', 'pose-power', 'pose-weakness', 'pose-heal',
+        'pose-blood', 'pose-mana', 'pose-buff'
     );
     spriteEl.classList.add(`pose-${pose}`);
 }

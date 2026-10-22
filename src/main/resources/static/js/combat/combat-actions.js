@@ -3,7 +3,7 @@ import { updateUI } from './combat-ui.js';
 import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
-import { triggerAllWaitSprites } from './combat-sprites.js?v=1786180000064';
+import { triggerAllWaitSprites } from './combat-sprites.js?v=1786180000065';
 
 
 export async function endTurn() {
