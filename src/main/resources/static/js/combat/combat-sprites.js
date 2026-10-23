@@ -13,13 +13,14 @@
  *   - Consolidation (/styles/sprites/consolidation/) : wait, shield, attak, renforce, auto-buff, dead
  *   - Raison (/styles/sprites/raison/) : wait, levitating, attak, protect, buff, dead
  *   - Destruction (/styles/sprites/destruction/) : wait, fire, lightning, attak, absorb, buff, dead
+ *   - Trahison (/styles/sprites/trahison/) : wait, attak, poison, acide, buff-heal, buff, debuff, capacity, dead
  *   - Création (/styles/sprites/creation/) : wait, poison, shield, heal, attak, bourgeons, dead
  */
 
 import { pageState } from './combat-state.js';
 import { javaClassToCode } from '../utils/constants.js';
 
-const SPRITE_VERSION = '1786180000110';
+const SPRITE_VERSION = '1786180000170';
 const ACTION_POSE_DURATION = 1600;
 
 const activeSpriteTimers = new Map();
@@ -32,7 +33,7 @@ const DAMAGE_TYPES = new Set(['DAMAGE', 'FIXED_DAMAGE', 'PERCENTAGE_DAMAGE', 'DO
 const HEAL_TYPES = new Set(['HEAL', 'FIXED_HEAL', 'PERCENTAGE_HEAL', 'HOT', 'HEAL_OVER_TIME', 'HEAL_FIXED', 'HEAL_PERCENTAGE']);
 const MANA_TYPES = new Set(['MANA', 'FIXED_MANA', 'PERCENTAGE_MANA', 'MOT', 'MANA_OVER_TIME', 'MANA_FIXED', 'MANA_PERCENTAGE']);
 const OFFENSIVE_BUFF_STATS = new Set(['STRENGTH', 'DAMAGE_GIVEN_PHYSIC', 'DAMAGE_GIVEN_PHYSIC_TO_SHIELD', 'DAMAGE_GIVEN_MAGIC_TO_SHIELD', 'DAMAGE_GIVEN_BRUT', 'POWER', 'CRIT', 'SHIELD_PENETRATION', 'SHIELD_PIERCED']);
-const DEFENSIVE_BUFF_STATS = new Set(['HEALTH', 'PV', 'ARMURE', 'ARMOR', 'RESISTANCE', 'SHIELD_RECEIVED', 'SHIELD_GIVEN']);
+const DEFENSIVE_BUFF_STATS = new Set(['HEALTH', 'PV', 'ARMURE', 'ARMOR', 'RESISTANCE', 'SHIELD_RECEIVED', 'SHIELD_GIVEN', 'DAMAGE_TAKEN_MAGIC', 'DAMAGE_TAKEN_PHYSIC', 'DAMAGE_TAKEN_BRUT']);
 const ENEMY_TARGETS = new Set(['TARGET', 'ALL_ENEMIES', 'ENEMY']);
 
 /**
@@ -94,6 +95,19 @@ const VOIE_POSE_RESOLVERS = {
         if (fx.hasDamage) return 'attak';
         if (fx.hasMana) return 'absorb';
         if (fx.hasBuff || fx.hasHeal || fx.hasShield) return 'buff';
+        return 'wait';
+    },
+    trahison: (fx) => {
+        if (fx.hasDispel) return 'capacity';
+        if (fx.hasPhysicDamage && fx.hasBrutDamage) return 'attak';
+        if (fx.hasPhysicDamage && fx.hasPoison) return 'poison';
+        if (fx.hasBrutDamageBuff) return 'poison';
+        if (fx.hasPoison || fx.hasDot) return 'acide';
+        if (fx.hasBuff && fx.hasHeal) return 'buff-heal';
+        if (fx.hasDebuff) return 'debuff';
+        if (fx.hasDefensiveBuff || fx.hasShield) return 'capacity';
+        if (fx.hasOffensiveBuff || fx.autoBuffCount > 0 || fx.hasBuff || fx.hasHeal) return 'buff';
+        if (fx.hasDamage) return 'attak';
         return 'wait';
     }
 };
@@ -178,6 +192,12 @@ function analyzeSpellEffects(activeEffects) {
         hasBurn: false,
         hasBud: false,
         hasDispel: false,
+        hasPhysicDamage: false,
+        hasBrutDamage: false,
+        hasDot: false,
+        hasOffensiveBuff: false,
+        hasDefensiveBuff: false,
+        hasBrutDamageBuff: false,
         autoBuffCount: 0,
         renforceCount: 0
     };
@@ -223,6 +243,26 @@ function analyzeSpellEffects(activeEffects) {
         if (mappedType === 'SHIELD' || rawType.includes('Shield')) {
             fx.hasShield = true;
             fx.hasBuff = true;
+            fx.hasDefensiveBuff = true;
+        }
+
+        const damageType = String(e.damageType || e.damage_type || '').toUpperCase();
+        if (damageType === 'PHYSIC' && (isEnemyTarget || target !== 'CASTER')) {
+            fx.hasPhysicDamage = true;
+        }
+        if (damageType === 'BRUT' && (isEnemyTarget || target !== 'CASTER')) {
+            fx.hasBrutDamage = true;
+        }
+
+        const isDot = mappedType === 'DOT'
+            || mappedType === 'DAMAGE_OVER_TIME'
+            || rawType.includes('DamageOverTime')
+            || rawType.includes('OverTime')
+            || stat === 'DOT'
+            || stat === 'DAMAGE_OVER_TIME'
+            || Boolean(e.dot);
+        if (isDot && (isEnemyTarget || target !== 'CASTER')) {
+            fx.hasDot = true;
         }
 
         const isHeat = mappedType === 'HEAT' || rawType.includes('Heat') || stat === 'HEAT';
@@ -245,13 +285,9 @@ function analyzeSpellEffects(activeEffects) {
         }
 
         if (mappedType === 'BUFF_DEBUFF' || rawType.includes('Buff')) {
-            if (!isNegative && target !== 'ALL_ENEMIES' && target !== 'ENEMY') {
-                if (OFFENSIVE_BUFF_STATS.has(stat) || stat.includes('TO_SHIELD')) {
-                    fx.autoBuffCount++;
-                } else if (DEFENSIVE_BUFF_STATS.has(stat) || stat.includes('ARMUR')) {
-                    fx.renforceCount++;
-                }
-            }
+            const isResistance = stat.includes('RESIST');
+            const isDamageTaken = stat.includes('DAMAGE_TAKEN') || stat.includes('DEGATS_SUBIS');
+            const isDefensiveStat = DEFENSIVE_BUFF_STATS.has(stat) || stat.includes('ARMUR') || isResistance || isDamageTaken;
 
             if (stat === 'POISON' || stat === 'BURN') {
                 if (isEnemyTarget) {
@@ -260,18 +296,60 @@ function analyzeSpellEffects(activeEffects) {
                     fx.hasBuff = true;
                 }
             } else if (stat === 'MANA') {
-                if (isEnemyTarget || isNegative) {
+                if (isEnemyTarget || (isNegative && isEnemyTarget)) {
                     fx.hasDebuff = true;
                     fx.hasStatDebuff = true;
                 } else {
                     fx.hasMana = true;
                 }
-            } else if (isEnemyTarget || isNegative) {
-                fx.hasDebuff = true;
-                fx.hasStatDebuff = true;
+            } else if (!isEnemyTarget && target !== 'ALL_ENEMIES' && target !== 'ENEMY') {
+                // Buff / effet sur le lanceur ou un allié
+                const isBrutDamageBuff = (
+                    stat === 'DAMAGE_GIVEN_BRUT'
+                    || stat.includes('GIVEN_BRUT')
+                    || (stat.includes('BRUT') && (stat.includes('GIVEN') || stat.includes('INFLIGE')))
+                    || (stat.includes('DAMAGE_GIVEN') && String(e.damageType || e.damage_type || '').toUpperCase() === 'BRUT')
+                );
+                if (isBrutDamageBuff && !isNegative) {
+                    fx.hasBrutDamageBuff = true;
+                }
+
+                if (isDamageTaken) {
+                    if (isNegative) {
+                        fx.renforceCount++;
+                        fx.hasDefensiveBuff = true;
+                        fx.hasBuff = true;
+                        fx.hasStatBuff = true;
+                    }
+                } else if (!isNegative) {
+                    if (OFFENSIVE_BUFF_STATS.has(stat) || stat.includes('TO_SHIELD') || stat.includes('DAMAGE') || stat === 'POWER' || stat === 'CRIT' || stat === 'STRENGTH') {
+                        fx.autoBuffCount++;
+                        fx.hasOffensiveBuff = true;
+                        fx.hasBuff = true;
+                        fx.hasStatBuff = true;
+                    } else if (isDefensiveStat) {
+                        fx.renforceCount++;
+                        if (!isResistance) {
+                            fx.hasDefensiveBuff = true;
+                        }
+                        fx.hasBuff = true;
+                        fx.hasStatBuff = true;
+                    } else {
+                        fx.hasBuff = true;
+                        fx.hasStatBuff = true;
+                    }
+                }
             } else {
-                fx.hasBuff = true;
-                fx.hasStatBuff = true;
+                // Effet ciblant l'ennemi (débuff)
+                if (isDamageTaken) {
+                    if (!isNegative) {
+                        fx.hasDebuff = true;
+                        fx.hasStatDebuff = true;
+                    }
+                } else if (isNegative || isEnemyTarget) {
+                    fx.hasDebuff = true;
+                    fx.hasStatDebuff = true;
+                }
             }
         }
 
@@ -284,7 +362,17 @@ function analyzeSpellEffects(activeEffects) {
             }
         }
 
-        if (mappedType === 'PURGE' || mappedType === 'DISPEL' || rawType.includes('Purge') || rawType.includes('Dispel') || rawType.toUpperCase().includes('DISSIP')) {
+        const isDispel = mappedType === 'PURGE'
+            || mappedType === 'DISPEL'
+            || rawType.toUpperCase().includes('PURGE')
+            || rawType.toUpperCase().includes('DISPEL')
+            || rawType.toUpperCase().includes('DISSIP')
+            || stat.includes('PURGE')
+            || stat.includes('DISPEL')
+            || stat.includes('DISSIP')
+            || Boolean(e.dispel || e.purge);
+
+        if (isDispel) {
             fx.hasDispel = true;
             if (isEnemyTarget) fx.hasDebuff = true;
             else fx.hasBuff = true;

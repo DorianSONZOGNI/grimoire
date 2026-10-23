@@ -2579,6 +2579,114 @@ body {
     opacity: 0.85;
 }
 
+/* --- Pose: acide (sort acide / DoT — Voie de Trahison) --- */
+@keyframes heroSpriteAcide {
+    0% {
+        transform: scale(0.95) translateX(-4px);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+    30% {
+        transform: scale(1.16) translateX(22px) translateY(-3px);
+        filter: drop-shadow(0 0 24px rgba(163, 230, 53, 1)) drop-shadow(0 0 40px rgba(132, 204, 22, 0.8)) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.85));
+    }
+    65% {
+        transform: scale(1.05) translateX(8px);
+        filter: drop-shadow(0 0 15px rgba(163, 230, 53, 0.85));
+    }
+    100% {
+        transform: scale(1) translateX(0) translateY(0);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+}
+.combat-hero-sprite.pose-acide img {
+    animation: heroSpriteAcide 0.65s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+}
+.combat-hero-sprite.pose-acide::after {
+    transform: scale(1.2) translateX(10px);
+    opacity: 0.9;
+}
+
+/* --- Pose: buff-heal (sort buff + heal — Voie de Trahison) --- */
+@keyframes heroSpriteBuffHeal {
+    0% {
+        transform: scale(0.96) translateY(2px);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+    35% {
+        transform: scale(1.14) translateY(-10px);
+        filter: drop-shadow(0 0 24px rgba(52, 211, 153, 1)) drop-shadow(0 0 42px rgba(192, 132, 252, 0.8)) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.85));
+    }
+    70% {
+        transform: scale(1.05) translateY(-3px);
+        filter: drop-shadow(0 0 16px rgba(52, 211, 153, 0.85));
+    }
+    100% {
+        transform: scale(1) translateY(0);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+}
+.combat-hero-sprite.pose-buff-heal img {
+    animation: heroSpriteBuffHeal 0.7s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+}
+.combat-hero-sprite.pose-buff-heal::after {
+    transform: scale(1.1);
+    opacity: 0.85;
+}
+
+/* --- Pose: debuff (débuff ennemi — Voie de Trahison) --- */
+@keyframes heroSpriteDebuff {
+    0% {
+        transform: scale(0.95) translateX(-2px);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+    30% {
+        transform: scale(1.14) translateX(16px) translateY(-2px);
+        filter: drop-shadow(0 0 24px rgba(168, 85, 247, 1)) drop-shadow(0 0 40px rgba(126, 34, 206, 0.85)) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.85));
+    }
+    65% {
+        transform: scale(1.05) translateX(6px);
+        filter: drop-shadow(0 0 15px rgba(168, 85, 247, 0.85));
+    }
+    100% {
+        transform: scale(1) translateX(0) translateY(0);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+}
+.combat-hero-sprite.pose-debuff img {
+    animation: heroSpriteDebuff 0.65s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+}
+.combat-hero-sprite.pose-debuff::after {
+    transform: scale(1.15) translateX(8px);
+    opacity: 0.85;
+}
+
+/* --- Pose: capacity (buff défensif — Voie de Trahison) --- */
+@keyframes heroSpriteCapacity {
+    0% {
+        transform: scale(0.96) translateY(2px);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+    35% {
+        transform: scale(1.1) translateY(-5px);
+        filter: drop-shadow(0 0 24px rgba(14, 165, 233, 1)) drop-shadow(0 0 40px rgba(99, 102, 241, 0.65)) drop-shadow(0 6px 12px rgba(0, 0, 0, 0.85));
+    }
+    70% {
+        transform: scale(1.04) translateY(-1px);
+        filter: drop-shadow(0 0 14px rgba(14, 165, 233, 0.8));
+    }
+    100% {
+        transform: scale(1) translateY(0);
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.75));
+    }
+}
+.combat-hero-sprite.pose-capacity img {
+    animation: heroSpriteCapacity 0.65s cubic-bezier(0.2, 0.8, 0.3, 1.2) forwards;
+}
+.combat-hero-sprite.pose-capacity::after {
+    transform: scale(1.1);
+    opacity: 0.85;
+}
+
 /* Héros mort */
 .combat-hero-sprite.is-dead img,
 .combat-hero-sprite.pose-dead img {

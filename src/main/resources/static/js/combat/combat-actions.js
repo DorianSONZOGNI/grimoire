@@ -1,9 +1,9 @@
-﻿import { pageState, setButtonsProcessing } from './combat-state.js';
+import { pageState, setButtonsProcessing } from './combat-state.js';
 import { updateUI } from './combat-ui.js';
 import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
-import { triggerAllWaitSprites, triggerCombatActionSprite } from './combat-sprites.js?v=1786180000110';
+import { triggerAllWaitSprites, triggerCombatActionSprite } from './combat-sprites.js?v=1786180000170';
 
 
 export async function endTurn() {
