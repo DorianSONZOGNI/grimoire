@@ -37,6 +37,10 @@ public class CombatInterceptor implements HandlerInterceptor {
         if (username != null) {
             for (Map.Entry<String, CombatSession> entry : combatService.getActiveSessions().entrySet()) {
                 CombatSession session = entry.getValue();
+                if (session.isFinished()) {
+                    combatService.getActiveSessions().remove(entry.getKey());
+                    continue;
+                }
                 boolean inCombat = session.getPlayers().stream()
                         .anyMatch(p -> p.getUser() != null && username.equals(p.getUser().getUsername()) && p.getHealthCurrent() > 0);
 

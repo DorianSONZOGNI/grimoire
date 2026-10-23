@@ -3,8 +3,8 @@ window.initAppMeta = async function () {
     return initMeta();
 };
 
-const isExplicitDungeonLaunch = window.location.pathname.includes('/dungeons.html') && window.location.search.includes('dungeonId=');
-if (isExplicitDungeonLaunch) {
+const isDungeonsPage = window.location.pathname.includes('/dungeons.html');
+if (isDungeonsPage) {
     localStorage.removeItem('activeCombatId');
 }
 
@@ -13,7 +13,7 @@ if (activeCombatId &&
     !window.location.pathname.includes('/combat.html') && 
     !window.location.pathname.includes('/login.html') && 
     !window.location.pathname.includes('/register.html') &&
-    !isExplicitDungeonLaunch) {
+    !isDungeonsPage) {
     console.warn('Active combat session found in localStorage, redirecting to combat page.');
     window.location.href = '/combat.html';
 }
@@ -153,7 +153,7 @@ window.globalFetch = async function (url, options = {}) {
             let isInCombat = errorMsg && errorMsg.toLowerCase().includes('combat');
 
             // If error message was generic (e.g. Spring Boot default "Forbidden"), query /api/pve/combat/current
-            if (!isInCombat && isValidToken(accessToken) && !url.includes('/api/pve/combat/')) {
+            if (!isInCombat && isValidToken(accessToken) && !url.includes('/api/pve/combat/') && !isDungeonsPage) {
                 try {
                     const curRes = await fetch('/api/pve/combat/current', {
                         headers: { 'Authorization': `Bearer ${accessToken}` }
@@ -168,7 +168,7 @@ window.globalFetch = async function (url, options = {}) {
                 } catch (e) {}
             }
 
-            if (isInCombat) {
+            if (isInCombat && !isDungeonsPage) {
                 console.warn('Redirecting to combat page due to active combat session', url);
                 if (parsedData && parsedData.activeCombatSessionId) {
                     localStorage.setItem('activeCombatId', parsedData.activeCombatSessionId);
@@ -392,7 +392,7 @@ window.checkAuthStatus = async function checkAuthStatus() {
             if (!window.location.pathname.includes('/combat.html') &&
                 !window.location.pathname.includes('/login.html') &&
                 !window.location.pathname.includes('/register.html') &&
-                !isExplicitDungeonLaunch) {
+                !isDungeonsPage) {
                 fetch('/api/pve/combat/current', {
                     headers: { 'Authorization': `Bearer ${accessToken}` }
                 }).then(async (curRes) => {

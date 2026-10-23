@@ -76,6 +76,12 @@ public class CombatService {
         if (characterIds.isEmpty())
             throw new RuntimeException("Aucun personnage sélectionné");
 
+        // Nettoyer toute ancienne session non terminée pour cet utilisateur
+        activeSessions.entrySet().removeIf(entry -> {
+            CombatSession s = entry.getValue();
+            return s != null && (s.isFinished() || s.getPlayers().stream().anyMatch(p -> p.getUser() != null && username.equals(p.getUser().getUsername())));
+        });
+
         List<Personnage> players = new ArrayList<>();
         java.util.Set<Long> usedVoies = new java.util.HashSet<>();
         for (Long characterId : characterIds) {
@@ -206,6 +212,12 @@ public class CombatService {
             String guestUsername) {
         if (characterIds.isEmpty())
             throw new RuntimeException("Aucun personnage sélectionné");
+
+        // Nettoyer toute ancienne session non terminée pour l'hôte ou le guest
+        activeSessions.entrySet().removeIf(entry -> {
+            CombatSession s = entry.getValue();
+            return s != null && (s.isFinished() || s.getPlayers().stream().anyMatch(p -> p.getUser() != null && (hostUsername.equals(p.getUser().getUsername()) || guestUsername.equals(p.getUser().getUsername()))));
+        });
 
         List<Personnage> players = new ArrayList<>();
         java.util.Map<String, java.util.Set<Long>> userVoies = new java.util.HashMap<>();
@@ -440,6 +452,13 @@ public class CombatService {
         combatTurnService.fleeCombatNoStat(session);
         if (session.isFinished()) {
             activeSessions.remove(sessionId);
+        }
+    }
+
+    public void finishCombat(String sessionId) {
+        CombatSession session = activeSessions.remove(sessionId);
+        if (session != null) {
+            session.setFinished(true);
         }
     }
 

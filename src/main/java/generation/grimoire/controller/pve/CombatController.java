@@ -64,6 +64,10 @@ public class CombatController {
         String username = principal.getName();
         for (java.util.Map.Entry<String, CombatSession> entry : combatService.getActiveSessions().entrySet()) {
             CombatSession session = entry.getValue();
+            if (session.isFinished()) {
+                combatService.getActiveSessions().remove(entry.getKey());
+                continue;
+            }
             boolean inCombat = session.getPlayers().stream()
                     .anyMatch(p -> p.getUser() != null && username.equals(p.getUser().getUsername()) && p.getHealthCurrent() > 0);
             
@@ -111,7 +115,7 @@ public class CombatController {
     public ResponseEntity<?> getCombatEquipments(@PathVariable("sessionId") String sessionId) {
         CombatSession session = combatService.getSession(sessionId);
         if (session == null)
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(java.util.Map.of());
 
         java.util.Map<Long, java.util.List<generation.grimoire.dto.equipment.EquipmentShopDTO>> result = new java.util.HashMap<>();
         if (session.getPlayers() != null) {
@@ -202,6 +206,12 @@ public class CombatController {
             e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PostMapping("/{sessionId}/finish")
+    public ResponseEntity<?> finishSession(@PathVariable("sessionId") String sessionId) {
+        combatService.finishCombat(sessionId);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{sessionId}/consumable/{consumableId}")

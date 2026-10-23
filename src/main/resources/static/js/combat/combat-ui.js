@@ -3966,6 +3966,18 @@ export function showResult(data) {
 
     localStorage.removeItem('activeCombatId');
 
+    window.exitCombatToDungeons = async function(e) {
+        if (e) e.preventDefault();
+        localStorage.removeItem('activeCombatId');
+        const sId = pageState.sessionId || (pageState.currentSessionData && pageState.currentSessionData.sessionId);
+        if (sId) {
+            try {
+                await (window.globalFetch || fetch)(`/api/pve/combat/${sId}/finish`, { method: 'POST' });
+            } catch (_) {}
+        }
+        window.location.href = '/dungeons.html';
+    };
+
     const retryBtn = document.getElementById('retryDungeonBtn');
     if (retryBtn) {
         const urlParams = new URLSearchParams(window.location.search);
@@ -3980,9 +3992,15 @@ export function showResult(data) {
                 targetUrl += `&charIds=${charIds}`;
             }
             retryBtn.href = targetUrl;
-            retryBtn.onclick = (e) => {
+            retryBtn.onclick = async (e) => {
                 e.preventDefault();
                 localStorage.removeItem('activeCombatId');
+                const sId = pageState.sessionId || (pageState.currentSessionData && pageState.currentSessionData.sessionId) || (data && data.sessionId);
+                if (sId) {
+                    try {
+                        await (window.globalFetch || fetch)(`/api/pve/combat/${sId}/finish`, { method: 'POST' });
+                    } catch (_) {}
+                }
                 window.location.href = targetUrl;
             };
             retryBtn.style.display = 'inline-flex';
