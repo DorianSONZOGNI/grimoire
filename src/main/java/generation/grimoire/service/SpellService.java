@@ -524,6 +524,7 @@ public class SpellService {
                 caster.setChannelingTarget(target);
                 caster.setChannelingAlly(ally);
                 caster.setChannelingChoiceKey(choiceKey);
+                caster.setStartedChannelingThisTurn(true);
                 log.debug("{} commence à canaliser {} pour {} tours (restants: {}).", caster.getName(), toCast.getNom(), toCast.getChannelingDuration(), remaining);
             } else {
                 log.debug("{} canalise {} (1 tour) - terminé immédiatement.", caster.getName(), toCast.getNom());

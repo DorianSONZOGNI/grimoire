@@ -4,6 +4,8 @@ import { updateUI } from './combat-ui.js';
 import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
+import { handleSignalReceived } from './combat-signals.js';
+import { handleCombatSpriteLog } from './combat-sprites.js?v=1786180000170';
 
 
 export function processNewDeathLogs(combatLogs) {
@@ -37,12 +39,30 @@ export function initMultiSSE(sessionId) {
     _multiSSE.addEventListener('combat-update', (e) => {
         try {
             const data = JSON.parse(e.data);
+            if (data.combatLog && data.combatLog.length > 0) {
+                if (typeof pageState.lastSpriteLogIndex !== 'number' || pageState.lastSpriteLogIndex > data.combatLog.length) {
+                    pageState.lastSpriteLogIndex = 0;
+                }
+                for (let i = pageState.lastSpriteLogIndex; i < data.combatLog.length; i++) {
+                    handleCombatSpriteLog(data.combatLog[i], data);
+                }
+                pageState.lastSpriteLogIndex = data.combatLog.length;
+            }
             // Ne pas re-renderer si on est en train de traiter une action locale
             if (!pageState.isProcessing) {
                 updateUI(data);
             }
         } catch (err) {
             console.error('[SSE] parse error', err);
+        }
+    });
+
+    _multiSSE.addEventListener('combat-signal', (e) => {
+        try {
+            const signal = JSON.parse(e.data);
+            handleSignalReceived(signal);
+        } catch (err) {
+            console.error('[SSE] combat-signal parse error', err);
         }
     });
 
@@ -119,7 +139,7 @@ export function updateMultiTurnBanner(data) {
 }
 
 export function setMultiActionsEnabled(enabled) {
-    const selectors = ['#btnAttack', '#btnEndTurn', '.combat-spell-card', '.action-btn'];
+    const selectors = ['#btnAttack', '#btnEndTurn', '.combat-spell-card', '.action-btn:not(.flee)'];
     selectors.forEach(sel => {
         document.querySelectorAll(sel).forEach(el => {
             if (enabled) {

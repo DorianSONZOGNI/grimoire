@@ -28,20 +28,20 @@ public class MultiCombatSession {
     private String shortCode;
 
     private String hostUsername;
-    private List<Long> hostCharacterIds;
+    private List<Long> hostCharacterIds = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     private String guestUsername;
-    private List<Long> guestCharacterIds;
+    private List<Long> guestCharacterIds = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     /** Consommables du guest (stockés séparément pour le merge final). */
-    private List<Long> guestConsumableIds;
+    private List<Long> guestConsumableIds = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     /** État provisoire du guest pendant sa sélection (avant join définitif). */
-    private List<Long> pendingGuestCharacterIds;
-    private List<Long> pendingGuestConsumableIds;
+    private List<Long> pendingGuestCharacterIds = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private List<Long> pendingGuestConsumableIds = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     private Long dungeonId;
-    private List<Long> consumableIds;
+    private List<Long> consumableIds = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     private Status status = Status.WAITING;
 

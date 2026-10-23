@@ -20,6 +20,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import generation.grimoire.dto.pve.CombatSignalDTO;
+import generation.grimoire.dto.pve.CombatSignalRequest;
+import generation.grimoire.dto.pve.CombatSignalsConfigDTO;
+import generation.grimoire.enumeration.CombatSignalAction;
+import generation.grimoire.enumeration.CombatSignalType;
 
 /**
  * Façade publique du système de combat PvE.
@@ -70,6 +75,12 @@ public class CombatService {
             List<Long> consumableIds, String username) {
         if (characterIds.isEmpty())
             throw new RuntimeException("Aucun personnage sélectionné");
+
+        // Nettoyer toute ancienne session non terminée pour cet utilisateur
+        activeSessions.entrySet().removeIf(entry -> {
+            CombatSession s = entry.getValue();
+            return s != null && (s.isFinished() || s.getPlayers().stream().anyMatch(p -> p.getUser() != null && username.equals(p.getUser().getUsername())));
+        });
 
         List<Personnage> players = new ArrayList<>();
         java.util.Set<Long> usedVoies = new java.util.HashSet<>();
@@ -201,6 +212,12 @@ public class CombatService {
             String guestUsername) {
         if (characterIds.isEmpty())
             throw new RuntimeException("Aucun personnage sélectionné");
+
+        // Nettoyer toute ancienne session non terminée pour l'hôte ou le guest
+        activeSessions.entrySet().removeIf(entry -> {
+            CombatSession s = entry.getValue();
+            return s != null && (s.isFinished() || s.getPlayers().stream().anyMatch(p -> p.getUser() != null && (hostUsername.equals(p.getUser().getUsername()) || guestUsername.equals(p.getUser().getUsername()))));
+        });
 
         List<Personnage> players = new ArrayList<>();
         java.util.Map<String, java.util.Set<Long>> userVoies = new java.util.HashMap<>();
@@ -379,6 +396,9 @@ public class CombatService {
         } catch (Exception e) {
             // Errors in computeSpellAvailability should not block the response
         }
+        if (session.isFinished()) {
+            activeSessions.remove(sessionId);
+        }
         return session;
     }
 
@@ -396,14 +416,22 @@ public class CombatService {
             session.increasePlayerTurnTimeLimit(p.getId(), 30000);
         }
 
-        return combatTurnService.endTurn(session);
+        CombatSession result = combatTurnService.endTurn(session);
+        if (session.isFinished()) {
+            activeSessions.remove(sessionId);
+        }
+        return result;
     }
 
     public CombatSession processNextAutoTurn(String sessionId) {
         CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
-        return combatTurnService.processNextAutoTurn(session);
+        CombatSession result = combatTurnService.processNextAutoTurn(session);
+        if (session.isFinished()) {
+            activeSessions.remove(sessionId);
+        }
+        return result;
     }
 
     public void fleeCombat(String sessionId, String username) {
@@ -424,6 +452,13 @@ public class CombatService {
         combatTurnService.fleeCombatNoStat(session);
         if (session.isFinished()) {
             activeSessions.remove(sessionId);
+        }
+    }
+
+    public void finishCombat(String sessionId) {
+        CombatSession session = activeSessions.remove(sessionId);
+        if (session != null) {
+            session.setFinished(true);
         }
     }
 
@@ -643,4 +678,57 @@ public class CombatService {
             }
         }
     }
+
+    public CombatSignalsConfigDTO getSignalsConfig() {
+        List<CombatSignalAction> mob = java.util.Arrays.stream(CombatSignalAction.values())
+                .filter(a -> a.getType() == CombatSignalType.MOB_PING)
+                .toList();
+        List<CombatSignalAction> hero = java.util.Arrays.stream(CombatSignalAction.values())
+                .filter(a -> a.getType() == CombatSignalType.HERO_PING)
+                .toList();
+        List<CombatSignalAction> emotes = java.util.Arrays.stream(CombatSignalAction.values())
+                .filter(a -> a.getType() == CombatSignalType.EMOTE)
+                .toList();
+        return new CombatSignalsConfigDTO(mob, hero, emotes);
+    }
+
+    public CombatSignalDTO sendSignal(String sessionId, String username, CombatSignalRequest request) {
+        if (request == null || request.action() == null) {
+            throw new IllegalArgumentException("Action de signal requise");
+        }
+        CombatSession session = getSession(sessionId);
+        if (session == null) {
+            throw new IllegalArgumentException("Session introuvable : " + sessionId);
+        }
+
+        String targetName = request.targetName();
+        if (request.targetIndex() != null) {
+            int idx = request.targetIndex();
+            if (request.action().getType() == CombatSignalType.MOB_PING) {
+                if (session.getEnemies() != null && idx >= 0 && idx < session.getEnemies().size()) {
+                    var m = session.getEnemies().get(idx);
+                    if (m != null && m.getBase() != null) {
+                        targetName = m.getBase().getName();
+                    }
+                }
+            } else if (request.action().getType() == CombatSignalType.HERO_PING) {
+                if (session.getPlayers() != null && idx >= 0 && idx < session.getPlayers().size()) {
+                    var p = session.getPlayers().get(idx);
+                    if (p != null) {
+                        targetName = p.getName();
+                    }
+                }
+            }
+        }
+
+        CombatSignalDTO dto = CombatSignalDTO.of(username, request.action(), request.targetIndex(), targetName);
+        session.addLog(dto.formattedMessage());
+
+        if (combatEventEmitter != null) {
+            combatEventEmitter.broadcastEvent(session.getSessionId(), "combat-signal", dto);
+        }
+
+        return dto;
+    }
 }
+

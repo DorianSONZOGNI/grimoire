@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="/styles/ui/components.css?v=1786180000040">
     <link rel="stylesheet" href="/styles/ui/utilities.css?v=1786180000001">
     <link rel="stylesheet" href="/styles/pages/sandbox.css?v=1786180000001">
-    <link rel="stylesheet" href="/styles/pages/combat.css?v=1786180000001">
+    <link rel="stylesheet" href="/styles/pages/combat.css?v=1786180000170">
     <link rel="stylesheet" href="/styles/pages/spell-cards.css?v=1786180000001">
     <link rel="stylesheet" href="/styles/pages/armory.css?v=1786180000001">
     <script src="/js/utils/utils.js?v=2"></script>
@@ -45,6 +45,10 @@
             <div id="bossBuffsContainer" class="flex gap-2 items-center flex-wrap justify-end max-w-[40vw]">
             </div>
 
+            <button id="btnCombatEmotes" class="combat-emotes-btn is-hidden" type="button" title="Émotes & Communication">
+                <span class="material-symbols-outlined">add_reaction</span>
+                <span class="combat-emotes-btn-label">Émotes</span>
+            </button>
             <div class="flex items-center gap-2 bg-white/5 py-1 px-3 rounded-lg border border-white/10">
                 <span class="material-symbols-outlined text-emerald cursor-pointer text-[1.4rem] select-none"
                     id="musicToggleBtn" onclick="window.toggleMusic()"
@@ -294,11 +298,12 @@
             </div>
 
             <div class="flex gap-4 justify-center" style="margin-top: 2rem;">
-                <a class="action-btn no-underline" href="/dungeons.html">
+                <a class="action-btn no-underline" id="btnQuitCombatToDungeons" href="/dungeons.html" onclick="if(window.exitCombatToDungeons) window.exitCombatToDungeons(event)">
                     Retourner à la page des donjons
                 </a>
-                <a class="action-btn no-underline bg-amber-500/20 text-amber-400 border-amber-500/40 hover:bg-amber-500/30"
-                    id="retryDungeonBtn" href="#" style="display: none;">
+                <a class="action-btn no-underline bg-amber-500/20 text-amber-400 border-amber-500/40 hover:bg-amber-500/30 flex items-center gap-1.5"
+                    id="retryDungeonBtn" href="#" style="display: none;" title="Ouvrir l'écran de lancement de ce donjon">
+                    <span class="material-symbols-outlined text-lg">restart_alt</span>
                     Relancer le donjon
                 </a>
             </div>
@@ -361,7 +366,7 @@
                 <span class="material-symbols-outlined">hourglass_top</span>
                 Fin de Tour
             </button>
-            <button class="action-btn flee w-full justify-center whitespace-nowrap" onclick="window.promptFlee()">
+            <button class="action-btn flee w-full justify-center whitespace-nowrap" id="btnFlee" onclick="window.promptFlee()">
                 <span class="material-symbols-outlined">directions_run</span>
                 Fuir
             </button>
@@ -392,9 +397,23 @@
         <div id="heroEquipmentTooltipContent" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
     </div>
 
-    <script type="module" src="/js/services/auth.js"></script>
-    <script type="module" src="/js/combat/combat-state.js"></script>
+    <!-- Popover Émotes -->
+    <div id="combatEmotesPopover" class="combat-emotes-popover is-hidden">
+        <div class="combat-emotes-popover-header">
+            <span class="material-symbols-outlined">add_reaction</span>
+            <span>Émotes & Communication</span>
+        </div>
+        <div id="combatEmotesGrid" class="combat-emotes-grid"></div>
+    </div>
 
+    <!-- Menu contextuel / radial de ping pour monstres et héros -->
+    <div id="combatPingMenu" class="combat-ping-menu is-hidden">
+        <div class="combat-ping-menu-header" id="combatPingMenuTitle"></div>
+        <div class="combat-ping-menu-items" id="combatPingMenuItems"></div>
+    </div>
+
+    <script type="module" src="/js/services/auth.js?v=18"></script>
+    <script type="module" src="/js/combat/combat-state.js?v=1786180000185"></script>
 
 </body>
 

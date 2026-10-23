@@ -151,6 +151,15 @@ class AppModal extends HTMLElement {
      */
     show(options) {
         if (!this.rendered) this.render();
+        this.confirmBtn.disabled = false;
+        this.confirmBtn.style.opacity = '';
+        this.confirmBtn.style.cursor = 'pointer';
+        this.confirmBtn.style.pointerEvents = '';
+        this.cancelBtn.disabled = false;
+        this.cancelBtn.style.opacity = '';
+        this.cancelBtn.style.cursor = 'pointer';
+        this.cancelBtn.style.pointerEvents = '';
+
         this.titleEl.innerText = options.title || 'Confirmation';
         this.textEl.innerHTML = options.body || '';
         this.iconEl.innerText = options.icon || 'warning';

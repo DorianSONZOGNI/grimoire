@@ -424,6 +424,18 @@ public class Personnage {
     private boolean banalSpellCastThisTurn;
 
     @Transient
+    @com.fasterxml.jackson.annotation.JsonProperty("startedChannelingThisTurn")
+    private boolean startedChannelingThisTurn = false;
+
+    public boolean isStartedChannelingThisTurn() {
+        return startedChannelingThisTurn;
+    }
+
+    public void setStartedChannelingThisTurn(boolean startedChannelingThisTurn) {
+        this.startedChannelingThisTurn = startedChannelingThisTurn;
+    }
+
+    @Transient
     private int remainingChannelingTurns;
 
     @Transient
@@ -621,6 +633,7 @@ public class Personnage {
         this.channelingTarget = null;
         this.channelingAlly = null;
         this.channelingChoiceKey = null;
+        this.startedChannelingThisTurn = false;
     }
 
     public void resetCombatState() {
@@ -629,6 +642,7 @@ public class Personnage {
         this.cancelChanneling();
         this.banalSpellCastThisTurn = false;
         this.instantSpellCastThisTurn = false;
+        this.startedChannelingThisTurn = false;
         System.out.println(name + " a réinitialisé son état de combat.");
     }
 

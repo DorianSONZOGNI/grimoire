@@ -539,3 +539,23 @@ export async function deleteEquipmentAPI(id, options = {}) {
         await doDelete();
     }
 }
+
+export async function fetchCombatSignalsConfig() {
+    const res = await globalFetch('/api/pve/combat/signals/config');
+    if (!res.ok) throw new Error('Impossible de charger la configuration des signaux.');
+    return res.json();
+}
+
+export async function postCombatSignal(sessionId, signalData) {
+    const res = await globalFetch(`/api/pve/combat/${sessionId}/signal`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(signalData)
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Erreur lors de l’envoi du signal.');
+    }
+    return res.json();
+}
+

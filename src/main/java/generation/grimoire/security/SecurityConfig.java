@@ -1,5 +1,6 @@
 package generation.grimoire.security;
 
+import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -29,13 +30,18 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // --- Allow CORS preflight requests ---
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll().requestMatchers("/api/pve/combat/debug/**").permitAll()
+                // --- Dispatcher types error / forward ---
+                .dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.FORWARD).permitAll()
+                .requestMatchers("/error").permitAll()
 
-                // --- Public : statiques + auth ---
-                .requestMatchers("/api/auth/**").permitAll().requestMatchers("/api/pve/combat/debug/**").permitAll()
-                .requestMatchers("/api/meta/**").permitAll().requestMatchers("/api/pve/combat/debug/**").permitAll()
-                .requestMatchers("/js/**", "/styles/**", "/images/**", "/sons/**", "/favicon.ico", "/favicon.svg", "/*.html", "/").permitAll().requestMatchers("/api/pve/combat/debug/**").permitAll()
+                // --- Allow CORS preflight requests ---
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                // --- Public : statiques + auth + debug ---
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/meta/**").permitAll()
+                .requestMatchers("/api/pve/combat/debug/**").permitAll()
+                .requestMatchers("/js/**", "/styles/**", "/images/**", "/sons/**", "/favicon.ico", "/favicon.svg", "/*.html", "/").permitAll()
 
                 // --- Admin uniquement : CRUD entités de jeu ---
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
@@ -50,7 +56,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/alchemy/admin/**").hasRole("ADMIN")
 
                 // --- Lecture publique (GET sur les API de consultation) ---
-                .requestMatchers(HttpMethod.GET, "/api/**").permitAll().requestMatchers("/api/pve/combat/debug/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/achievements/acknowledge").permitAll()
 
                 // --- Tout le reste nécessite une authentification ---

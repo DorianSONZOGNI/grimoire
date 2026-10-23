@@ -3,22 +3,37 @@ window.initAppMeta = async function () {
     return initMeta();
 };
 
+const isDungeonsPage = window.location.pathname.includes('/dungeons.html');
+if (isDungeonsPage) {
+    localStorage.removeItem('activeCombatId');
+}
+
 const activeCombatId = localStorage.getItem('activeCombatId');
 if (activeCombatId && 
     !window.location.pathname.includes('/combat.html') && 
     !window.location.pathname.includes('/login.html') && 
-    !window.location.pathname.includes('/register.html')) {
+    !window.location.pathname.includes('/register.html') &&
+    !isDungeonsPage) {
     console.warn('Active combat session found in localStorage, redirecting to combat page.');
     window.location.href = '/combat.html';
 }
 
+function isValidToken(token) {
+    return typeof token === 'string' && token.trim().length > 0 && token !== 'null' && token !== 'undefined';
+}
+
 let accessToken = localStorage.getItem('accessToken');
+if (!isValidToken(accessToken)) {
+    accessToken = null;
+    localStorage.removeItem('accessToken');
+}
 
 window.setAccessToken = function (token) {
-    accessToken = token;
-    if (token) {
+    if (isValidToken(token)) {
+        accessToken = token;
         localStorage.setItem('accessToken', token);
     } else {
+        accessToken = null;
         localStorage.removeItem('accessToken');
     }
 };
@@ -60,10 +75,16 @@ window.animateGoldValue = function(element, start, end, duration) {
 
 window.globalFetch = async function (url, options = {}) {
     if (!options.headers) options.headers = {};
-    if (!accessToken) {
-        accessToken = localStorage.getItem('accessToken');
+    if (!isValidToken(accessToken)) {
+        const stored = localStorage.getItem('accessToken');
+        if (isValidToken(stored)) {
+            accessToken = stored;
+        } else {
+            accessToken = null;
+            localStorage.removeItem('accessToken');
+        }
     }
-    if (accessToken && !options.headers['Authorization']) {
+    if (isValidToken(accessToken) && !options.headers['Authorization']) {
         options.headers['Authorization'] = `Bearer ${accessToken}`;
     }
 
@@ -77,9 +98,12 @@ window.globalFetch = async function (url, options = {}) {
                     .then(async (refreshRes) => {
                         if (refreshRes.ok) {
                             const data = await refreshRes.json();
-                            accessToken = data.token;
-                            localStorage.setItem('accessToken', data.token);
-                            return true;
+                            if (isValidToken(data.token)) {
+                                accessToken = data.token;
+                                localStorage.setItem('accessToken', data.token);
+                                return true;
+                            }
+                            return false;
                         }
                         if (refreshRes.status >= 500) {
                             throw new Error("Erreur serveur, réessayez plus tard.");
@@ -96,10 +120,12 @@ window.globalFetch = async function (url, options = {}) {
 
             if (refreshSuccess) {
                 // Retry with the latest token (may have been set by another concurrent refresh)
-                options.headers['Authorization'] = `Bearer ${accessToken}`;
+                if (isValidToken(accessToken)) {
+                    options.headers['Authorization'] = `Bearer ${accessToken}`;
+                }
                 res = await fetch(url, options);
             } else {
-                if (!url.includes('/api/auth/me') && !url.includes('/api/alchemy/recipes') && !url.includes('/api/meta/all') && !url.includes('/api/achievements/')) {
+                if (!url.includes('/api/auth/me') && !url.includes('/api/alchemy/recipes') && !url.includes('/api/meta/all') && !url.includes('/api/achievements/') && !url.includes('/api/anomalies')) {
                     localStorage.removeItem('accessToken');
                     localStorage.removeItem('refreshToken');
                     localStorage.removeItem('isLikelyLoggedIn');
@@ -113,18 +139,40 @@ window.globalFetch = async function (url, options = {}) {
             }
         } else if (res.status === 403) {
             let errorMsg = 'Accès refusé';
+            let parsedData = null;
             try {
                 const text = await res.text();
                 try {
-                    const data = JSON.parse(text);
-                    errorMsg = data.message || data.error || text || errorMsg;
+                    parsedData = JSON.parse(text);
+                    errorMsg = parsedData.message || parsedData.error || text || errorMsg;
                 } catch (e) {
                     errorMsg = text || errorMsg;
                 }
             } catch (e2) {}
 
-            if (errorMsg.includes('combat')) {
+            let isInCombat = errorMsg && errorMsg.toLowerCase().includes('combat');
+
+            // If error message was generic (e.g. Spring Boot default "Forbidden"), query /api/pve/combat/current
+            if (!isInCombat && isValidToken(accessToken) && !url.includes('/api/pve/combat/') && !isDungeonsPage) {
+                try {
+                    const curRes = await fetch('/api/pve/combat/current', {
+                        headers: { 'Authorization': `Bearer ${accessToken}` }
+                    });
+                    if (curRes.ok) {
+                        const curData = await curRes.json();
+                        if (curData && curData.sessionId) {
+                            isInCombat = true;
+                            localStorage.setItem('activeCombatId', curData.sessionId);
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            if (isInCombat && !isDungeonsPage) {
                 console.warn('Redirecting to combat page due to active combat session', url);
+                if (parsedData && parsedData.activeCombatSessionId) {
+                    localStorage.setItem('activeCombatId', parsedData.activeCombatSessionId);
+                }
                 window.location.href = '/combat.html';
                 await new Promise(() => {}); // Halt execution
             }
@@ -134,7 +182,7 @@ window.globalFetch = async function (url, options = {}) {
         }
 
         if (!res.ok) {
-            if (res.status === 401 && !url.includes('/api/auth/me') && !url.includes('/api/alchemy/recipes') && !url.includes('/api/meta/all') && !url.includes('/api/achievements/')) {
+            if (res.status === 401 && !url.includes('/api/auth/me') && !url.includes('/api/alchemy/recipes') && !url.includes('/api/meta/all') && !url.includes('/api/achievements/') && !url.includes('/api/anomalies')) {
                 console.warn('Redirecting to login due to 401', url);
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
@@ -172,7 +220,12 @@ window.globalFetch = async function (url, options = {}) {
 
         return res;
     } catch (error) {
-        if (!options.silent) {
+        const isPassiveUrl = url.includes('/api/auth/me') ||
+            url.includes('/api/alchemy/recipes') ||
+            url.includes('/api/meta/all') ||
+            url.includes('/api/achievements/') ||
+            url.includes('/api/anomalies');
+        if (!options.silent && !isPassiveUrl) {
             if (typeof showNotif !== 'undefined') {
                 showNotif(error.message, true);
             } else if (typeof alert !== 'undefined') {
@@ -334,6 +387,25 @@ window.checkAuthStatus = async function checkAuthStatus() {
             window.currentUser = data;
             window.isAdmin = data.roles && data.roles.some(r => r.authority === 'ADMIN' || r.authority === 'ROLE_ADMIN');
             window.dispatchEvent(new Event('authLoaded'));
+
+            // Redirection automatique si une session de combat est toujours en cours
+            if (!window.location.pathname.includes('/combat.html') &&
+                !window.location.pathname.includes('/login.html') &&
+                !window.location.pathname.includes('/register.html') &&
+                !isDungeonsPage) {
+                fetch('/api/pve/combat/current', {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                }).then(async (curRes) => {
+                    if (curRes.ok) {
+                        const curData = await curRes.json();
+                        if (curData && curData.sessionId) {
+                            console.warn("Active combat session found via checkAuthStatus, redirecting to combat.html");
+                            localStorage.setItem('activeCombatId', curData.sessionId);
+                            window.location.href = '/combat.html';
+                        }
+                    }
+                }).catch(() => {});
+            }
             
             let prevGold = window.previousGold || 0;
             let currentGold = data.monnaie !== undefined ? +Number(data.monnaie) : 0;

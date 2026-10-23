@@ -1,17 +1,20 @@
 import { shakeStyle } from './combat-utils.js';
-import { initMultiSSE } from './combat-socket.js';
-import { updateUI, renderSpells } from './combat-ui.js';
-import { currentSpellsTab, setCurrentSpellsTab, initiateCombatCast, confirmCombatCast, cancelCombatCast, doAction } from './combat-spells.js';
-import { endTurn, nextRoom, openStrangeDoor, acceptAlteration, useRope, buyMerchantItem, openBuyModal, closeBuyModal, addLootedConsumable, openChest } from './combat-actions.js';
-import { loadAnomaliesCombat, resumeCombat, startCombat, fetchCombatEquipments } from './combat-init.js';
+import { initMultiSSE } from './combat-socket.js?v=1786180000170';
+import { updateUI, renderSpells } from './combat-ui.js?v=1786180000170';
+import { currentSpellsTab, setCurrentSpellsTab, initiateCombatCast, confirmCombatCast, cancelCombatCast, doAction } from './combat-spells.js?v=1786180000170';
+import { endTurn, nextRoom, openStrangeDoor, acceptAlteration, useRope, buyMerchantItem, openBuyModal, closeBuyModal, addLootedConsumable, openChest } from './combat-actions.js?v=1786180000170';
+import { loadAnomaliesCombat, resumeCombat, startCombat, fetchCombatEquipments } from './combat-init.js?v=1786180000185';
 import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
+import { initCombatSignals, showFighterPingMenu } from './combat-signals.js';
+
+window.showFighterPingMenu = showFighterPingMenu;
 
 
 if (!window.allAnomaliesCombat || !Array.isArray(window.allAnomaliesCombat)) {
     window.allAnomaliesCombat = [];
-    window.globalFetch('/api/anomalies/all-templates').then(res => {
+    window.globalFetch('/api/anomalies/all-templates', { silent: true }).then(res => {
         if (!res.ok) throw new Error("HTTP error " + res.status);
         return res.json();
     }).then(data => {
@@ -38,7 +41,7 @@ shakeStyle.innerHTML = `
 
 document.head.appendChild(shakeStyle);
 
-export const pageState = {
+window.pageState = window.pageState || {
     lastCombatLogCount: null,
     sessionId: null,
     currentSessionData: null,
@@ -65,6 +68,7 @@ export const pageState = {
     combatWarningTimer: null,
     combatCountdownInterval: null,
 };
+export const pageState = window.pageState;
 
 pageState.lastCombatLogCount = 0;
 
@@ -87,7 +91,7 @@ pageState.pendingNeedsEnemy = false;
 pageState.pendingNeedsAlly = false;
 
 export function setButtonsProcessing(isProc) {
-    const buttons = document.querySelectorAll('.action-btn, .btn');
+    const buttons = document.querySelectorAll('.action-btn:not(.flee), .btn');
     buttons.forEach(btn => {
         if (isProc) {
             btn.disabled = true;
@@ -118,14 +122,18 @@ window.confirmCombatCast = confirmCombatCast;
 window.cancelCombatCast = cancelCombatCast;
 
 window.promptFlee = function () {
-    console.log("promptFlee called", pageState.sessionId, pageState.currentSessionData);
-    if (!pageState.sessionId || !pageState.currentSessionData || pageState.currentSessionData.finished) {
-        console.log("promptFlee aborted due to missing data or finished session");
+    const state = window.pageState || pageState;
+    const sId = state.sessionId || (state.currentSessionData && state.currentSessionData.sessionId) || localStorage.getItem('activeCombatId');
+    console.log("promptFlee called, resolved sessionId:", sId, "state:", state);
+    if (!sId) {
+        if (typeof window.showNotif === 'function') window.showNotif("Aucune session de combat active à fuir.", true);
+        else ui.showNotif("Aucune session de combat active à fuir.", true);
         return;
     }
     
-    const roomsCount = Math.max(1, pageState.currentSessionData.totalRooms || 1);
-    const nbHeroes = Math.max(1, (pageState.currentSessionData.players || []).length);
+    const sess = state.currentSessionData;
+    const roomsCount = Math.max(1, (sess && sess.totalRooms) || 1);
+    const nbHeroes = Math.max(1, ((sess && sess.players) || []).length);
     const xpLossPerHero = Math.floor((10 * roomsCount) / nbHeroes);
     const goldLoss = 10 * roomsCount;
     
@@ -138,10 +146,10 @@ window.promptFlee = function () {
         confirmText: 'Oui, fuir',
         onConfirm: async () => {
             try {
-                pageState.isFleeing = true;
-                const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/flee`, { method: 'POST' });
+                state.isFleeing = true;
+                const res = await globalFetch(`/api/pve/combat/${sId}/flee`, { method: 'POST' });
                 if (!res.ok) {
-                    pageState.isFleeing = false;
+                    state.isFleeing = false;
                     const err = await res.text();
                     ui.showNotif("Erreur lors de la fuite : " + err, true);
                     return;
@@ -172,10 +180,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener('click', tryPlayMusic);
 
     try { if (window.initAppMeta) await window.initAppMeta(); } catch (e) { console.warn('Meta loading skipped:', e); }
+    initCombatSignals();
 
     // Charger le username actuel
     try {
-        const meRes = await globalFetch('/api/auth/me', { credentials: 'same-origin' });
+        const meRes = await globalFetch('/api/auth/me', { credentials: 'same-origin', silent: true });
         if (meRes.ok) {
             const meData = await meRes.json();
             pageState.currentUsername = meData.username || null;

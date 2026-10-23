@@ -12,6 +12,9 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.security.Principal;
 import java.util.List;
+import generation.grimoire.dto.pve.CombatSignalRequest;
+import generation.grimoire.dto.pve.CombatSignalDTO;
+import generation.grimoire.dto.pve.CombatSignalsConfigDTO;
 
 @RestController
 @RequestMapping("/api/pve/combat")
@@ -61,6 +64,10 @@ public class CombatController {
         String username = principal.getName();
         for (java.util.Map.Entry<String, CombatSession> entry : combatService.getActiveSessions().entrySet()) {
             CombatSession session = entry.getValue();
+            if (session.isFinished()) {
+                combatService.getActiveSessions().remove(entry.getKey());
+                continue;
+            }
             boolean inCombat = session.getPlayers().stream()
                     .anyMatch(p -> p.getUser() != null && username.equals(p.getUser().getUsername()) && p.getHealthCurrent() > 0);
             
@@ -108,7 +115,7 @@ public class CombatController {
     public ResponseEntity<?> getCombatEquipments(@PathVariable("sessionId") String sessionId) {
         CombatSession session = combatService.getSession(sessionId);
         if (session == null)
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(java.util.Map.of());
 
         java.util.Map<Long, java.util.List<generation.grimoire.dto.equipment.EquipmentShopDTO>> result = new java.util.HashMap<>();
         if (session.getPlayers() != null) {
@@ -199,6 +206,12 @@ public class CombatController {
             e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PostMapping("/{sessionId}/finish")
+    public ResponseEntity<?> finishSession(@PathVariable("sessionId") String sessionId) {
+        combatService.finishCombat(sessionId);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{sessionId}/consumable/{consumableId}")
@@ -352,4 +365,24 @@ public class CombatController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/signals/config")
+    public ResponseEntity<CombatSignalsConfigDTO> getSignalsConfig() {
+        return ResponseEntity.ok(combatService.getSignalsConfig());
+    }
+
+    @PostMapping("/{sessionId}/signal")
+    public ResponseEntity<?> sendSignal(
+            @PathVariable("sessionId") String sessionId,
+            @RequestBody CombatSignalRequest request,
+            Principal principal) {
+        try {
+            String username = principal != null ? principal.getName() : "Joueur";
+            CombatSignalDTO result = combatService.sendSignal(sessionId, username, request);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
 }
+

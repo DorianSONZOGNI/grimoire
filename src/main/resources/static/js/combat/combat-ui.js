@@ -6,6 +6,8 @@ import { nextRoom, openStrangeDoor, acceptAlteration, useRope, openBuyModal, add
 import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
+import { showFighterPingMenu } from './combat-signals.js';
+import { renderHeroCombatSprite } from './combat-sprites.js?v=1786180000170';
 
 window.toggleCombatLog = function() {
     const log = document.getElementById('combatLog');
@@ -288,14 +290,23 @@ export function updateUI(data) {
 
     if (pageState.currentSessionData && data && !data.error) {
         const old = pageState.currentSessionData;
-        const isStale = (
-            data.currentRoomIndex < old.currentRoomIndex ||
-            (data.currentRoomIndex === old.currentRoomIndex && data.turnNumber < old.turnNumber) ||
-            (data.currentRoomIndex === old.currentRoomIndex && data.turnNumber === old.turnNumber && data.combatLog && old.combatLog && data.combatLog.length < old.combatLog.length)
-        );
-        if (isStale) {
-            console.log('Ignored stale data update (likely delayed HTTP response).');
+        const isOlderRoom = data.currentRoomIndex < old.currentRoomIndex;
+        const isOlderTurn = (data.currentRoomIndex === old.currentRoomIndex && data.turnNumber < old.turnNumber);
+        if (isOlderRoom || isOlderTurn) {
+            console.log('Ignored stale data update (older room or turn).', {
+                dataRoom: data.currentRoomIndex, oldRoom: old.currentRoomIndex,
+                dataTurn: data.turnNumber, oldTurn: old.turnNumber
+            });
             return;
+        }
+
+        // If in same room and same turn but incoming data has fewer logs (e.g. out-of-order SSE vs HTTP),
+        // preserve the longer combatLog rather than dropping the state update and ignoring player action!
+        if (data.currentRoomIndex === old.currentRoomIndex &&
+            data.turnNumber === old.turnNumber &&
+            data.combatLog && old.combatLog &&
+            data.combatLog.length < old.combatLog.length) {
+            data.combatLog = old.combatLog;
         }
     }
 
@@ -336,6 +347,17 @@ export function updateUI(data) {
     }
 
     pageState.currentSessionData = data;
+    if (data && data.multi !== undefined) {
+        pageState.isMulti = (data.multi === true);
+    }
+    const emotesBtn = document.getElementById('btnCombatEmotes');
+    if (emotesBtn) {
+        if (pageState.isMulti) {
+            emotesBtn.classList.remove('is-hidden');
+        } else {
+            emotesBtn.classList.add('is-hidden');
+        }
+    }
 
     if (data.finished) {
         localStorage.removeItem('activeCombatId');
@@ -459,6 +481,8 @@ export function updateUI(data) {
             const div = document.createElement('div');
             div.className = `fighter fighter-player ${isActive ? 'active' : ''} ${isAllySelected ? 'selected-ally' : ''} ${isDead ? 'dead' : ''}`;
             div.dataset.fighterId = `hero-${p.id || index}`;
+            div.dataset.index = index;
+            div.dataset.ownerUsername = p.ownerUsername || p.user?.username || '';
 
             if (isAllySelected) {
                 div.style.borderColor = '#10b981';
@@ -469,8 +493,8 @@ export function updateUI(data) {
                 div.style.boxShadow = '0 0 20px rgba(56, 189, 248, 0.4)';
                 div.style.transform = 'scale(1.05)';
             } else if (isDead) {
-                div.style.opacity = '0.4';
-                div.style.filter = 'grayscale(1)';
+                div.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+                div.style.transform = 'scale(0.95)';
             } else {
                 div.style.borderColor = 'rgba(255, 255, 255, 0.1)';
                 div.style.transform = 'scale(0.95)';
@@ -489,6 +513,20 @@ export function updateUI(data) {
 
             div.innerHTML = timerHtml + generateFighterHtml(p, true, false, forcedHp, forcedMana, turnMap.players[index] || null);
             playersContainer.appendChild(div);
+            renderHeroCombatSprite(div, p, isActive, isDead);
+
+            div.addEventListener('contextmenu', (e) => {
+                if (!pageState.isMulti) return;
+                e.preventDefault();
+                showFighterPingMenu(e, 'hero', index, p.name);
+            });
+            const heroPingBtn = div.querySelector('.fighter-card-ping-btn');
+            if (heroPingBtn) {
+                heroPingBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showFighterPingMenu(e, 'hero', index, p.name);
+                });
+            }
 
             // Animate bars with JS loop
             const hpBar = div.querySelector('.gauge-fill.hp');
@@ -2375,6 +2413,15 @@ export function updateUI(data) {
         if (btnEnd) btnEnd.disabled = false;
     }
 
+    // Always ensure the flee button remains available while combat is active
+    const btnFlee = document.getElementById('btnFlee') || document.querySelector('.action-btn.flee');
+    if (btnFlee && (!data.finished)) {
+        btnFlee.disabled = false;
+        btnFlee.classList.remove('disabled', 'multi-disabled');
+        btnFlee.style.pointerEvents = '';
+        btnFlee.style.opacity = '';
+    }
+
     processNewDeathLogs(data.combatLog);
     updateNextRoomButtons(data);
     renderActiveChallenges(data);
@@ -2528,7 +2575,7 @@ export function getBossBuffsHtml(c) {
     return html;
 }
 
-export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = null, forcedMana = null, turnOrderNum = null) {
+export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = null, forcedMana = null, turnOrderNum = null, isBossSolo = false) {
     const hpToRender = forcedHp !== null && !isNaN(forcedHp) ? forcedHp : c.healthCurrent;
     const hpPct = c.healthMax > 0 ? Math.max(0, Math.min(100, (hpToRender / c.healthMax) * 100)) : 0;
     let hpLabel = `${hpToRender} / ${c.healthMax}`;
@@ -2982,7 +3029,7 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
     } else if (rMana < 0) {
         manaRegenBadge = `<span title="Perd ${-rMana} Mana au début du tour (Famine)" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">water_drop</span>${rMana} MP/t</span>`;
     }
-    let avatarHtml = isHero ? '🧙‍♂️' : '👹';
+    let avatarHtml = isHero ? '🧙‍♂️' : (isBossSolo ? '<span class="fighter-avatar-boss">👑</span>' : '👹');
     if (isHero && c.voie && c.voie.nom) {
         const vNom = c.voie.nom.toLowerCase();
         let avatarName = '';
@@ -3045,12 +3092,28 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         shieldBarHtml = `<div style="width: 100%; height: 3px; background: rgba(0,0,0,0.3); border-radius: 2px; position: relative;"><div class="${glowClass}" style="position: absolute; top: 0; left: 0; height: 100%; width: ${shieldPct}%; background: #3b82f6; border-radius: 2px; box-shadow: 0 0 5px #3b82f6;"></div></div>`;
     }
 
+    let pingBtnHtml = pageState.isMulti
+        ? `<button class="fighter-card-ping-btn" type="button" title="Signaler / Communication (ou clic droit)"><span class="material-symbols-outlined">campaign</span></button>`
+        : '';
+
+    const bossSoloHeaderHtml = isBossSolo ? `
+        <div class="boss-solo-header">
+            <div class="boss-solo-crest">
+                <span class="material-symbols-outlined boss-solo-icon">skull</span>
+                <span class="boss-solo-title">BOSS</span>
+                <span class="material-symbols-outlined boss-solo-icon">skull</span>
+            </div>
+        </div>
+    ` : '';
+
     return `
+        ${bossSoloHeaderHtml}
         ${turnOrderBadgeHtml}
+        ${pingBtnHtml}
         ${mutationsHtml}
         ${passiveIconsHtml}
         ${channelingBadgeHtml}
-        <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.3rem; display: flex; justify-content: center; align-items: center; gap: 0.2rem; margin-bottom: 0.8rem; width: 100%;">
+        <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: ${isBossSolo ? '1.75rem' : '1.3rem'}; display: flex; justify-content: center; align-items: center; gap: 0.2rem; margin-bottom: 0.8rem; width: 100%;">
             <span style="flex-shrink: 0; display: flex; align-items: center; ${isHero ? 'cursor: help;' : ''}" ${isHero ? `onmouseenter="if(window.showHeroEquipmentTooltip) window.showHeroEquipmentTooltip(this, ${c.id})" onmouseleave="if(window.hideHeroEquipmentTooltip) window.hideHeroEquipmentTooltip()"` : ''}>${avatarHtml}</span>
             <div style="display: flex; align-items: center; gap: 0.3rem; min-width: 0;">
                 <span style="flex-shrink: 0; display: flex;">${titleIconsHtml}</span>
@@ -3093,6 +3156,19 @@ export function renderEnemies(enemies, turnMap = null) {
 
     let bossBuffsRendered = false;
 
+    const isBossRoom = !!(pageState.currentSessionData && pageState.currentSessionData.currentRoom && pageState.currentSessionData.currentRoom.type === 'BOSS');
+    const isSingleEnemy = enemies.length === 1;
+    const isBossSolo = isSingleEnemy && (isBossRoom || (enemies[0] && (
+        (enemies[0].asPersonnage && enemies[0].asPersonnage.passiveStates && Object.keys(enemies[0].asPersonnage.passiveStates).some(k => k.startsWith('BOSS_BUFF_'))) ||
+        (enemies[0].base && (enemies[0].base.monsterType === 'BOSS' || (typeof enemies[0].base.monsterType === 'object' && enemies[0].base.monsterType?.name === 'BOSS')))
+    )));
+
+    if (isBossSolo) {
+        container.classList.add('is-boss-solo');
+    } else {
+        container.classList.remove('is-boss-solo');
+    }
+
     enemies.forEach((activeMonster, index) => {
         const m = activeMonster.base;
         const pMonster = activeMonster.asPersonnage || activeMonster; // Fallback just in case
@@ -3116,22 +3192,24 @@ export function renderEnemies(enemies, turnMap = null) {
         if (typeof activeMonster.maxHp !== 'undefined') pMonster.healthMax = activeMonster.maxHp;
 
         const div = document.createElement('div');
-        div.className = `fighter fighter-enemy enemy-card ${isActive ? 'active' : ''} ${activeMonster.dead ? 'dead' : ''}`;
+        div.className = `fighter fighter-enemy enemy-card ${isBossSolo ? 'fighter-boss-solo' : ''} ${isActive ? 'active' : ''} ${activeMonster.dead ? 'dead' : ''}`;
         div.dataset.index = index;
         div.dataset.fighterId = `monster-${m.monsterId || index}`;
         div.style.position = 'relative';
 
-        if (isActive) {
-            div.style.borderColor = '#ef4444';
-            div.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.4)';
-            div.style.transform = 'scale(1.05)';
-        } else if (!activeMonster.dead) {
-            div.style.borderColor = 'rgba(220, 38, 38, 0.4)'; // Default enemy border
-            div.style.boxShadow = 'none';
-            div.style.transform = 'scale(0.95)';
+        if (!isBossSolo) {
+            if (isActive) {
+                div.style.borderColor = '#ef4444';
+                div.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.4)';
+                div.style.transform = 'scale(1.05)';
+            } else if (!activeMonster.dead) {
+                div.style.borderColor = 'rgba(220, 38, 38, 0.4)'; // Default enemy border
+                div.style.boxShadow = 'none';
+                div.style.transform = 'scale(0.95)';
+            }
         }
 
-        const isBoss = pMonster.passiveStates && Object.keys(pMonster.passiveStates).some(k => k.startsWith('BOSS_BUFF_'));
+        const isBoss = (pMonster.passiveStates && Object.keys(pMonster.passiveStates).some(k => k.startsWith('BOSS_BUFF_'))) || isBossRoom;
 
         if (isBoss) {
             if (bossBuffsContainer && !bossBuffsRendered) {
@@ -3151,8 +3229,21 @@ export function renderEnemies(enemies, turnMap = null) {
             forcedMana = window.combatOldStats[fId].mana;
         }
 
-        div.innerHTML = generateFighterHtml(pMonster, false, isBoss, forcedHp, forcedMana, turnMap && turnMap.enemies ? turnMap.enemies[index] : null);
+        div.innerHTML = generateFighterHtml(pMonster, false, isBoss, forcedHp, forcedMana, turnMap && turnMap.enemies ? turnMap.enemies[index] : null, isBossSolo);
         container.appendChild(div);
+
+        div.addEventListener('contextmenu', (e) => {
+            if (!pageState.isMulti) return;
+            e.preventDefault();
+            showFighterPingMenu(e, 'mob', index, m.name);
+        });
+        const mobPingBtn = div.querySelector('.fighter-card-ping-btn');
+        if (mobPingBtn) {
+            mobPingBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showFighterPingMenu(e, 'mob', index, m.name);
+            });
+        }
 
         // Animate bars with JS loop
         const hpBar = div.querySelector('.gauge-fill.hp');
@@ -3873,12 +3964,45 @@ export function showResult(data) {
         if (tipContainer) tipContainer.style.display = 'none';
     }
 
+    localStorage.removeItem('activeCombatId');
+
+    window.exitCombatToDungeons = async function(e) {
+        if (e) e.preventDefault();
+        localStorage.removeItem('activeCombatId');
+        const sId = pageState.sessionId || (pageState.currentSessionData && pageState.currentSessionData.sessionId);
+        if (sId) {
+            try {
+                await (window.globalFetch || fetch)(`/api/pve/combat/${sId}/finish`, { method: 'POST' });
+            } catch (_) {}
+        }
+        window.location.href = '/dungeons.html';
+    };
+
     const retryBtn = document.getElementById('retryDungeonBtn');
     if (retryBtn) {
         const urlParams = new URLSearchParams(window.location.search);
-        const dId = (data && data.dungeonId) || urlParams.get('dungeonId');
+        const dId = (data && data.dungeonId) || (pageState.currentSessionData && pageState.currentSessionData.dungeonId) || urlParams.get('dungeonId');
         if (dId) {
-            retryBtn.href = `/dungeons.html?dungeonId=${dId}`;
+            let targetUrl = `/dungeons.html?dungeonId=${dId}`;
+            const heroes = (data && data.players && data.players.length > 0)
+                ? data.players
+                : (pageState.currentSessionData && pageState.currentSessionData.players);
+            if (heroes && heroes.length > 0) {
+                const charIds = heroes.map(p => p.id).join(',');
+                targetUrl += `&charIds=${charIds}`;
+            }
+            retryBtn.href = targetUrl;
+            retryBtn.onclick = async (e) => {
+                e.preventDefault();
+                localStorage.removeItem('activeCombatId');
+                const sId = pageState.sessionId || (pageState.currentSessionData && pageState.currentSessionData.sessionId) || (data && data.sessionId);
+                if (sId) {
+                    try {
+                        await (window.globalFetch || fetch)(`/api/pve/combat/${sId}/finish`, { method: 'POST' });
+                    } catch (_) {}
+                }
+                window.location.href = targetUrl;
+            };
             retryBtn.style.display = 'inline-flex';
         } else {
             retryBtn.style.display = 'none';

@@ -46,11 +46,13 @@ public class CombatEventEmitter {
      */
     public void broadcast(String sessionId, CombatSession session) {
         List<SseEmitter> list = emitters.get(sessionId);
-        if (list == null || list.isEmpty()) return;
+        if (list == null || list.isEmpty() || session == null) return;
 
         String json;
         try {
-            json = objectMapper.writeValueAsString(session);
+            synchronized (session) {
+                json = objectMapper.writeValueAsString(session);
+            }
         } catch (IOException e) {
             log.error("SSE serialization error for session {}", sessionId, e);
             return;
@@ -78,7 +80,13 @@ public class CombatEventEmitter {
 
         String json;
         try {
-            json = objectMapper.writeValueAsString(payload);
+            if (payload != null) {
+                synchronized (payload) {
+                    json = objectMapper.writeValueAsString(payload);
+                }
+            } else {
+                json = "{}";
+            }
         } catch (IOException e) {
             log.error("SSE serialization error for event {} / session {}", eventName, sessionId, e);
             return;

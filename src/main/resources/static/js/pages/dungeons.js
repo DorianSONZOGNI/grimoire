@@ -357,6 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 async function loadDungeons() {
+    localStorage.removeItem('activeCombatId');
     try {
         const res = await globalFetch('/api/pve/dungeons');
         if (res.ok) {
@@ -776,7 +777,9 @@ async function loadDungeons() {
 
     const urlParams = new URLSearchParams(window.location.search);
     const openDungeonId = urlParams.get('dungeonId');
+    const openCharIds = urlParams.get('charIds');
     if (openDungeonId) {
+        localStorage.removeItem('activeCombatId');
         const card = document.getElementById(`dungeon-card-${openDungeonId}`);
         if (card) {
             const section = card.closest('.tab-content');
@@ -789,6 +792,15 @@ async function loadDungeons() {
             if (!card.classList.contains('locked')) {
                 card.click();
                 window.scrollTo({ top: 0, behavior: 'instant' });
+
+                if (openCharIds) {
+                    const ids = openCharIds.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n));
+                    ids.forEach(cid => {
+                        if (typeof window.selectCharacter === 'function') {
+                            window.selectCharacter(cid);
+                        }
+                    });
+                }
             } else {
                 if (window.showNotif) window.showNotif('Ce donjon est actuellement verrouillé.', true);
             }
@@ -798,6 +810,7 @@ async function loadDungeons() {
 
         const url = new URL(window.location);
         url.searchParams.delete('dungeonId');
+        url.searchParams.delete('charIds');
         window.history.replaceState({}, '', url);
     }
 }
@@ -1423,8 +1436,10 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
     document.getElementById('prepStatGrid').classList.add('hidden');
     document.getElementById('prepEquipList').innerHTML = '<div class="text-sm text-muted">Aucun équipement à afficher.</div>';
 
+    window._isStartingCombat = false;
     const btn = document.getElementById('btnEnterDungeon');
     if (btn) {
+        btn.disabled = false;
         btn.classList.remove('pointer-events-none');
         btn.classList.add('opacity-50', 'cursor-not-allowed');
     }
@@ -1436,6 +1451,7 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
 };
 
 window.closePrepInterface = function () {
+    window._isStartingCombat = false;
     document.getElementById('prepInterface').style.display = 'none';
     document.getElementById('dungeonsContent').style.display = 'block';
     pageState.currentDungeonId = null;
@@ -1446,6 +1462,7 @@ window.closePrepInterface = function () {
 };
 
 window.startCombat = async function () {
+    if (window._isStartingCombat) return;
     if (pageState.selectedCharIds.length === 0) {
         window.showNotif("Veuillez s\u00e9lectionner au moins un personnage.", true);
         return;
@@ -1458,6 +1475,13 @@ window.startCombat = async function () {
         }
         const confirmed = await showEntryModal(window.currentDungeonEntryCost);
         if (!confirmed) return;
+    }
+
+    window._isStartingCombat = true;
+    const btn = document.getElementById('btnEnterDungeon');
+    if (btn) {
+        btn.disabled = true;
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
     }
 
     const charIdsStr = pageState.selectedCharIds.join(',');

@@ -110,8 +110,13 @@
                         Veuillez sélectionner un personnage pour voir ses statistiques.
                     </div>
 
-                    <h3 class="mb-4 font-outfit text-xl text-slate-50 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-warning">shield</span> Équipement Actuel
+                    <h3 class="mb-4 font-outfit text-xl text-slate-50 flex items-center gap-2 justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-warning">shield</span> Équipement Actuel
+                        </div>
+                        <a href="/armory.html" class="text-xs text-sky-400 hover:text-sky-300 flex items-center gap-1 font-normal no-underline border border-sky-500/30 bg-sky-500/10 px-2 py-1 rounded transition-colors" title="Accéder à l'Armurerie pour modifier l'équipement">
+                            <span class="material-symbols-outlined text-sm">shield</span> Modifier dans l'Armurerie
+                        </a>
                     </h3>
                     <div id="prepEquipList">
                         <div class="text-muted text-sm">Aucun équipement à afficher.</div>
@@ -388,10 +393,10 @@
         <div id="heroEquipmentTooltipContent" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
     </div>
 
-    <script defer src="/js/services/auth.js?v=15" type="module"></script>
+    <script defer src="/js/services/auth.js?v=18" type="module"></script>
     <script defer src="/js/utils/utils.js"></script>
     <script type="module" src="/js/ui.js"></script>
-    <script defer src="/js/pages/dungeons.js?v=7"></script>
+    <script defer src="/js/pages/dungeons.js?v=11"></script>
     
     <script defer src="/js/components/loader.js"></script>
 

@@ -7,13 +7,17 @@ import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
 
 
 export async function fetchCombatEquipments(sessionId) {
+    if (!sessionId) return;
     try {
-        const res = await globalFetch(`/api/pve/combat/${sessionId}/equipments`);
-        if (res.ok) {
+        const res = await globalFetch(`/api/pve/combat/${sessionId}/equipments`, { silent: true });
+        if (res && res.ok) {
             pageState.combatEquipments = await res.json();
+        } else {
+            pageState.combatEquipments = pageState.combatEquipments || {};
         }
     } catch (e) {
-        console.error("Erreur récupération des équipements:", e);
+        console.warn("Erreur récupération des équipements:", e);
+        pageState.combatEquipments = pageState.combatEquipments || {};
     }
 }
 
@@ -21,7 +25,7 @@ export async function fetchCombatEquipments(sessionId) {
 export async function loadAnomaliesCombat() {
     if (!window.allAnomaliesCombat || !Array.isArray(window.allAnomaliesCombat) || window.allAnomaliesCombat.length === 0) {
         try {
-            const res = await globalFetch('/api/anomalies/all-templates');
+            const res = await globalFetch('/api/anomalies/all-templates', { silent: true });
             if (res.ok) {
                 const data = await res.json();
                 if (Array.isArray(data)) window.allAnomaliesCombat = data;
@@ -32,7 +36,7 @@ export async function loadAnomaliesCombat() {
         }
     }
     try {
-        const resUser = await globalFetch('/api/anomalies');
+        const resUser = await globalFetch('/api/anomalies', { silent: true });
         if (resUser.ok) {
             const dataUser = await resUser.json();
             if (Array.isArray(dataUser)) window.myGlobalAnomalies = dataUser;
@@ -76,7 +80,11 @@ export async function resumeCombat(savedSessionId) {
     }
 }
 
+let isStartingCombatInProgress = false;
+
 export async function startCombat(characterIds, dungeonId, consumableIds) {
+    if (isStartingCombatInProgress) return;
+    isStartingCombatInProgress = true;
     try {
         let fetchUrl = `/api/pve/combat/start?characterIds=${characterIds}&dungeonId=${dungeonId}`;
         if (consumableIds) {
@@ -124,5 +132,7 @@ export async function startCombat(characterIds, dungeonId, consumableIds) {
         setTimeout(() => {
             window.location.href = '/dungeons.html';
         }, 3000);
+    } finally {
+        isStartingCombatInProgress = false;
     }
 }
