@@ -35,6 +35,11 @@
     <link rel="modulepreload" href="/js/pages/forge.js">
     <link rel="modulepreload" href="/js/ui.js">
     <script src="/js/components/navbar.js?v=1786180000040"></script>
+    <script>
+        if (localStorage.getItem('isLikelyLoggedIn') !== 'true') {
+            window.location.replace('/login.html');
+        }
+    </script>
 </head>
 
 <body>
@@ -589,7 +594,7 @@
     
     <script src="/js/components/loader.js"></script>
     <script type="module" src="/js/app.js?v=6"></script>
-    <script type="module" src="/js/services/auth.js?v=15"></script>
+    <script type="module" src="/js/services/auth.js?v=20"></script>
 
 
 </body>
