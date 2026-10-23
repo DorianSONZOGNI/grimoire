@@ -3423,24 +3423,52 @@ export function renderPoisonBurnHtml(c) {
     return html;
 }
 
+function getStatIconInfo(statAffected) {
+    if (!statAffected) return { icon: 'star', cssClass: 'text-warning' };
+    const sa = statAffected.toUpperCase();
+
+    if (sa.includes('SPEED') || sa.includes('VITESSE')) return { icon: 'bolt', cssClass: 'text-speed' };
+    if (sa.includes('MANA')) return { icon: 'water_drop', cssClass: 'text-mana' };
+    if (sa.includes('HEALTH') || sa.includes('HP') || sa.includes('LIFE') || sa.includes('PV')) return { icon: 'favorite', cssClass: 'text-pv' };
+    if (sa.includes('CRIT')) return { icon: 'gps_fixed', cssClass: 'text-crit' };
+    if (sa.includes('ARMOR') || sa.includes('ARMURE')) return { icon: 'shield', cssClass: 'text-armor' };
+    if (sa.includes('RESISTANCE')) return { icon: 'shield', cssClass: 'text-resist' };
+    if (sa.includes('PHYSICAL_POWER') || sa.includes('STRENGTH') || sa.includes('FORCE')) return { icon: 'fitness_center', cssClass: 'text-physic' };
+    if (sa.includes('POWER') || sa.includes('PUISSANCE')) return { icon: 'auto_awesome', cssClass: 'text-magic' };
+    if (sa.includes('HEAL_RECEIVED')) return { icon: 'health_and_safety', cssClass: 'text-heal' };
+    if (sa.includes('SHIELD_RECEIVED')) return { icon: 'security', cssClass: 'text-shield' };
+    if (sa.includes('HEAL_GIVEN')) return { icon: 'healing', cssClass: 'text-heal' };
+    if (sa.includes('SHIELD_GIVEN')) return { icon: 'add_moderator', cssClass: 'text-shield' };
+    if (sa === 'SHIELD_PIERCED' || sa === 'SHIELD_PENETRATION' || sa.includes('PIERCED')) return { icon: 'heart_broken', cssClass: 'text-orange' };
+    if (sa === 'DAMAGE_TAKEN_ALL') return { icon: 'security', cssClass: 'text-armor' };
+    if (sa === 'DAMAGE_GIVEN_ALL') return { icon: 'swords', cssClass: 'text-danger' };
+    if (sa === 'DAMAGE_TAKEN_MAGIC' || sa === 'DAMAGE_GIVEN_MAGIC') return { icon: 'auto_awesome', cssClass: 'text-magic' };
+    if (sa === 'DAMAGE_TAKEN_PHYSIC') return { icon: 'explosion', cssClass: 'text-crit' };
+    if (sa === 'DAMAGE_TAKEN_BRUT' || sa === 'DAMAGE_GIVEN_BRUT') return { icon: 'bloodtype', cssClass: 'text-brut' };
+    if (sa === 'DAMAGE_GIVEN_PHYSIC' || sa.includes('DAMAGE_GIVEN')) return { icon: 'swords', cssClass: 'text-danger' };
+    if (sa.includes('DAMAGE_TAKEN')) return { icon: 'explosion', cssClass: 'text-crit' };
+    return { icon: 'star', cssClass: 'text-warning' };
+}
+
 export function renderBuffsHtml(c, buffList, motList, hotList) {
-    const goodBuffs = [];
-    const badBuffs = [];
+    const rawGoodBuffs = [];
+    const rawBadBuffs = [];
 
     if (buffList && buffList.length > 0) {
         buffList.forEach(b => {
+            if (!b || !b.statAffected) return;
             if (b.statAffected === 'AME_DETACHEE' || b.effectType === 'AME_DETACHEE') return;
             if (b.statAffected === 'POISON' || b.statAffected === 'BURN') return;
+
             const inverseStats = ['DAMAGE_TAKEN_MAGIC', 'DAMAGE_TAKEN_PHYSIC', 'DAMAGE_TAKEN_BRUT', 'SHIELD_PIERCED', 'BURN', 'POISON'];
             const isInverse = inverseStats.includes(b.statAffected);
-            const isNegativeValue = b.modifier < 0 || b.flatValue < 0;
+            const isNegativeValue = (b.modifier != null && b.modifier < 0) || (b.flatValue != null && b.flatValue < 0);
 
             let isBad = isNegativeValue;
             if (isInverse) isBad = !isNegativeValue;
 
             let effectiveFlat = b.flatValue || 0;
             let showModifier = true;
-            let text = '';
 
             if (b.modifier && c) {
                 let rawStat = null;
@@ -3458,7 +3486,6 @@ export function renderBuffsHtml(c, buffList, motList, hotList) {
                 if (rawStat !== null && rawStat !== undefined) {
                     const allBuffs = c.activeBuffs || c.buffs || [];
 
-                    // Compute flat bonus from buffs (same as server getStatFlatBonus)
                     let flatBonus = 0;
                     allBuffs.forEach(otherBuff => {
                         if (otherBuff.statAffected === b.statAffected && otherBuff.flatValue) {
@@ -3467,7 +3494,6 @@ export function renderBuffsHtml(c, buffList, motList, hotList) {
                     });
 
                     let baseStat = rawStat + flatBonus;
-
                     let runPos = 0.0;
                     let runNeg = 1.0;
                     let statBefore = 0;
@@ -3500,160 +3526,288 @@ export function renderBuffsHtml(c, buffList, motList, hotList) {
                     }
                 }
             }
-            if (effectiveFlat !== 0 || (!showModifier && b.modifier !== 0)) {
-                let sign = effectiveFlat > 0 ? '+' : '';
-                if (effectiveFlat === 0) {
-                    sign = b.modifier > 0 ? '+' : '-';
-                }
-                text += `${sign}${Math.abs(effectiveFlat)} ${ui.formatStat(b.statAffected)}`;
-            }
-            if (b.modifier && showModifier) {
-                if (text) text += ' et ';
-                text += `${b.modifier > 0 ? '+' : ''}${Math.round(b.modifier * 100)}% ${ui.formatStat(b.statAffected)}`;
-            }
-            if (!text) text = `Modifie ${ui.formatStat(b.statAffected)}`;
 
-            const typeStr = (b.statAffected === 'POISON' || b.statAffected === 'BURN') ? ui.formatStat(b.statAffected) : 'Buff/Débuff';
-            const indicatorColor = isBad ? '#f43f5e' : '#10b981';
-
-            let iconName = isBad ? 'trending_down' : 'trending_up';
-            if (b.statAffected === 'POISON') iconName = 'science';
-            if (b.statAffected === 'BURN') iconName = 'local_fire_department';
-
-            let statIconHtml = '';
-            if (b.statAffected && b.statAffected !== 'POISON' && b.statAffected !== 'BURN') {
-                const sa = b.statAffected.toUpperCase();
-                let statIcon = { icon: 'star', color: 'var(--text-muted)' };
-
-                if (sa.includes('SPEED')) statIcon = { icon: 'bolt', color: 'var(--slot-anneau)' };
-                else if (sa.includes('MANA')) statIcon = { icon: 'water_drop', color: 'var(--mana)' };
-                else if (sa.includes('HEALTH') || sa.includes('HP') || sa.includes('LIFE')) statIcon = { icon: 'favorite', color: 'var(--secondary)' };
-                else if (sa.includes('CRIT')) statIcon = { icon: 'gps_fixed', color: 'var(--crit)' };
-                else if (sa.includes('ARMOR') || sa.includes('ARMURE')) statIcon = { icon: 'shield', color: 'var(--accent)' };
-                else if (sa.includes('RESISTANCE')) statIcon = { icon: 'shield', color: 'var(--success)' };
-                else if (sa.includes('PHYSICAL_POWER') || sa.includes('STRENGTH')) statIcon = { icon: 'fitness_center', color: 'var(--danger)' };
-                else if (sa.includes('POWER')) statIcon = { icon: 'auto_awesome', color: 'var(--magic)' };
-                else if (sa.includes('HEAL_RECEIVED')) statIcon = { icon: 'health_and_safety', color: 'var(--success)' };
-                else if (sa.includes('SHIELD_RECEIVED')) statIcon = { icon: 'security', color: 'var(--shield-light)' };
-                else if (sa.includes('HEAL_GIVEN')) statIcon = { icon: 'healing', color: 'var(--caster-color)' };
-                else if (sa.includes('SHIELD_GIVEN')) statIcon = { icon: 'add_moderator', color: 'var(--shield-lighter)' };
-                else if (sa === 'SHIELD_PIERCED' || sa === 'SHIELD_PENETRATION') statIcon = { icon: 'heart_broken', color: 'var(--pierce)' };
-                else if (sa === 'DAMAGE_TAKEN_MAGIC' || sa === 'DAMAGE_GIVEN_MAGIC') statIcon = { icon: 'auto_awesome', color: 'var(--magic)' };
-                else if (sa === 'DAMAGE_TAKEN_PHYSIC' || sa.includes('DAMAGE_TAKEN')) statIcon = { icon: 'explosion', color: 'var(--crit)' };
-                else if (sa === 'DAMAGE_TAKEN_BRUT' || sa === 'DAMAGE_GIVEN_BRUT') statIcon = { icon: 'bloodtype', color: 'var(--brut)' };
-                else if (sa === 'DAMAGE_GIVEN_PHYSIC' || sa.includes('DAMAGE_GIVEN')) statIcon = { icon: 'swords', color: 'var(--danger)' };
-                else if (sa === 'DAMAGE_GIVEN_MAGIC_TO_SHIELD') statIcon = { icon: 'gavel', color: 'var(--magic-shield)' };
-                else if (sa === 'DAMAGE_GIVEN_PHYSIC_TO_SHIELD') statIcon = { icon: 'gavel', color: 'var(--danger)' };
-                else if (sa.includes('PIERCED') || sa.includes('PIERCING')) statIcon = { icon: 'heart_broken', color: 'var(--pierce)' };
-
-                statIconHtml = `<span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${statIcon.color}; margin-left:-0.1rem;">${statIcon.icon}</span>`;
+            let isModifierOnly = (showModifier && !!b.modifier && effectiveFlat === 0);
+            let valText = '';
+            if (effectiveFlat !== 0) {
+                const sign = effectiveFlat > 0 ? '+' : '';
+                valText = `${sign}${effectiveFlat}`;
+            } else if (isModifierOnly) {
+                const sign = b.modifier > 0 ? '+' : '';
+                valText = `${sign}${Math.round(b.modifier * 100)}%`;
+            } else {
+                valText = '+0';
             }
 
-            const entryHtml = `
-            <div class="flex justify-start items-center gap-1 w-full text-sm">
-                <span class="material-symbols-outlined icon-sm-shrink text-base" style="color:${indicatorColor};">${iconName}</span>
-                ${statIconHtml}
-                <span class="font-bold text-white">[Cible]</span>
-                <span class="text-sky-medium">${typeStr}</span>
-                <span class="text-subtle">→ ${text} (${b.duration} tours)</span>
-            </div>
-            `;
+            const item = {
+                statAffected: b.statAffected,
+                isBad: isBad,
+                duration: b.duration != null ? b.duration : 1,
+                effectiveFlat: effectiveFlat,
+                modifier: (showModifier && b.modifier) ? b.modifier : 0,
+                hasModifier: showModifier && !!b.modifier,
+                isModifierOnly: isModifierOnly,
+                valText: valText
+            };
 
-            if (isBad) badBuffs.push(entryHtml);
-            else goodBuffs.push(entryHtml);
+            if (isBad) rawBadBuffs.push(item);
+            else rawGoodBuffs.push(item);
         });
     }
+
+    function groupBuffItems(items) {
+        if (!items || items.length === 0) return [];
+        const list = items.map(it => ({ ...it }));
+
+        // Tri-Type consolidation (MAGIC, PHYSIC, BRUT with identical stats)
+        const checkTriType = (typePrefix, mergedStat, mergedLabel) => {
+            const checkTypeGroup = (isMod) => {
+                const magicItems = list.filter(i => i.statAffected === `${typePrefix}_MAGIC` && i.isModifierOnly === isMod);
+                const physicItems = list.filter(i => i.statAffected === `${typePrefix}_PHYSIC` && i.isModifierOnly === isMod);
+                const brutItems = list.filter(i => i.statAffected === `${typePrefix}_BRUT` && i.isModifierOnly === isMod);
+
+                if (magicItems.length > 0 && magicItems.length === physicItems.length && magicItems.length === brutItems.length) {
+                    magicItems.sort((a, b) => a.duration - b.duration);
+                    physicItems.sort((a, b) => a.duration - b.duration);
+                    brutItems.sort((a, b) => a.duration - b.duration);
+
+                    let allMatch = true;
+                    for (let k = 0; k < magicItems.length; k++) {
+                        const m = magicItems[k];
+                        const p = physicItems[k];
+                        const b = brutItems[k];
+                        if (m.valText !== p.valText || m.valText !== b.valText || m.duration !== p.duration || m.duration !== b.duration) {
+                            allMatch = false;
+                            break;
+                        }
+                    }
+                    if (allMatch) {
+                        for (let k = 0; k < magicItems.length; k++) {
+                            magicItems[k].statAffected = mergedStat;
+                            magicItems[k].customLabel = mergedLabel;
+                        }
+                        for (let p of physicItems) {
+                            const idx = list.indexOf(p);
+                            if (idx !== -1) list.splice(idx, 1);
+                        }
+                        for (let b of brutItems) {
+                            const idx = list.indexOf(b);
+                            if (idx !== -1) list.splice(idx, 1);
+                        }
+                    }
+                }
+            };
+            checkTypeGroup(false);
+            checkTypeGroup(true);
+        };
+
+        checkTriType('DAMAGE_TAKEN', 'DAMAGE_TAKEN_ALL', 'Dégâts subis (Tous)');
+        checkTriType('DAMAGE_GIVEN', 'DAMAGE_GIVEN_ALL', 'Dégâts infligés (Tous)');
+
+        const groups = new Map();
+        list.forEach(item => {
+            const groupKey = `${item.statAffected}_${item.isModifierOnly ? 'MOD' : 'FLAT'}`;
+            if (!groups.has(groupKey)) {
+                groups.set(groupKey, []);
+            }
+            groups.get(groupKey).push(item);
+        });
+
+        const rows = [];
+        groups.forEach((groupItems) => {
+            const isBad = groupItems[0].isBad;
+            const statAffected = groupItems[0].statAffected;
+            const isMod = groupItems[0].isModifierOnly;
+            const customLabel = groupItems[0].customLabel;
+            const statLabel = customLabel || ui.formatStat(statAffected);
+            const iconInfo = getStatIconInfo(statAffected);
+
+            // Group & fuse bonuses by duration (e.g. +6 and +3 on 1t -> +9 on 1t)
+            const durationMap = new Map();
+            groupItems.forEach(item => {
+                const dur = item.duration != null ? item.duration : 1;
+                if (!durationMap.has(dur)) {
+                    durationMap.set(dur, {
+                        duration: dur,
+                        totalFlat: 0,
+                        totalMod: 0
+                    });
+                }
+                const entry = durationMap.get(dur);
+                entry.totalFlat += (item.effectiveFlat || 0);
+                entry.totalMod += (item.modifier || 0);
+            });
+
+            const durationEntries = Array.from(durationMap.values());
+            durationEntries.sort((a, b) => a.duration - b.duration);
+
+            let totalValFormatted = '';
+            if (isMod) {
+                let grandTotalMod = 0;
+                durationEntries.forEach(d => {
+                    grandTotalMod += d.totalMod;
+                    const sign = d.totalMod > 0 ? '+' : '';
+                    d.valText = `${sign}${Math.round(d.totalMod * 100)}%`;
+                });
+                const sign = grandTotalMod > 0 ? '+' : '';
+                totalValFormatted = `${sign}${Math.round(grandTotalMod * 100)}%`;
+            } else {
+                let grandTotalFlat = 0;
+                durationEntries.forEach(d => {
+                    grandTotalFlat += d.totalFlat;
+                    const sign = d.totalFlat > 0 ? '+' : '';
+                    d.valText = `${sign}${d.totalFlat}`;
+                });
+                const sign = grandTotalFlat > 0 ? '+' : '';
+                totalValFormatted = `${sign}${grandTotalFlat}`;
+            }
+
+            let durationText = '';
+            const isMulti = durationEntries.length > 1;
+
+            if (!isMulti) {
+                const dur = durationEntries[0].duration;
+                durationText = `${dur} tour${dur > 1 ? 's' : ''}`;
+            } else {
+                durationText = durationEntries.map(d => `${d.valText} (${d.duration}t)`).join(' · ');
+            }
+
+            rows.push(`
+                <div class="buff-tooltip-row">
+                    <div class="buff-tooltip-left">
+                        <span class="material-symbols-outlined buff-tooltip-icon ${iconInfo.cssClass}">${iconInfo.icon}</span>
+                        <span class="buff-tooltip-val ${isBad ? 'is-debuff' : 'is-buff'}">${totalValFormatted}</span>
+                        <span class="buff-tooltip-label">${statLabel}</span>
+                    </div>
+                    <div class="buff-tooltip-right">
+                        <span class="buff-duration-pill ${isMulti ? 'is-multi' : ''}">${durationText}</span>
+                    </div>
+                </div>
+            `);
+        });
+
+        return rows;
+    }
+
+    const goodMoTRows = [];
+    const badMoTRows = [];
+    let rawGoodCount = rawGoodBuffs.length;
+    let rawBadCount = rawBadBuffs.length;
 
     if (motList && motList.length > 0) {
         motList.forEach(m => {
-            let text = "";
+            let valText = '';
+            let label = 'Mana/tour';
             if (m.percentageManaPerTick) {
-                text = (m.percentageManaPerTick * 100) + "% " + (m.manaSource === 'TARGET_MANA_MAX' ? 'Mana Max' : ui.formatSrc(m.manaSource));
+                const srcLabel = m.manaSource === 'TARGET_MANA_MAX' ? 'Mana Max' : ui.formatSrc(m.manaSource);
+                const pct = Math.round(m.percentageManaPerTick * 100);
+                valText = `${pct > 0 ? '+' : ''}${pct}%`;
+                label = `${srcLabel} Mana/tour`;
                 if (m.fixedManaPerTick) {
-                    text += (m.fixedManaPerTick > 0 ? ' + ' : ' - ') + Math.abs(m.fixedManaPerTick);
+                    valText += ` ${m.fixedManaPerTick > 0 ? '+' : '-'}${Math.abs(m.fixedManaPerTick)}`;
                 }
             } else {
-                text = m.fixedManaPerTick;
+                const fix = m.fixedManaPerTick || 0;
+                valText = `${fix > 0 ? '+' : ''}${fix}`;
             }
 
-            let isBad = false;
-            if (m.percentageManaPerTick < 0 || m.fixedManaPerTick < 0) {
-                isBad = true;
-            }
+            const isBad = (m.percentageManaPerTick < 0 || m.fixedManaPerTick < 0);
+            const dur = m.duration != null ? m.duration : 1;
+            const durText = `${dur} tour${dur > 1 ? 's' : ''}`;
 
-            const indicatorColor = isBad ? '#f43f5e' : '#10b981';
-            const iconName = isBad ? 'trending_down' : 'trending_up';
-
-            const entryHtml = `
-                <div class="flex justify-start items-center gap-1 w-full text-sm">
-                    <span class="material-symbols-outlined icon-sm-shrink text-base" style="color:${indicatorColor};">${iconName}</span>
-                    <span class="material-symbols-outlined icon-sm-shrink text-base text-sky-300">water_drop</span>
-                    <span class="font-bold text-white">[Cible]</span>
-                    <span class="text-sky-medium">MoT</span>
-                    <span class="text-subtle">→ ${text} Mana/tour (${m.duration} tours)</span>
+            const row = `
+                <div class="buff-tooltip-row">
+                    <div class="buff-tooltip-left">
+                        <span class="material-symbols-outlined buff-tooltip-icon text-mana">water_drop</span>
+                        <span class="buff-tooltip-val ${isBad ? 'is-debuff' : 'is-buff'}">${valText}</span>
+                        <span class="buff-tooltip-label">${label}</span>
+                    </div>
+                    <div class="buff-tooltip-right">
+                        <span class="buff-duration-pill">${durText}</span>
+                    </div>
                 </div>
             `;
-            if (isBad) badBuffs.push(entryHtml);
-            else goodBuffs.push(entryHtml);
+            if (isBad) {
+                rawBadCount++;
+                badMoTRows.push(row);
+            } else {
+                rawGoodCount++;
+                goodMoTRows.push(row);
+            }
         });
     }
+
+    const goodHoTRows = [];
+    const badHoTRows = [];
 
     if (hotList && hotList.length > 0) {
         hotList.forEach(h => {
-            let text = "";
+            let valText = '';
+            let label = 'PV/tour';
             if (h.percentageHealPerTick) {
-                text = (h.percentageHealPerTick * 100) + "% " + (h.healSource === 'TARGET_HEALTH_MAX' ? 'PV Max' : ui.formatSrc(h.healSource));
+                const srcLabel = h.healSource === 'TARGET_HEALTH_MAX' ? 'PV Max' : ui.formatSrc(h.healSource);
+                const pct = Math.round(h.percentageHealPerTick * 100);
+                valText = `${pct > 0 ? '+' : ''}${pct}%`;
+                label = `${srcLabel} PV/tour`;
                 if (h.fixedHealPerTick) {
-                    text += (h.fixedHealPerTick > 0 ? ' + ' : ' - ') + Math.abs(h.fixedHealPerTick);
+                    valText += ` ${h.fixedHealPerTick > 0 ? '+' : '-'}${Math.abs(h.fixedHealPerTick)}`;
                 }
             } else {
-                text = h.fixedHealPerTick;
+                const fix = h.fixedHealPerTick || 0;
+                valText = `${fix > 0 ? '+' : ''}${fix}`;
             }
 
-            let isBad = false;
-            if (h.percentageHealPerTick < 0 || h.fixedHealPerTick < 0) {
-                isBad = true;
-            }
+            const isBad = (h.percentageHealPerTick < 0 || h.fixedHealPerTick < 0);
+            const dur = h.duration != null ? h.duration : 1;
+            const durText = `${dur} tour${dur > 1 ? 's' : ''}`;
 
-            const indicatorColor = isBad ? '#f43f5e' : '#10b981';
-            const iconName = isBad ? 'trending_down' : 'trending_up';
-
-            const entryHtml = `
-                <div class="flex justify-start items-center gap-1 w-full text-sm">
-                    <span class="material-symbols-outlined icon-sm-shrink text-base" style="color:${indicatorColor};">${iconName}</span>
-                    <span class="material-symbols-outlined icon-sm-shrink text-base text-success">healing</span>
-                    <span class="font-bold text-white">[Cible]</span>
-                    <span class="text-success font-medium">HoT</span>
-                    <span class="text-subtle">→ ${text} PV/tour (${h.duration} tours)</span>
+            const row = `
+                <div class="buff-tooltip-row">
+                    <div class="buff-tooltip-left">
+                        <span class="material-symbols-outlined buff-tooltip-icon text-heal">healing</span>
+                        <span class="buff-tooltip-val ${isBad ? 'is-debuff' : 'is-buff'}">${valText}</span>
+                        <span class="buff-tooltip-label">${label}</span>
+                    </div>
+                    <div class="buff-tooltip-right">
+                        <span class="buff-duration-pill">${durText}</span>
+                    </div>
                 </div>
             `;
-            if (isBad) badBuffs.push(entryHtml);
-            else goodBuffs.push(entryHtml);
+            if (isBad) {
+                rawBadCount++;
+                badHoTRows.push(row);
+            } else {
+                rawGoodCount++;
+                goodHoTRows.push(row);
+            }
         });
     }
 
-    if (goodBuffs.length === 0 && badBuffs.length === 0) return '';
+    const allGoodRows = [...groupBuffItems(rawGoodBuffs), ...goodHoTRows, ...goodMoTRows];
+    const allBadRows = [...groupBuffItems(rawBadBuffs), ...badHoTRows, ...badMoTRows];
+
+    if (allGoodRows.length === 0 && allBadRows.length === 0) return '';
     let html = '';
     const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
 
-    if (goodBuffs.length > 0) {
-        html += `<div class="sandbox-status-badge buff relative" ${tooltipAttrs} style="cursor: help;">
+    if (allGoodRows.length > 0) {
+        html += `<div class="sandbox-status-badge buff relative cursor-help" ${tooltipAttrs}>
             <span class="material-symbols-outlined text-sm">trending_up</span>
-            <span>Buffs (${goodBuffs.length})</span>
+            <span>Buffs (${rawGoodCount})</span>
             <template class="tooltip-data">
-                <div class="flex-col-xs">
-                    ${goodBuffs.join('')}
+                <div class="buff-tooltip-list">
+                    ${allGoodRows.join('')}
                 </div>
             </template>
         </div>`;
     }
-    if (badBuffs.length > 0) {
-        html += `<div class="sandbox-status-badge debuff relative" ${tooltipAttrs} style="cursor: help;">
+    if (allBadRows.length > 0) {
+        html += `<div class="sandbox-status-badge debuff relative cursor-help" ${tooltipAttrs}>
             <span class="material-symbols-outlined text-sm">trending_down</span>
-            <span>Débuffs (${badBuffs.length})</span>
+            <span>Débuffs (${rawBadCount})</span>
             <template class="tooltip-data">
-                <div class="flex-col-xs">
-                    ${badBuffs.join('')}
+                <div class="buff-tooltip-list">
+                    ${allBadRows.join('')}
                 </div>
             </template>
         </div>`;

@@ -28,6 +28,21 @@ if (!isValidToken(accessToken)) {
     localStorage.removeItem('accessToken');
 }
 
+const currentPath = window.location.pathname;
+const isAuthPage = currentPath.includes('/login.html') || currentPath.includes('/register.html') || currentPath === '/login' || currentPath === '/register';
+
+if (!isAuthPage) {
+    const isLikely = localStorage.getItem('isLikelyLoggedIn') === 'true';
+    if (!isLikely || !accessToken) {
+        window.location.replace('/login.html');
+    }
+} else {
+    const isLikely = localStorage.getItem('isLikelyLoggedIn') === 'true';
+    if (isLikely && isValidToken(accessToken)) {
+        window.location.replace('/armory.html');
+    }
+}
+
 window.setAccessToken = function (token) {
     if (isValidToken(token)) {
         accessToken = token;
@@ -297,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.warn("Could not check active combat session on login", e);
                     }
                     
-                    window.location.href = '/';
+                    window.location.href = '/armory.html';
                 }
             } catch (err) {
                 errorDiv.innerText = "Erreur de communication avec le serveur";
@@ -342,11 +357,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.setAccessToken(data.token);
                     }
                     localStorage.setItem('isLikelyLoggedIn', 'true');
-                    successDiv.innerText = data.message || "Inscription réussie ! Redirection...";
+                    successDiv.innerText = data.message || "Inscription réussie ! Redirection vers l'armurerie...";
                     successDiv.style.display = 'block';
                     setTimeout(() => {
-                        window.location.href = '/';
-                    }, 1500);
+                        window.location.href = '/armory.html';
+                    }, 1000);
                 }
             } catch (err) {
                 errorDiv.innerText = "Erreur de communication avec le serveur";
@@ -517,10 +532,13 @@ window.logout = async function () {
 
     try {
         localStorage.removeItem('isLikelyLoggedIn');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('activeCombatId');
         await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
-        window.location.reload();
+        window.location.replace('/login.html');
     } catch (e) {
         console.error("Logout failed", e);
+        window.location.replace('/login.html');
     }
 };
 
