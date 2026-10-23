@@ -7,7 +7,7 @@ import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
 import { showFighterPingMenu } from './combat-signals.js';
-import { renderHeroCombatSprite } from './combat-sprites.js?v=1786180000100';
+import { renderHeroCombatSprite } from './combat-sprites.js?v=1786180000110';
 
 window.toggleCombatLog = function() {
     const log = document.getElementById('combatLog');

@@ -1,8 +1,8 @@
 import { shakeStyle } from './combat-utils.js';
-import { initMultiSSE } from './combat-socket.js?v=1786180000100';
-import { updateUI, renderSpells } from './combat-ui.js?v=1786180000100';
-import { currentSpellsTab, setCurrentSpellsTab, initiateCombatCast, confirmCombatCast, cancelCombatCast, doAction } from './combat-spells.js?v=1786180000100';
-import { endTurn, nextRoom, openStrangeDoor, acceptAlteration, useRope, buyMerchantItem, openBuyModal, closeBuyModal, addLootedConsumable, openChest } from './combat-actions.js?v=1786180000100';
+import { initMultiSSE } from './combat-socket.js?v=1786180000110';
+import { updateUI, renderSpells } from './combat-ui.js?v=1786180000110';
+import { currentSpellsTab, setCurrentSpellsTab, initiateCombatCast, confirmCombatCast, cancelCombatCast, doAction } from './combat-spells.js?v=1786180000110';
+import { endTurn, nextRoom, openStrangeDoor, acceptAlteration, useRope, buyMerchantItem, openBuyModal, closeBuyModal, addLootedConsumable, openChest } from './combat-actions.js?v=1786180000110';
 import { loadAnomaliesCombat, resumeCombat, startCombat, fetchCombatEquipments } from './combat-init.js';
 import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';

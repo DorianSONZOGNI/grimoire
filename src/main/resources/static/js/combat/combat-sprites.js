@@ -12,13 +12,14 @@
  *   - Sûreté (/styles/sprites/surete/) : wait, blood, attak, heal, mana, buff, dead
  *   - Consolidation (/styles/sprites/consolidation/) : wait, shield, attak, renforce, auto-buff, dead
  *   - Raison (/styles/sprites/raison/) : wait, levitating, attak, protect, buff, dead
+ *   - Destruction (/styles/sprites/destruction/) : wait, fire, lightning, attak, absorb, buff, dead
  *   - Création (/styles/sprites/creation/) : wait, poison, shield, heal, attak, bourgeons, dead
  */
 
 import { pageState } from './combat-state.js';
 import { javaClassToCode } from '../utils/constants.js';
 
-const SPRITE_VERSION = '1786180000100';
+const SPRITE_VERSION = '1786180000110';
 const ACTION_POSE_DURATION = 1600;
 
 const activeSpriteTimers = new Map();
@@ -85,6 +86,14 @@ const VOIE_POSE_RESOLVERS = {
         if (fx.hasDamage) return 'attak';
         if (fx.hasShield) return 'protect';
         if (fx.hasBuff || fx.hasHeal || fx.hasMana) return 'buff';
+        return 'wait';
+    },
+    destruction: (fx) => {
+        if (fx.hasBurn) return 'fire';
+        if (fx.hasDamage && fx.hasDebuff) return 'lightning';
+        if (fx.hasDamage) return 'attak';
+        if (fx.hasMana) return 'absorb';
+        if (fx.hasBuff || fx.hasHeal || fx.hasShield) return 'buff';
         return 'wait';
     }
 };
@@ -166,6 +175,7 @@ function analyzeSpellEffects(activeEffects) {
         hasHeal: false,
         hasMana: false,
         hasPoison: false,
+        hasBurn: false,
         hasBud: false,
         hasDispel: false,
         autoBuffCount: 0,
@@ -188,8 +198,26 @@ function analyzeSpellEffects(activeEffects) {
             || Boolean(e.poison);
 
         if (isPoison) {
-            fx.hasPoison = true;
-            fx.hasDamage = true;
+            if (isEnemyTarget) {
+                fx.hasPoison = true;
+                fx.hasDamage = true;
+            } else {
+                fx.hasBuff = true;
+            }
+        }
+
+        const isBurn = mappedType === 'BURN'
+            || rawType.toUpperCase().includes('BURN')
+            || stat === 'BURN'
+            || Boolean(e.burn);
+
+        if (isBurn) {
+            if (isEnemyTarget) {
+                fx.hasBurn = true;
+                fx.hasDamage = true;
+            } else {
+                fx.hasBuff = true;
+            }
         }
 
         if (mappedType === 'SHIELD' || rawType.includes('Shield')) {
@@ -197,8 +225,19 @@ function analyzeSpellEffects(activeEffects) {
             fx.hasBuff = true;
         }
 
-        if (DAMAGE_TYPES.has(mappedType) || rawType.includes('Damage') || rawType.includes('Heat')) {
-            fx.hasDamage = true;
+        const isHeat = mappedType === 'HEAT' || rawType.includes('Heat') || stat === 'HEAT';
+        if (isHeat) {
+            if (isEnemyTarget) {
+                fx.hasDamage = true;
+            } else {
+                fx.hasBuff = true;
+            }
+        }
+
+        if (!isHeat && !isBurn && !isPoison && (DAMAGE_TYPES.has(mappedType) || rawType.includes('Damage'))) {
+            if (isEnemyTarget || target !== 'CASTER') {
+                fx.hasDamage = true;
+            }
         }
 
         if (HEAL_TYPES.has(mappedType) || rawType.includes('Heal')) {
@@ -215,7 +254,11 @@ function analyzeSpellEffects(activeEffects) {
             }
 
             if (stat === 'POISON' || stat === 'BURN') {
-                fx.hasDamage = true;
+                if (isEnemyTarget) {
+                    fx.hasDamage = true;
+                } else {
+                    fx.hasBuff = true;
+                }
             } else if (stat === 'MANA') {
                 if (isEnemyTarget || isNegative) {
                     fx.hasDebuff = true;
