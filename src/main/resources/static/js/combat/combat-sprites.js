@@ -11,13 +11,14 @@
  *   - Violence (/styles/sprites/violence/) : wait, attak, power, weakness, heal, dead
  *   - Sûreté (/styles/sprites/surete/) : wait, blood, attak, heal, mana, buff, dead
  *   - Consolidation (/styles/sprites/consolidation/) : wait, shield, attak, renforce, auto-buff, dead
+ *   - Raison (/styles/sprites/raison/) : wait, levitating, attak, protect, buff, dead
  *   - Création (/styles/sprites/creation/) : wait, poison, shield, heal, attak, bourgeons, dead
  */
 
 import { pageState } from './combat-state.js';
 import { javaClassToCode } from '../utils/constants.js';
 
-const SPRITE_VERSION = '1786180000091';
+const SPRITE_VERSION = '1786180000100';
 const ACTION_POSE_DURATION = 1600;
 
 const activeSpriteTimers = new Map();
@@ -77,6 +78,13 @@ const VOIE_POSE_RESOLVERS = {
         if (fx.hasDamage || fx.hasStatDebuff) return 'attak';
         if (fx.hasBud || fx.hasDispel) return 'bourgeons';
         if (fx.hasMana) return 'heal';
+        return 'wait';
+    },
+    raison: (fx) => {
+        if (fx.hasDispel) return 'levitating';
+        if (fx.hasDamage) return 'attak';
+        if (fx.hasShield) return 'protect';
+        if (fx.hasBuff || fx.hasHeal || fx.hasMana) return 'buff';
         return 'wait';
     }
 };
@@ -233,7 +241,7 @@ function analyzeSpellEffects(activeEffects) {
             }
         }
 
-        if (mappedType === 'PURGE' || mappedType === 'DISPEL' || rawType.includes('Purge') || rawType.includes('Dispel')) {
+        if (mappedType === 'PURGE' || mappedType === 'DISPEL' || rawType.includes('Purge') || rawType.includes('Dispel') || rawType.toUpperCase().includes('DISSIP')) {
             fx.hasDispel = true;
             if (isEnemyTarget) fx.hasDebuff = true;
             else fx.hasBuff = true;

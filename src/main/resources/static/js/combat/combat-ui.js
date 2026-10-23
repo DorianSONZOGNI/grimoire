@@ -1,4 +1,4 @@
-import { createAnomalyBadgeHtml, getExpStats, getSpiritExpStats } from './combat-utils.js';
+﻿import { createAnomalyBadgeHtml, getExpStats, getSpiritExpStats } from './combat-utils.js';
 import { pageState } from './combat-state.js';
 import { processNewDeathLogs, updateMultiTurnBanner } from './combat-socket.js';
 import { currentSpellsTab, initiateCombatCast } from './combat-spells.js';
@@ -7,7 +7,7 @@ import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
 import { showFighterPingMenu } from './combat-signals.js';
-import { renderHeroCombatSprite } from './combat-sprites.js?v=1786180000091';
+import { renderHeroCombatSprite } from './combat-sprites.js?v=1786180000100';
 
 window.toggleCombatLog = function() {
     const log = document.getElementById('combatLog');
