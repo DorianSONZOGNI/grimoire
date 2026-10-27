@@ -23,11 +23,6 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # Étape à ajouter pour débloquer le quota public
-      - name: Connexion à Amazon ECR Public
-        run: |
-          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
-          
       - name: Build et push de l'image Docker
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}

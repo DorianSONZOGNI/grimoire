@@ -1,14 +1,15 @@
 # 1. Build de l'application Java avec Maven
 FROM maven:3.9.6-eclipse-temurin-21 AS build
+WORKDIR /app
 COPY . .
 RUN mvn clean package -DskipTests
 
 # 2. Lancement de l'application pour AWS Lambda
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
-COPY --from=build /target/*.jar app.jar
+COPY --from=build /app/target/*.jar app.jar
 
-# Téléchargement direct du binaire (contourne ECR Public)
+# Téléchargement direct du binaire officiel (évite tout quota ECR et tout droit IAM)
 ADD https://github.com/awslabs/aws-lambda-web-adapter/releases/download/v0.8.4/aws-lambda-adapter-x86_64 /opt/extensions/lambda-adapter
 RUN chmod +x /opt/extensions/lambda-adapter
 
