@@ -1,4 +1,4 @@
-name: Build, Push and Deploy to ECS
+name: Build, Push and Deploy to Lambda
 
 on:
   push:
@@ -14,7 +14,6 @@ jobs:
 
       - name: Configurer les identifiants AWS
         uses: aws-actions/configure-aws-credentials@v4
-        continue-on-error: true
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -23,10 +22,8 @@ jobs:
       - name: Connexion à Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-        continue-on-error: true
 
       - name: Build et push de l'image Docker
-        continue-on-error: true
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
@@ -37,7 +34,6 @@ jobs:
           docker push $REGISTRY/$REPOSITORY:latest
 
       - name: Déployer la nouvelle image sur AWS Lambda
-        continue-on-error: true
         run: |
           aws lambda update-function-code \
             --function-name rpg-coldrestart \
