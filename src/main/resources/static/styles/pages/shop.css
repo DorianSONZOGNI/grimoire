@@ -56,8 +56,12 @@
    ====================================================== */
 
 .shop-rarity-group {
-    display: flex;
-    flex-direction: row;
+    /* CSS Grid : les enfants position:absolute (le .shop-rarity-title)
+       ne participent pas au dimensionnement des colonnes.
+       Fonctionne identiquement en Chrome et Firefox. */
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 200px;
     gap: 2rem;
     position: relative;
     padding: 1.5rem 0.75rem;
@@ -141,6 +145,8 @@
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     z-index: 50;
 }
+
+
 
 /* ======================================================
    STAND VERROUILLÉ (cadenas)
