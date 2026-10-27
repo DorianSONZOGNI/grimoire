@@ -9,9 +9,8 @@ FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
-# Téléchargement direct du binaire officiel (évite tout quota ECR et tout droit IAM)
-ADD https://github.com/awslabs/aws-lambda-web-adapter/releases/download/v0.8.4/aws-lambda-adapter-x86_64 /opt/extensions/lambda-adapter
-RUN chmod +x /opt/extensions/lambda-adapter
+# Copie officielle de l'adaptateur Lambda
+COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.8.4 /lambda-adapter /opt/extensions/lambda-adapter
 
 ENV PORT=8080
 EXPOSE 8080
