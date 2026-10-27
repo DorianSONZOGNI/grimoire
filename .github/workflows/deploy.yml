@@ -1,11 +1,11 @@
-name: Build & Push to ECR
+name: Build, Push and Deploy to ECS
 
 on:
   push:
     branches: [ master ]
 
 jobs:
-  build-and-push:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -32,3 +32,7 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t $REGISTRY/$REPOSITORY:latest .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
           docker push $REGISTRY/$REPOSITORY:latest
+
+      - name: Forcer le redéploiement sur ECS
+        run: |
+          aws ecs update-service --cluster rpg-cluster --service rpg-service --force-new-deployment
