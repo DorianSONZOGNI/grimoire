@@ -36,7 +36,9 @@ jobs:
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
           docker push $REGISTRY/$REPOSITORY:latest
 
-      - name: Forcer le redéploiement sur ECS
+      - name: Déployer la nouvelle image sur AWS Lambda
         continue-on-error: true
         run: |
-          aws ecs update-service --cluster rpg-cluster --service rpg-service --force-new-deployment
+          aws lambda update-function-code \
+            --function-name rpg-coldrestart \
+            --image-uri ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest
