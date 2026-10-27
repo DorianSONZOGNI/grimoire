@@ -8,8 +8,8 @@ FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 COPY --from=build /target/*.jar app.jar
 
-# Adaptateur officiel AWS avec le tag latest
-COPY --from=public.ecr.aws/awslabs/aws-lambda-web-adapter:latest /lambda-adapter /opt/extensions/lambda-adapter
+# Le vrai dépôt officiel AWS : awsguru/aws-lambda-adapter
+COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:latest /lambda-adapter /opt/extensions/lambda-adapter
 
 ENV PORT=8080
 EXPOSE 8080
