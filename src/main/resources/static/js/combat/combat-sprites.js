@@ -20,7 +20,7 @@
 import { pageState } from './combat-state.js';
 import { javaClassToCode } from '../utils/constants.js';
 
-const SPRITE_VERSION = '1786180000170';
+const SPRITE_VERSION = '1786180000210';
 const ACTION_POSE_DURATION = 1600;
 
 const activeSpriteTimers = new Map();
@@ -389,23 +389,113 @@ function analyzeSpellEffects(activeEffects) {
 /**
  * Détermine la pose du sprite selon le sort lancé, l'option choisie, la voie et le tour de canalisation.
  */
-export function getSpritePose(spell, choiceKey = null, voieSlug = 'conviction', channelingTurn = null) {
-    if (!spell) return 'attak';
+function isTenebresSpell(spell, hero = null) {
+    if (!spell) return false;
+    const spiri = spell.spiritualite;
+    if (spiri) {
+        const nom = typeof spiri === 'string' ? spiri : (spiri.nom || spiri.name || '');
+        const norm = nom.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+        if (norm.includes('tenebre')) return true;
+    }
+    const effects = spell.effects || [];
+    if (effects.some(e => {
+        const stat = String(e.statAffected || '').toUpperCase();
+        const type = String(e.effectType || e.effect_type || '').toUpperCase();
+        const req = String(e.detachedSoulRequirement || '').toUpperCase();
+        return stat === 'AME_DETACHEE' || type === 'AME_DETACHEE' || req === 'REQUIRED' || req === 'FORBIDDEN';
+    })) {
+        return true;
+    }
+    if (!spell.voie && hero?.spiritualite) {
+        const hSpiri = hero.spiritualite;
+        const hNom = typeof hSpiri === 'string' ? hSpiri : (hSpiri.nom || hSpiri.name || '');
+        const hNorm = hNom.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+        if (hNorm.includes('tenebre')) return true;
+    }
+    return false;
+}
+
+function heroHasAmeDetachee(hero) {
+    if (!hero) return false;
+    const buffs = hero.activeBuffs || hero.buffs || [];
+    return buffs.some(b => {
+        const stat = String(b.statAffected || '').toUpperCase();
+        const type = String(b.effectType || b.effect_type || '').toUpperCase();
+        return stat === 'AME_DETACHEE' || type === 'AME_DETACHEE';
+    });
+}
+
+function isDetachementEffect(e) {
+    if (!e) return false;
+    const stat = String(e.statAffected || '').toUpperCase();
+    const type = String(e.effectType || e.effect_type || '').toUpperCase();
+    return stat === 'AME_DETACHEE' || type === 'AME_DETACHEE' || stat.includes('DETACH') || type.includes('DETACH');
+}
+
+function resolveTenebresPose(spell, activeEffects, hero = null) {
+    const effectsToCheck = (activeEffects && activeEffects.length > 0) ? activeEffects : (spell?.effects || []);
+
+    if (effectsToCheck.some(isDetachementEffect)) {
+        return 'detachement';
+    }
+
+    const hasDetachedSoul = hero ? heroHasAmeDetachee(hero) : null;
+
+    const hasExcluEffect = effectsToCheck.some(e => {
+        const req = String(e.detachedSoulRequirement || '').toUpperCase();
+        if (req !== 'FORBIDDEN') return false;
+        return hasDetachedSoul === null || hasDetachedSoul === false;
+    });
+    if (hasExcluEffect) {
+        return 'attak-exclu';
+    }
+
+    const hasRequisEffect = effectsToCheck.some(e => {
+        const req = String(e.detachedSoulRequirement || '').toUpperCase();
+        if (req !== 'REQUIRED') return false;
+        return hasDetachedSoul === null || hasDetachedSoul === true;
+    });
+    if (hasRequisEffect) {
+        return 'attak-requis';
+    }
+
+    return 'buff';
+}
+
+function createPoseResult(pose, subPath = null) {
+    return {
+        pose,
+        subPath,
+        toString() {
+            return this.pose;
+        }
+    };
+}
+
+export function getSpritePose(spell, choiceKey = null, voieSlug = 'conviction', channelingTurn = null, hero = null) {
+    if (!spell) return createPoseResult('attak');
 
     const activeEffects = filterActiveEffects(spell, choiceKey, channelingTurn);
+
+    if (isTenebresSpell(spell, hero)) {
+        const pose = resolveTenebresPose(spell, activeEffects, hero);
+        return createPoseResult(pose, 'tenebre');
+    }
+
     if (activeEffects.length === 0) {
-        return (isSpellChanneled(spell) && voieSlug === 'conviction') ? 'prepare' : 'wait';
+        const pose = (isSpellChanneled(spell) && voieSlug === 'conviction') ? 'prepare' : 'wait';
+        return createPoseResult(pose);
     }
 
     const fx = analyzeSpellEffects(activeEffects);
     const resolver = VOIE_POSE_RESOLVERS[voieSlug] || VOIE_POSE_RESOLVERS.conviction;
-    return resolver(fx);
+    return createPoseResult(resolver(fx));
 }
 
 /**
  * Applique une pose au conteneur DOM du sprite (sans style inline) et nettoie dynamiquement les classes `pose-*`.
  */
-function applyPoseToSpriteEl(spriteEl, voieSlug, pose, restartAnim = false) {
+function applyPoseToSpriteEl(spriteEl, voieSlug, pose, restartAnim = false, subPath = null) {
     if (!spriteEl) return;
 
     let img = spriteEl.querySelector('img');
@@ -416,7 +506,8 @@ function applyPoseToSpriteEl(spriteEl, voieSlug, pose, restartAnim = false) {
         spriteEl.appendChild(img);
     }
 
-    const targetSrc = `/styles/sprites/${voieSlug}/${pose}.png?v=${SPRITE_VERSION}`;
+    const pathPrefix = subPath ? `${voieSlug}/${subPath}` : voieSlug;
+    const targetSrc = `/styles/sprites/${pathPrefix}/${pose}.png?v=${SPRITE_VERSION}`;
     img.onerror = () => {
         if (pose !== 'wait') {
             img.src = `/styles/sprites/${voieSlug}/wait.png?v=${SPRITE_VERSION}`;
@@ -456,7 +547,7 @@ function getOrCreateSpriteEl(cardEl) {
 /**
  * Joue une pose d'action temporaire sur la carte d'un héros puis revient automatiquement en `wait`.
  */
-function playHeroActionPose(heroIndex, cardEl, voieSlug, pose, data) {
+function playHeroActionPose(heroIndex, cardEl, voieSlug, pose, data, subPath = null) {
     const spriteEl = getOrCreateSpriteEl(cardEl);
 
     if (activeSpriteTimers.has(heroIndex)) {
@@ -464,8 +555,11 @@ function playHeroActionPose(heroIndex, cardEl, voieSlug, pose, data) {
         activeSpriteTimers.delete(heroIndex);
     }
 
-    activeHeroPoses.set(heroIndex, pose);
-    applyPoseToSpriteEl(spriteEl, voieSlug, pose, true);
+    const poseName = (pose && typeof pose === 'object') ? pose.pose : pose;
+    const resolvedSubPath = subPath || ((pose && typeof pose === 'object') ? pose.subPath : null);
+
+    activeHeroPoses.set(heroIndex, { pose: poseName, subPath: resolvedSubPath });
+    applyPoseToSpriteEl(spriteEl, voieSlug, poseName, true, resolvedSubPath);
 
     const timer = setTimeout(() => {
         activeHeroPoses.delete(heroIndex);
@@ -516,7 +610,9 @@ export function renderHeroCombatSprite(heroCardEl, player, isActive, isDead) {
     spriteEl.classList.remove('is-dead');
 
     const currentActionPose = activeHeroPoses.get(heroIndex);
-    applyPoseToSpriteEl(spriteEl, voieSlug, currentActionPose || 'wait');
+    const activePoseName = currentActionPose?.pose || (typeof currentActionPose === 'string' ? currentActionPose : 'wait');
+    const activeSubPath = currentActionPose?.subPath || null;
+    applyPoseToSpriteEl(spriteEl, voieSlug, activePoseName, false, activeSubPath);
 }
 
 /**
@@ -558,9 +654,9 @@ export function triggerCombatActionSprite(spellOrId = null, choiceKey = null, ta
 
     const computedTurn = computeChannelingTurn(spell, hero, channelingTurn, 1);
     const activeChoiceKey = choiceKey !== null ? choiceKey : (hero.channelingChoiceKey || null);
-    const pose = getSpritePose(spell, activeChoiceKey, voieSlug, computedTurn);
+    const poseResult = getSpritePose(spell, activeChoiceKey, voieSlug, computedTurn, hero);
 
-    playHeroActionPose(heroIndex, activeCard, voieSlug, pose, data);
+    playHeroActionPose(heroIndex, activeCard, voieSlug, poseResult.pose, data, poseResult.subPath);
 }
 
 /**
@@ -646,7 +742,7 @@ export function handleCombatSpriteLog(logEntry, sessionData = null) {
     const card = document.querySelector(`.fighter-player[data-index="${heroIndex}"]`);
     if (!card) return;
 
-    let pose = 'attak';
+    let poseResult = createPoseResult('attak');
     if (!isBasicAttack && spellName) {
         const spell = data.availableSpells?.find(s => s.nom === spellName)
             || (hero.channeledSpell?.nom === spellName ? hero.channeledSpell : null)
@@ -655,7 +751,7 @@ export function handleCombatSpriteLog(logEntry, sessionData = null) {
         if (spell) {
             const explicitTurn = logChannelingTurn || (actionVerb === 'lance' ? 1 : null);
             const turnToApply = computeChannelingTurn(spell, hero, explicitTurn, 2);
-            pose = getSpritePose(spell, hero.channelingChoiceKey || null, voieSlug, turnToApply);
+            poseResult = getSpritePose(spell, hero.channelingChoiceKey || null, voieSlug, turnToApply, hero);
         }
     }
 
@@ -665,5 +761,5 @@ export function handleCombatSpriteLog(logEntry, sessionData = null) {
         card.style.transform = card.classList.contains('active') ? 'scale(1.05)' : 'scale(0.95)';
     }, 200);
 
-    playHeroActionPose(heroIndex, card, voieSlug, pose, data);
+    playHeroActionPose(heroIndex, card, voieSlug, poseResult.pose, data, poseResult.subPath);
 }
