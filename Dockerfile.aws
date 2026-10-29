@@ -9,7 +9,7 @@ FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
-# Copie officielle de l'adaptateur Lambda
+# Utilisation de l'image officielle AWS
 COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.8.4 /lambda-adapter /opt/extensions/lambda-adapter
 
 ENV PORT=8080

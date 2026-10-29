@@ -19,11 +19,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION || 'eu-west-3' }}
 
-      - name: Connexion à Amazon ECR
+      - name: Connexion à Amazon ECR (Privé)
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # Authentification pour débloquer le quota public (5 To / mois)
+      # Débloque le quota ECR Public grâce aux droits ajoutés à l'étape 1
       - name: Connexion à Amazon ECR Public
         run: |
           aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
