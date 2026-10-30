@@ -20,7 +20,7 @@
 import { pageState } from './combat-state.js';
 import { javaClassToCode } from '../utils/constants.js';
 
-const SPRITE_VERSION = '1786180000221';
+const SPRITE_VERSION = '1786180000223';
 const ACTION_POSE_DURATION = 1600;
 
 const activeSpriteTimers = new Map();
@@ -453,6 +453,31 @@ function isEspritSpell(spell, hero = null) {
     return false;
 }
 
+/**
+ * Détecte si un sort appartient à la Spiritualité du Karma.
+ */
+function isKarmaSpell(spell, hero = null) {
+    if (!spell) return false;
+    const spiri = spell.spiritualite || spell.spiritualiteName || spell.spiritualite_name;
+    if (spiri) {
+        const nom = typeof spiri === 'string' ? spiri : (spiri.nom || spiri.name || spiri.type || '');
+        const norm = nom.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (norm.includes('karma')) return true;
+    }
+    const align = String(spell.karmaAlignment || spell.alignment || '').toUpperCase();
+    if (align !== '' && align !== 'NONE') {
+        return true;
+    }
+    const isSpiritualiteSpell = !spell.voie || String(spell.category || '').toUpperCase() === 'SPIRITUALITE';
+    if (isSpiritualiteSpell && hero?.spiritualite) {
+        const hSpiri = hero.spiritualite || hero.spiritualiteName || hero.spiritualite_name;
+        const hNom = typeof hSpiri === 'string' ? hSpiri : (hSpiri.nom || hSpiri.name || hSpiri.type || '');
+        const hNorm = hNom.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (hNorm.includes('karma')) return true;
+    }
+    return false;
+}
+
 function isTargetEveryone(targetVal) {
     if (!targetVal) return false;
     const str = String(targetVal).toUpperCase();
@@ -596,6 +621,63 @@ function resolveTenebresPose(spell, activeEffects, hero = null) {
     return 'buff';
 }
 
+/**
+ * Résout la pose du sprite pour la Spiritualité du Karma.
+ * Règles d'affichage des sprites :
+ * - tenebre.png : sort des ténèbres (KarmaAlignment.OFFENSIVE)
+ * - karma.png : sort d'harmonie (KarmaAlignment.RESTORATIVE)
+ * - lumiere.png : sort de lumière (KarmaAlignment.PROTECTIVE)
+ */
+function resolveKarmaPose(spell, activeEffects, hero = null) {
+    if (!spell) return 'karma';
+
+    // 1. Détection prioritaire via karmaAlignment
+    const align = String(spell.karmaAlignment || spell.alignment || '').toUpperCase();
+    if (align === 'OFFENSIVE' || align.includes('TENEBRE') || align.includes('DARK')) {
+        return 'tenebre';
+    }
+    if (align === 'PROTECTIVE' || align.includes('LUMIERE') || align.includes('LIGHT')) {
+        return 'lumiere';
+    }
+    if (align === 'RESTORATIVE' || align.includes('HARMONIE') || align === 'KARMA') {
+        return 'karma';
+    }
+
+    // 2. Détection via nom du sort
+    const nom = String(spell.nom || spell.name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (nom.includes('harmonie') || nom.includes('equilibre')) {
+        return 'karma';
+    }
+    if (nom.includes('tenebre') || nom.includes('sombre') || nom.includes('obscur')) {
+        return 'tenebre';
+    }
+    if (nom.includes('lumiere') || nom.includes('eclat') || nom.includes('rayon')) {
+        return 'lumiere';
+    }
+
+    // 3. Fallback via analyse des effets
+    const effectsToCheck = (activeEffects && activeEffects.length > 0) ? activeEffects : (spell?.effects || []);
+    if (effectsToCheck.some(isDamageEffect)) {
+        return 'tenebre';
+    }
+    if (effectsToCheck.some(e => {
+        const stat = String(e.statAffected || '').toUpperCase();
+        const type = String(e.effectType || e.effect_type || '').toUpperCase();
+        return type.includes('SHIELD') || stat.includes('SHIELD') || stat.includes('ARMUR') || stat.includes('RESIST');
+    })) {
+        return 'lumiere';
+    }
+    if (effectsToCheck.some(e => {
+        const stat = String(e.statAffected || '').toUpperCase();
+        const type = String(e.effectType || e.effect_type || '').toUpperCase();
+        return type.includes('HEAL') || stat.includes('HEAL') || stat.includes('SOIN') || type.includes('MANA') || stat.includes('MANA');
+    })) {
+        return 'karma';
+    }
+
+    return 'karma';
+}
+
 function createPoseResult(pose, subPath = null) {
     return {
         pose,
@@ -610,6 +692,11 @@ export function getSpritePose(spell, choiceKey = null, voieSlug = 'conviction', 
     if (!spell) return createPoseResult('attak');
 
     const activeEffects = filterActiveEffects(spell, choiceKey, channelingTurn);
+
+    if (isKarmaSpell(spell, hero)) {
+        const pose = resolveKarmaPose(spell, activeEffects, hero);
+        return createPoseResult(pose, 'karma');
+    }
 
     if (isTenebresSpell(spell, hero)) {
         const pose = resolveTenebresPose(spell, activeEffects, hero);
@@ -648,6 +735,10 @@ function applyPoseToSpriteEl(spriteEl, voieSlug, pose, restartAnim = false, subP
     const pathPrefix = subPath ? `${voieSlug}/${subPath}` : voieSlug;
     const targetSrc = `/styles/sprites/${pathPrefix}/${pose}.png?v=${SPRITE_VERSION}`;
     img.onerror = () => {
+        if (subPath === 'karma' && pose === 'karma' && !img.src.includes('/conviction/karma/karma.png')) {
+            img.src = `/styles/sprites/conviction/karma/karma.png?v=${SPRITE_VERSION}`;
+            return;
+        }
         if (pose !== 'wait') {
             img.src = `/styles/sprites/${voieSlug}/wait.png?v=${SPRITE_VERSION}`;
         } else if (!img.src.includes('/conviction/dead.png')) {
