@@ -754,11 +754,11 @@ public class Personnage {
         boolean hasSpiritReq = spell.getSpiritualite() != null;
 
         if (hasVoieReq) {
-            boolean idMatch = this.voie != null && this.voie.getId() != null && spell.getVoie().getId() != null
-                    && this.voie.getId().equals(spell.getVoie().getId());
-            boolean nameMatch = this.voie != null && this.voie.getId() == null && spell.getVoie().getId() == null
-                    && this.voie.getNom() != null && this.voie.getNom().equals(spell.getVoie().getNom());
-            if (this.voie == null || (!idMatch && !nameMatch)) {
+
+
+
+
+            if (this.voie == null || !matchesVoie(this.voie, spell.getVoie())) {
                 return this.name + " n'a pas la " + spell.getVoie().getNom() + " requise pour lancer " + spell.getNom()
                         + ".";
             }
@@ -769,13 +769,13 @@ public class Personnage {
         }
 
         if (hasSpiritReq) {
-            boolean idMatch = this.spiritualite != null && this.spiritualite.getId() != null
-                    && spell.getSpiritualite().getId() != null
-                    && this.spiritualite.getId().equals(spell.getSpiritualite().getId());
-            boolean nameMatch = this.spiritualite != null && this.spiritualite.getId() == null
-                    && spell.getSpiritualite().getId() == null && this.spiritualite.getNom() != null
-                    && this.spiritualite.getNom().equals(spell.getSpiritualite().getNom());
-            if (this.spiritualite == null || (!idMatch && !nameMatch)) {
+
+
+
+
+
+
+            if (this.spiritualite == null || !matchesSpiritualite(this.spiritualite, spell.getSpiritualite())) {
                 return this.name + " n'a pas la spiritualité " + spell.getSpiritualite().getNom()
                         + " requise pour lancer " + spell.getNom() + ".";
             }
@@ -806,6 +806,45 @@ public class Personnage {
         }
 
         return null; // Lancement autorisé
+    }
+
+    private boolean matchesVoie(Voie v1, Voie v2) {
+        if (v1 == null || v2 == null) return false;
+        if (v1.getId() != null && v2.getId() != null && v1.getId().equals(v2.getId())) {
+            return true;
+        }
+        if (v1.getNom() != null && v2.getNom() != null) {
+            String n1 = normalizeName(v1.getNom());
+            String n2 = normalizeName(v2.getNom());
+            if (n1.equalsIgnoreCase(n2)) return true;
+            String[] knownVoies = { "raison", "surete", "trahison", "consolidation", "conviction", "creation", "destruction", "violence" };
+            for (String kv : knownVoies) {
+                if (n1.contains(kv) && n2.contains(kv)) return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean matchesSpiritualite(Spiritualite s1, Spiritualite s2) {
+        if (s1 == null || s2 == null) return false;
+        if (s1.getId() != null && s2.getId() != null && s1.getId().equals(s2.getId())) {
+            return true;
+        }
+        if (s1.getNom() != null && s2.getNom() != null) {
+            String n1 = normalizeName(s1.getNom());
+            String n2 = normalizeName(s2.getNom());
+            if (n1.equalsIgnoreCase(n2)) return true;
+            if (n1.contains("esprit") && n2.contains("esprit")) return true;
+            if (n1.contains("tenebre") && n2.contains("tenebre")) return true;
+            if (n1.contains("karma") && n2.contains("karma")) return true;
+        }
+        return false;
+    }
+
+    private static String normalizeName(String str) {
+        if (str == null) return "";
+        String normalized = java.text.Normalizer.normalize(str.trim(), java.text.Normalizer.Form.NFD);
+        return normalized.replaceAll("\\p{M}", "").toLowerCase();
     }
 
     /** Alias pour la lisibilité dans les passifs. */

@@ -20,7 +20,7 @@
 import { pageState } from './combat-state.js';
 import { javaClassToCode } from '../utils/constants.js';
 
-const SPRITE_VERSION = '1786180000210';
+const SPRITE_VERSION = '1786180000221';
 const ACTION_POSE_DURATION = 1600;
 
 const activeSpriteTimers = new Map();
@@ -432,6 +432,140 @@ function isDetachementEffect(e) {
     return stat === 'AME_DETACHEE' || type === 'AME_DETACHEE' || stat.includes('DETACH') || type.includes('DETACH');
 }
 
+/**
+ * Détecte si un sort appartient à la Spiritualité de l'Esprit.
+ */
+function isEspritSpell(spell, hero = null) {
+    if (!spell) return false;
+    const spiri = spell.spiritualite || spell.spiritualiteName || spell.spiritualite_name;
+    if (spiri) {
+        const nom = typeof spiri === 'string' ? spiri : (spiri.nom || spiri.name || spiri.type || '');
+        const norm = nom.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (norm.includes('esprit')) return true;
+    }
+    const isSpiritualiteSpell = !spell.voie || String(spell.category || '').toUpperCase() === 'SPIRITUALITE';
+    if (isSpiritualiteSpell && hero?.spiritualite) {
+        const hSpiri = hero.spiritualite || hero.spiritualiteName || hero.spiritualite_name;
+        const hNom = typeof hSpiri === 'string' ? hSpiri : (hSpiri.nom || hSpiri.name || hSpiri.type || '');
+        const hNorm = hNom.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (hNorm.includes('esprit')) return true;
+    }
+    return false;
+}
+
+function isTargetEveryone(targetVal) {
+    if (!targetVal) return false;
+    const str = String(targetVal).toUpperCase();
+    if (str === 'ALL_COMBATANTS' || str.includes('ALL_COMBATANT') || str.includes('TOUT_LE_MONDE') || str.includes('EVERYONE')) {
+        return true;
+    }
+    const norm = String(targetVal).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return norm.includes('tout le monde');
+}
+
+function spellTargetsEveryone(spell, effectsToCheck) {
+    if (effectsToCheck && effectsToCheck.some(e => isTargetEveryone(e.effectTarget || e.effect_target || e.target))) {
+        return true;
+    }
+    if (spell && isTargetEveryone(spell.target || spell.effectTarget || spell.targetType)) {
+        return true;
+    }
+    return false;
+}
+
+function isDamageEffect(e) {
+    if (!e) return false;
+    const rawType = String(e.effectType || e.effect_type || '');
+    const mappedType = (javaClassToCode[rawType] || rawType).toUpperCase();
+    const upperRaw = rawType.toUpperCase();
+    const stat = String(e.statAffected || '').toUpperCase();
+    const target = String(e.effectTarget || e.effect_target || e.target || '').toUpperCase();
+    const isEnemy = ENEMY_TARGETS.has(target) || target === '' || target === 'TARGET' || target === 'ALL_ENEMIES';
+
+    if (DAMAGE_TYPES.has(mappedType) || upperRaw.includes('DAMAGE') || upperRaw.includes('DEGAT')) {
+        if (isEnemy || target !== 'CASTER') return true;
+    }
+
+    const damageType = String(e.damageType || e.damage_type || '').toUpperCase();
+    if (damageType && damageType !== 'NONE') {
+        if (isEnemy || target !== 'CASTER') return true;
+    }
+
+    const isPoison = mappedType === 'POISON' || upperRaw.includes('POISON') || stat === 'POISON' || Boolean(e.poison);
+    if (isPoison && (isEnemy || target !== 'CASTER')) return true;
+
+    const isBurn = mappedType === 'BURN' || upperRaw.includes('BURN') || stat === 'BURN' || Boolean(e.burn);
+    if (isBurn && (isEnemy || target !== 'CASTER')) return true;
+
+    const isHeat = mappedType === 'HEAT' || upperRaw.includes('HEAT') || stat === 'HEAT';
+    if (isHeat && (isEnemy || target !== 'CASTER')) return true;
+
+    const isDot = mappedType === 'DOT' || mappedType === 'DAMAGE_OVER_TIME' || upperRaw.includes('DAMAGEOVERTIME') || upperRaw.includes('OVERTIME') || stat === 'DOT' || Boolean(e.dot);
+    if (isDot && (isEnemy || target !== 'CASTER')) return true;
+
+    return false;
+}
+
+function isMeditationEffect(e) {
+    if (!e) return false;
+    const rawType = String(e.effectType || e.effect_type || '');
+    const mappedType = (javaClassToCode[rawType] || rawType).toUpperCase();
+    const upperRaw = rawType.toUpperCase();
+    const stat = String(e.statAffected || '').toUpperCase();
+
+    // Bouclier
+    if (mappedType === 'SHIELD' || upperRaw.includes('SHIELD') || stat.includes('SHIELD') || stat.includes('BOUCLIER') || stat.includes('ARMUR')) {
+        return true;
+    }
+
+    // Heal de vie
+    if (HEAL_TYPES.has(mappedType) || upperRaw.includes('HEAL') || stat.includes('HEAL') || stat.includes('SOIN') || stat === 'PV' || stat === 'HEALTH' || stat.includes('LIFE')) {
+        return true;
+    }
+
+    // Heal de mana
+    if (MANA_TYPES.has(mappedType) || upperRaw.includes('MANA') || stat.includes('MANA') || upperRaw.includes('MOT')) {
+        return true;
+    }
+
+    // Buff / Débuff
+    if (mappedType === 'BUFF_DEBUFF' || upperRaw.includes('BUFF') || upperRaw.includes('DEBUFF') || stat !== '') {
+        return true;
+    }
+
+    // Dispel / Purge
+    if (mappedType === 'PURGE' || mappedType === 'DISPEL' || upperRaw.includes('PURGE') || upperRaw.includes('DISPEL')) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Résout la pose du sprite pour la Spiritualité de l'Esprit.
+ * Priorités strictes :
+ * 1. all : sort comportant un effet qui cible tout le monde
+ * 2. attak : sort comportant une attaque infligeant des dégâts
+ * 3. meditation : sort faisant bouclier, buff, débuff, heal de vie ou de mana
+ */
+function resolveEspritPose(spell, activeEffects, hero = null) {
+    const effectsToCheck = (activeEffects && activeEffects.length > 0) ? activeEffects : (spell?.effects || []);
+
+    if (spellTargetsEveryone(spell, effectsToCheck)) {
+        return 'all';
+    }
+
+    if (effectsToCheck.some(isDamageEffect)) {
+        return 'attak';
+    }
+
+    if (effectsToCheck.some(isMeditationEffect)) {
+        return 'meditation';
+    }
+
+    return 'meditation';
+}
+
 function resolveTenebresPose(spell, activeEffects, hero = null) {
     const effectsToCheck = (activeEffects && activeEffects.length > 0) ? activeEffects : (spell?.effects || []);
 
@@ -482,6 +616,11 @@ export function getSpritePose(spell, choiceKey = null, voieSlug = 'conviction', 
         return createPoseResult(pose, 'tenebre');
     }
 
+    if (isEspritSpell(spell, hero)) {
+        const pose = resolveEspritPose(spell, activeEffects, hero);
+        return createPoseResult(pose, 'esprit');
+    }
+
     if (activeEffects.length === 0) {
         const pose = (isSpellChanneled(spell) && voieSlug === 'conviction') ? 'prepare' : 'wait';
         return createPoseResult(pose);
@@ -520,6 +659,11 @@ function applyPoseToSpriteEl(spriteEl, voieSlug, pose, restartAnim = false, subP
     }
 
     spriteEl.dataset.pose = pose;
+    if (subPath) {
+        spriteEl.dataset.subPath = subPath;
+    } else {
+        delete spriteEl.dataset.subPath;
+    }
 
     Array.from(spriteEl.classList).forEach(cls => {
         if (cls.startsWith('pose-')) {

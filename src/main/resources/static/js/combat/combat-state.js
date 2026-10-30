@@ -460,6 +460,7 @@ window.openBuyModal = openBuyModal;
 window.closeBuyModal = closeBuyModal;
 
 window.switchSpellTab = function (tab) {
+    pageState.currentSpellsTab = tab;
     setCurrentSpellsTab(tab);
     // Update tab UI
     document.querySelectorAll('.csp-tab').forEach(t => t.classList.remove('active'));
