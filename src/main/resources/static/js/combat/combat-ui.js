@@ -3822,11 +3822,12 @@ export function renderSpells(spells) {
 
     // Filter spells based on currentSpellsTab
     let filteredSpells = [];
-    if (currentSpellsTab === 'VOIE') {
+    const activeTab = pageState.currentSpellsTab || currentSpellsTab || 'VOIE';
+    if (activeTab === 'VOIE') {
         filteredSpells = spells.filter(s => s.voie != null);
-    } else if (currentSpellsTab === 'SPIRIT') {
+    } else if (activeTab === 'SPIRIT') {
         filteredSpells = spells.filter(s => s.spiritualite != null);
-    } else if (currentSpellsTab === 'ALL') {
+    } else if (activeTab === 'ALL') {
         filteredSpells = spells.filter(s => s.voie != null || s.spiritualite != null);
     }
 
@@ -3993,10 +3994,16 @@ export function renderSpellCard(sp) {
     }
 
     let spiritHtml = '';
-    if (sp.spiritualite && sp.spiritualite.nom) {
-        const sColor = getSpiritButtonColor(sp.spiritualite);
-        const sIcon = ui.getSpiritIcon(sp.spiritualite.nom);
-        spiritHtml = `<span class="material-symbols-outlined" style="font-size: 1rem; color: ${sColor};" title="${sp.spiritualite.nom}">${sIcon}</span>`;
+    const spiriObj = sp.spiritualite;
+    const spiriNom = spiriObj ? (typeof spiriObj === 'string' ? spiriObj : (spiriObj.nom || spiriObj.name || '')) : '';
+    if (spiriNom) {
+        const sColor = getSpiritButtonColor(spiriObj);
+        const sIcon = ui.getSpiritIcon(spiriNom);
+        spiritHtml = `<span class="material-symbols-outlined" style="font-size: 1rem; color: ${sColor};" title="${spiriNom}">${sIcon}</span>`;
+
+
+
+
     }
 
     let effectsSummary = getSpellEffectsSummaryHtml(sp);

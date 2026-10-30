@@ -201,7 +201,7 @@ export function hexToRgb(hex) {
 }
 
 export function getVoieIcon(nom) {
-    const n = nom.toLowerCase();
+    const n = (nom ? (typeof nom === 'string' ? nom : (nom.nom || nom.name || '')) : '').toLowerCase();
     if (n.includes('raison')) return 'psychology';
     if (n.includes('sûreté') || n.includes('surete')) return 'water_drop';
     if (n.includes('trahison')) return 'visibility_off';
@@ -214,7 +214,7 @@ export function getVoieIcon(nom) {
 }
 
 export function getSpiritIcon(nom) {
-    const n = nom.toLowerCase();
+    const n = (nom ? (typeof nom === 'string' ? nom : (nom.nom || nom.name || '')) : '').toLowerCase();
     if (n.includes('esprit')) return 'blur_on';
     if (n.includes('ténèbres') || n.includes('tenebres')) return 'dark_mode';
     if (n.includes('karma')) return 'all_inclusive';

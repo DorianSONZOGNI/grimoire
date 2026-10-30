@@ -3,7 +3,7 @@ import { state } from './state.js';
 import { renderFilteredSpells } from '../pages/grimoire.js';
 
 export function getVoieButtonColor(v) {
-    const vNom = v.nom.toLowerCase();
+    const vNom = (v ? (typeof v === 'string' ? v : (v.nom || v.name || '')) : '').toLowerCase();
     if (vNom.includes('raison')) return '#3b82f6';
     if (vNom.includes('sûreté') || vNom.includes('surete')) return '#00e5cc';
     if (vNom.includes('trahison')) return '#ed5677';
@@ -16,7 +16,7 @@ export function getVoieButtonColor(v) {
 }
 
 export function getSpiritButtonColor(s) {
-    const sNom = s.nom.toLowerCase();
+    const sNom = (s ? (typeof s === 'string' ? s : (s.nom || s.name || '')) : '').toLowerCase();
     if (sNom.includes('esprit')) return '#38bdf8';
     if (sNom.includes('ténèbres') || sNom.includes('tenebres')) return '#c084fc';
     if (sNom.includes('karma')) return '#e7d198';
